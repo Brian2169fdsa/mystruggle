@@ -619,18 +619,14 @@ function seed(): DB {
     },
   ];
 
-  // ~300 generated members with 1–2 enrollments and plausible progress.
-  for (let i = 0; i < 300; i++) {
-    const member = pick(generated);
+  // 300 distinct generated members with 1–2 enrollments and plausible progress.
+  const enrolled = new Set<User>();
+  while (enrolled.size < 300) enrolled.add(pick(generated));
+  for (const member of enrolled) {
     const count = rnd() < 0.55 ? 1 : 2;
-    for (let j = 0; j < count; j++) {
-      const course = pick(courses);
-      if (
-        enrollments.some(
-          (e) => e.memberId === member.id && e.courseId === course.id
-        )
-      )
-        continue;
+    const chosen = new Set<Course>();
+    while (chosen.size < count) chosen.add(pick(courses));
+    for (const course of chosen) {
       const done = int(0, course.lessonCount);
       enrollments.push({
         id: did(),
