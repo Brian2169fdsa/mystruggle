@@ -53,6 +53,7 @@ export default function NavDrawer() {
 
       <div
         aria-hidden={!open}
+        inert={!open}
         className={
           "fixed inset-0 z-[100] flex flex-col bg-navy-deep transition-transform duration-300 ease-out lg:hidden " +
           (open ? "translate-x-0" : "translate-x-full")
