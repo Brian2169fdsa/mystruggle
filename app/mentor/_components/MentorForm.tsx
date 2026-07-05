@@ -33,7 +33,7 @@ export default function MentorForm() {
   const [availability, setAvailability] = useState<string>("weekly");
 
   return (
-    <div className="flex flex-col gap-[22px] rounded-2xl bg-white px-12 py-11 shadow-[0_4px_20px_rgba(11,37,69,.08)]">
+    <div className="flex flex-col gap-[22px] rounded-2xl bg-white px-5 py-7 shadow-[0_4px_20px_rgba(11,37,69,.08)] sm:px-8 sm:py-9 lg:px-12 lg:py-11">
       {submitted ? (
         <div className="flex flex-col items-center gap-3.5 py-10 text-center">
           <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#E8F8F0] text-[30px] font-extrabold text-success">
@@ -56,7 +56,7 @@ export default function MentorForm() {
         </div>
       ) : (
         <div className="flex flex-col gap-[22px]">
-          <div className="grid grid-cols-2 gap-[18px]">
+          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2">
             <div>
               <div className={FIELD_LABEL}>Full name</div>
               <input placeholder="Your name" className={FIELD_INPUT} />

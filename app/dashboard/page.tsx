@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LayoutGrid, Users, Heart, Flag, BarChart3 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -9,7 +9,14 @@ import ParticipantDetail from "./_components/ParticipantDetail";
 import GivingDesk from "./_components/GivingDesk";
 import Moderation from "./_components/Moderation";
 import Reports from "./_components/Reports";
-import type { GivingStep, ModStatus, Section, Verdict } from "./_components/types";
+import type { Post } from "../lib/types";
+import type {
+  AdminMember,
+  GivingStep,
+  ModerateAction,
+  OverviewData,
+  Section,
+} from "./_components/types";
 
 const WORDMARK_WHITE =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2843%29-1920w.png";
@@ -27,24 +34,61 @@ export default function DashboardPage() {
   const [riskOnly, setRiskOnly] = useState(false);
   const [givingStep, setGivingStep] = useState<GivingStep>("amount");
   const [redeemAmount, setRedeemAmount] = useState(20);
-  const [pagePublic, setPagePublic] = useState(true);
-  const [photoPublic, setPhotoPublic] = useState(false);
-  const [modStatus, setModStatus] = useState<ModStatus>({
-    jasmine: "pending",
-    kevin: "pending",
-  });
 
-  // Crisis post is always held + pending, so it counts as 1.
+  // ── LIVE data ────────────────────────────────────────────────────────
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [members, setMembers] = useState<AdminMember[] | null>(null);
+  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [selectedMember, setSelectedMember] = useState<AdminMember | null>(
+    null
+  );
+
+  const loadOverview = useCallback(async () => {
+    const res = await fetch("/api/admin/overview");
+    if (res.ok) setOverview(await res.json());
+  }, []);
+
+  const loadPosts = useCallback(async () => {
+    const res = await fetch("/api/admin/posts");
+    if (res.ok) setPosts((await res.json()).posts as Post[]);
+  }, []);
+
+  useEffect(() => {
+    loadOverview().catch(() => {});
+    loadPosts().catch(() => {});
+    fetch("/api/admin/members")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setMembers(d.members as AdminMember[]))
+      .catch(() => {});
+  }, [loadOverview, loadPosts]);
+
+  const moderate = useCallback(
+    async (postId: string, action: ModerateAction) => {
+      await fetch(`/api/posts/${postId}/moderate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      // Refetch so the queue, badge, and overview counts reflect the server.
+      await Promise.all([loadPosts(), loadOverview()]).catch(() => {});
+    },
+    [loadPosts, loadOverview]
+  );
+
+  // Live badge: posts still needing staff eyes (pending + flagged).
   const pendingCount =
-    1 + Object.values(modStatus).filter((v) => v === "pending").length;
+    posts?.filter((p) => p.status === "pending" || p.status === "flagged")
+      .length ?? 0;
   const activeKey = section === "detail" ? "participants" : section;
 
   const goParticipants = () => setSection("participants");
   const goModeration = () => setSection("moderation");
   const goGiving = () => setSection("giving");
 
-  const setVerdict = (key: keyof ModStatus, verdict: Verdict) =>
-    setModStatus((prev) => ({ ...prev, [key]: verdict }));
+  const openMember = (m: AdminMember) => {
+    setSelectedMember(m);
+    setSection("detail");
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -97,6 +141,7 @@ export default function DashboardPage() {
       <main className="flex min-w-0 flex-1 flex-col gap-5 px-9 py-[30px] text-[15px]">
         {section === "overview" && (
           <Overview
+            overview={overview}
             pendingCount={pendingCount}
             goParticipants={goParticipants}
             goModeration={goModeration}
@@ -104,24 +149,31 @@ export default function DashboardPage() {
         )}
         {section === "participants" && (
           <Participants
+            members={members}
             riskOnly={riskOnly}
             onToggleRisk={() => setRiskOnly((v) => !v)}
-            onOpenDanielle={() => setSection("detail")}
+            onOpenMember={openMember}
           />
         )}
-        {section === "detail" && (
-          <ParticipantDetail
-            pagePublic={pagePublic}
-            photoPublic={photoPublic}
-            onTogglePage={() => setPagePublic((v) => !v)}
-            onTogglePhoto={() => setPhotoPublic((v) => !v)}
-            redeemed={givingStep === "done" ? redeemAmount : 0}
-            goParticipants={goParticipants}
-            goGiving={goGiving}
-          />
-        )}
+        {section === "detail" &&
+          (selectedMember ? (
+            <ParticipantDetail
+              key={selectedMember.id}
+              member={selectedMember}
+              goParticipants={goParticipants}
+              goGiving={goGiving}
+            />
+          ) : (
+            <Participants
+              members={members}
+              riskOnly={riskOnly}
+              onToggleRisk={() => setRiskOnly((v) => !v)}
+              onOpenMember={openMember}
+            />
+          ))}
         {section === "giving" && (
           <GivingDesk
+            overview={overview}
             step={givingStep}
             redeemAmount={redeemAmount}
             onSelectAmount={setRedeemAmount}
@@ -136,9 +188,9 @@ export default function DashboardPage() {
         )}
         {section === "moderation" && (
           <Moderation
+            posts={posts}
             pendingCount={pendingCount}
-            modStatus={modStatus}
-            onVerdict={setVerdict}
+            onModerate={moderate}
             goParticipants={goParticipants}
           />
         )}

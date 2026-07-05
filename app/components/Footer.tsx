@@ -7,7 +7,7 @@ const WORDMARK_WHITE =
 export default function Footer() {
   return (
     <footer className="bg-navy-deep">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-12 px-6 pt-20">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 pt-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] lg:gap-12 lg:px-6 lg:pt-20">
         <div className="flex flex-col gap-[18px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -85,7 +85,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-16 flex max-w-[1200px] justify-between border-t border-white/[.12] px-6 py-6 text-[13px] text-white/50">
+      <div className="mx-auto mt-12 flex max-w-[1200px] flex-col items-center gap-2 border-t border-white/[.12] px-5 py-6 text-center text-[13px] text-white/50 lg:mt-16 lg:flex-row lg:justify-between lg:px-6 lg:text-left">
         <span>© 2026 My Struggle · EST. 2021 · Laveen, Arizona</span>
         <span>Privacy · Terms · 501(c)(3)</span>
       </div>

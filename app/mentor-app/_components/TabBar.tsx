@@ -2,15 +2,24 @@
 
 import { Users, MessageCircle, Home, CircleUser } from "lucide-react";
 
-/** Bottom tab bar — shown on roster + thread (hidden on mentee detail). */
+export type MentorView =
+  | "roster"
+  | "detail"
+  | "chatlist"
+  | "thread"
+  | "community";
+
+/** Bottom tab bar — shown everywhere except mentee detail. */
 export default function TabBar({
   view,
   onMentees,
   onChat,
+  onCommunity,
 }: {
-  view: "roster" | "thread";
+  view: MentorView;
   onMentees: () => void;
   onChat: () => void;
+  onCommunity: () => void;
 }) {
   const tabs = [
     {
@@ -22,10 +31,15 @@ export default function TabBar({
     {
       label: "Chat",
       Icon: MessageCircle,
-      active: view === "thread",
+      active: view === "chatlist" || view === "thread",
       onClick: onChat,
     },
-    { label: "Community", Icon: Home, active: false, onClick: undefined },
+    {
+      label: "Community",
+      Icon: Home,
+      active: view === "community",
+      onClick: onCommunity,
+    },
     { label: "Me", Icon: CircleUser, active: false, onClick: undefined },
   ];
 

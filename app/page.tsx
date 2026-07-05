@@ -17,18 +17,18 @@ export default function Home() {
       <Nav />
 
       {/* HERO */}
-      <section className="relative flex min-h-[86vh] items-center overflow-hidden bg-navy-deep bg-[url('/hero.png')] bg-[center_60%] bg-cover bg-no-repeat">
+      <section className="relative flex min-h-[560px] items-center overflow-hidden bg-navy-deep bg-[url('/center-exterior.png')] bg-[center_60%] bg-cover bg-no-repeat lg:min-h-[86vh]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.58)_48%,rgba(11,37,69,.12)_100%)]" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={WORDMARK_WHITE}
           alt=""
-          className="absolute right-12 top-11 h-[140px] opacity-90"
+          className="absolute right-12 top-11 hidden h-[140px] opacity-90 lg:block"
           style={{ filter: HERO_GHOST_FILTER }}
         />
-        <div className="relative mx-auto w-full max-w-[1200px] px-6 py-[120px]">
-          <div className="flex max-w-[720px] flex-col gap-[26px]">
-            <div className="text-[13px] font-bold tracking-[.12em] text-[#8FBCF0]">
+        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[120px]">
+          <div className="flex max-w-[720px] flex-col gap-5 lg:gap-[26px]">
+            <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
               2026 MISSION
             </div>
             <h1 className="text-[clamp(40px,5vw,68px)]/[1.06] font-extrabold tracking-[-0.02em] text-white">
@@ -36,20 +36,20 @@ export default function Home() {
               <span className="script text-[1.25em] text-[#A9B4E8]">Future</span>{" "}
               Together
             </h1>
-            <p className="max-w-[560px] text-[19px]/[1.65] font-medium text-white/[.88]">
+            <p className="max-w-[560px] text-[16px]/[1.65] font-medium text-white/[.88] lg:text-[19px]">
               Peer mentorship, outreach centers, and QR Code Giving — built by
               people who&apos;ve lived the struggle, for people still in it.
             </p>
-            <div className="mt-1.5 flex flex-wrap gap-4">
+            <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <Link
                 href="/donate"
-                className="inline-flex h-[52px] items-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover"
+                className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
               >
                 Donate today <Heart size={14} fill="currentColor" />
               </Link>
               <Link
                 href="/mentor"
-                className="inline-flex h-[52px] items-center rounded-full border-[1.5px] border-white/85 px-[34px] text-base font-bold text-white hover:bg-white/[.12]"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
               >
                 Become a mentor
               </Link>
@@ -60,13 +60,13 @@ export default function Home() {
 
       {/* MISSION */}
       <section className="bg-white">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(300px,440px)_1fr] gap-20 px-6 py-[110px]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 lg:grid-cols-[minmax(300px,440px)_1fr] lg:gap-20 lg:px-6 lg:py-[110px]">
           <div>
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Our mission
             </div>
-            <h2 className="mt-4 text-[48px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
-              what is <span className="script text-[60px]">My</span> Struggle
+            <h2 className="mt-4 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
+              what is <span className="script text-[44px] lg:text-[60px]">My</span> Struggle
             </h2>
           </div>
           <div className="flex flex-col gap-[22px] text-[17px]/[1.75] text-ink-600">
@@ -101,19 +101,19 @@ export default function Home() {
 
       {/* DANIELLE STORY SPOTLIGHT */}
       <section className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 py-[100px]">
-          <div className="grid grid-cols-[minmax(300px,460px)_1fr] overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)]">
-            <div className="photo-ph relative flex min-h-[420px] items-end p-4">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)] lg:grid-cols-[minmax(300px,460px)_1fr]">
+            <div className="photo-ph relative flex min-h-[260px] items-end p-4 lg:min-h-[420px]">
               <span className="photo-cap">
                 photo: Danielle, warm daylight portrait
               </span>
             </div>
-            <div className="flex flex-col gap-[18px] px-16 py-14">
-              <div className="text-[13px] font-bold tracking-[.12em] text-blue-primary">
+            <div className="flex flex-col gap-[18px] px-6 py-8 lg:px-16 lg:py-14">
+              <div className="text-[12px] font-bold tracking-[.12em] text-blue-primary lg:text-[13px]">
                 MEMBER STORY
               </div>
               <div className="flex flex-wrap items-center gap-3.5">
-                <div className="text-[36px] font-extrabold tracking-[-0.02em] text-ink-900">
+                <div className="text-[30px] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[36px]">
                   Danielle
                 </div>
                 <span className="inline-flex h-[30px] items-center rounded-full bg-sky-tint px-3.5 text-[12px] font-bold text-blue-primary">
@@ -140,7 +140,7 @@ export default function Home() {
               <div className="mt-2.5">
                 <Link
                   href="/give"
-                  className="inline-flex h-[52px] items-center gap-2 rounded-full bg-blue-primary px-8 text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+                  className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-5 text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto sm:px-8 sm:text-base"
                 >
                   Donate to Danielle&apos;s journey{" "}
                   <Heart size={14} fill="currentColor" />
@@ -153,17 +153,17 @@ export default function Home() {
 
       {/* 01/02/03 GIVE CARDS */}
       <section className="bg-white">
-        <div className="mx-auto max-w-[1200px] px-6 py-[110px]">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
           <div className="mx-auto max-w-[640px] text-center">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Three ways to give
             </div>
-            <h2 className="mt-3.5 text-[48px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
               Every gift builds someone&apos;s way{" "}
-              <span className="script text-[60px]">home</span>
+              <span className="script text-[44px] lg:text-[60px]">home</span>
             </h2>
           </div>
-          <div className="mt-[60px] grid grid-cols-3 gap-7">
+          <div className="mt-10 grid grid-cols-1 gap-6 lg:mt-[60px] lg:grid-cols-3 lg:gap-7">
             {[
               {
                 n: "01",
@@ -206,20 +206,20 @@ export default function Home() {
 
       {/* EST. 2021 MANIFESTO */}
       <section className="relative overflow-hidden bg-navy-deep">
-        <div className="absolute -top-[30px] left-10 whitespace-nowrap text-[220px]/[1] font-extrabold tracking-[-0.02em] text-white/[.04]">
+        <div className="absolute -top-[30px] left-10 hidden whitespace-nowrap text-[220px]/[1] font-extrabold tracking-[-0.02em] text-white/[.04] lg:block">
           EST. 2021
         </div>
-        <div className="relative mx-auto flex max-w-[900px] flex-col gap-7 px-6 py-[120px] text-center">
-          <div className="text-[13px] font-bold tracking-[.12em] text-[#8FBCF0]">
+        <div className="relative mx-auto flex max-w-[900px] flex-col gap-6 px-5 py-16 text-center lg:gap-7 lg:px-6 lg:py-[120px]">
+          <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
             EST. 2021 · LAVEEN, ARIZONA
           </div>
-          <div className="text-[40px]/[1.25] font-extrabold tracking-[-0.02em] text-white">
+          <div className="text-[28px]/[1.3] font-extrabold tracking-[-0.02em] text-white lg:text-[40px]/[1.25]">
             We&apos;re not experts on struggle because we studied it.
             <br />
             We&apos;re experts because we{" "}
-            <span className="script text-[52px] text-[#A9B4E8]">lived</span> it.
+            <span className="script text-[36px] text-[#A9B4E8] lg:text-[52px]">lived</span> it.
           </div>
-          <div className="mx-auto max-w-[640px] text-[18px]/[1.7] text-white/75">
+          <div className="mx-auto max-w-[640px] text-[16px]/[1.7] text-white/75 lg:text-[18px]">
             &ldquo;We don&apos;t ask what&apos;s wrong with you. We ask what
             happened to you — and how we can help.&rdquo;
           </div>
@@ -231,12 +231,12 @@ export default function Home() {
 
       {/* POSITION OF NEUTRALITY */}
       <section className="bg-canvas">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_minmax(320px,560px)] items-center gap-[72px] px-6 py-[110px]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1fr_minmax(320px,560px)] lg:gap-[72px] lg:px-6 lg:py-[110px]">
           <div className="flex flex-col gap-5">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Flagship program
             </div>
-            <div className="text-[44px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900">
+            <div className="text-[34px]/[1.15] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.12]">
               Position of Neutrality
             </div>
             <div className="text-[17px]/[1.75] text-ink-600">
@@ -254,7 +254,7 @@ export default function Home() {
                 href="https://positionofneutrality.org"
                 target="_blank"
                 rel="noopener"
-                className="inline-flex h-[52px] items-center rounded-full border-[1.5px] border-blue-primary px-[30px] text-base font-bold text-blue-primary hover:bg-sky-tint"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-blue-primary px-5 text-[15px] font-bold text-blue-primary hover:bg-sky-tint sm:w-auto sm:px-[30px] sm:text-base"
               >
                 positionofneutrality.org ↗
               </a>
@@ -274,7 +274,7 @@ export default function Home() {
 
       {/* STATS */}
       <section className="border-y border-sky-tint bg-white">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-4 gap-8 px-6 py-[90px] text-center">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-6 px-5 py-16 text-center lg:grid-cols-4 lg:gap-8 lg:px-6 lg:py-[90px]">
           {[
             { n: "15,000+", l: "people mentored", green: false },
             {
@@ -288,7 +288,7 @@ export default function Home() {
             <div key={s.l}>
               <div
                 className={
-                  "tnum text-[56px] font-extrabold tracking-[-0.02em] " +
+                  "tnum text-[40px] font-extrabold tracking-[-0.02em] lg:text-[56px] " +
                   (s.green ? "text-success" : "text-blue-primary")
                 }
               >
@@ -307,23 +307,23 @@ export default function Home() {
 
       {/* FAQ */}
       <section className="bg-canvas">
-        <div className="mx-auto max-w-[900px] px-6 py-[110px]">
+        <div className="mx-auto max-w-[900px] px-5 py-16 lg:px-6 lg:py-[110px]">
           <div className="text-center">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               FAQ
             </div>
-            <h2 className="mt-3.5 text-[44px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
-              Questions, <span className="script text-[56px]">answered</span>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Questions, <span className="script text-[42px] lg:text-[56px]">answered</span>
             </h2>
           </div>
-          <div className="mt-[52px] flex flex-col gap-3.5">
+          <div className="mt-10 flex flex-col gap-3.5 lg:mt-[52px]">
             {FAQ.map((f, i) => (
               <details
                 key={f.q}
                 open={i === 0}
-                className="rounded-2xl bg-white px-8 py-[26px] shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+                className="rounded-2xl bg-white px-5 py-5 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:px-8 lg:py-[26px]"
               >
-                <summary className="flex items-center justify-between text-[17px] font-bold text-ink-900">
+                <summary className="flex items-center justify-between gap-4 text-[16px] font-bold text-ink-900 lg:text-[17px]">
                   {f.q}
                   <span className="text-[20px] text-blue-primary">
                     <span className="faq-plus">+</span>
@@ -442,19 +442,19 @@ function SocialWall() {
   ];
   return (
     <section className="bg-white">
-      <div className="mx-auto max-w-[1200px] px-6 py-[110px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
         <div className="flex flex-col items-center gap-3.5 text-center">
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+          <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
             Social wall
           </div>
-          <h2 className="text-[44px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
-            Follow the <span className="script text-[56px]">journey</span>
+          <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+            Follow the <span className="script text-[42px] lg:text-[56px]">journey</span>
           </h2>
           <div className="text-base text-ink-600">
             Wins, reunions, and center life — @themystruggle everywhere.
           </div>
         </div>
-        <div className="mt-[52px] grid grid-cols-4 gap-[22px]">
+        <div className="mt-10 grid grid-cols-1 gap-[22px] sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4">
           {cards.map((c) => (
             <a
               key={c.tag}
@@ -499,7 +499,7 @@ function SocialWall() {
             </a>
           ))}
         </div>
-        <div className="mt-10 flex justify-center gap-3">
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           {["Facebook", "Instagram", "TikTok", "YouTube", "LinkedIn"].map(
             (p) => (
               <span
