@@ -17,18 +17,18 @@ export default function Home() {
       <Nav />
 
       {/* HERO */}
-      <section className="relative flex min-h-[86vh] items-center overflow-hidden bg-navy-deep bg-[url('/hero.png')] bg-[center_60%] bg-cover bg-no-repeat">
+      <section className="relative flex min-h-[560px] items-center overflow-hidden bg-navy-deep bg-[url('/center-exterior.png')] bg-[center_60%] bg-cover bg-no-repeat lg:min-h-[86vh]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.58)_48%,rgba(11,37,69,.12)_100%)]" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={WORDMARK_WHITE}
           alt=""
-          className="absolute right-12 top-11 h-[140px] opacity-90"
+          className="absolute right-12 top-11 hidden h-[140px] opacity-90 lg:block"
           style={{ filter: HERO_GHOST_FILTER }}
         />
-        <div className="relative mx-auto w-full max-w-[1200px] px-6 py-[120px]">
-          <div className="flex max-w-[720px] flex-col gap-[26px]">
-            <div className="text-[13px] font-bold tracking-[.12em] text-[#8FBCF0]">
+        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[120px]">
+          <div className="flex max-w-[720px] flex-col gap-5 lg:gap-[26px]">
+            <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
               2026 MISSION
             </div>
             <h1 className="text-[clamp(40px,5vw,68px)]/[1.06] font-extrabold tracking-[-0.02em] text-white">
@@ -36,20 +36,20 @@ export default function Home() {
               <span className="script text-[1.25em] text-[#A9B4E8]">Future</span>{" "}
               Together
             </h1>
-            <p className="max-w-[560px] text-[19px]/[1.65] font-medium text-white/[.88]">
+            <p className="max-w-[560px] text-[16px]/[1.65] font-medium text-white/[.88] lg:text-[19px]">
               Peer mentorship, outreach centers, and QR Code Giving — built by
               people who&apos;ve lived the struggle, for people still in it.
             </p>
-            <div className="mt-1.5 flex flex-wrap gap-4">
+            <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <Link
                 href="/donate"
-                className="inline-flex h-[52px] items-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover"
+                className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
               >
                 Donate today <Heart size={14} fill="currentColor" />
               </Link>
               <Link
                 href="/mentor"
-                className="inline-flex h-[52px] items-center rounded-full border-[1.5px] border-white/85 px-[34px] text-base font-bold text-white hover:bg-white/[.12]"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
               >
                 Become a mentor
               </Link>
@@ -60,13 +60,13 @@ export default function Home() {
 
       {/* MISSION */}
       <section className="bg-white">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(300px,440px)_1fr] gap-20 px-6 py-[110px]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 lg:grid-cols-[minmax(300px,440px)_1fr] lg:gap-20 lg:px-6 lg:py-[110px]">
           <div>
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Our mission
             </div>
-            <h2 className="mt-4 text-[48px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
-              what is <span className="script text-[60px]">My</span> Struggle
+            <h2 className="mt-4 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
+              what is <span className="script text-[44px] lg:text-[60px]">My</span> Struggle
             </h2>
           </div>
           <div className="flex flex-col gap-[22px] text-[17px]/[1.75] text-ink-600">
@@ -101,19 +101,19 @@ export default function Home() {
 
       {/* DANIELLE STORY SPOTLIGHT */}
       <section className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 py-[100px]">
-          <div className="grid grid-cols-[minmax(300px,460px)_1fr] overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)]">
-            <div className="photo-ph relative flex min-h-[420px] items-end p-4">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)] lg:grid-cols-[minmax(300px,460px)_1fr]">
+            <div className="photo-ph relative flex min-h-[260px] items-end p-4 lg:min-h-[420px]">
               <span className="photo-cap">
                 photo: Danielle, warm daylight portrait
               </span>
             </div>
-            <div className="flex flex-col gap-[18px] px-16 py-14">
-              <div className="text-[13px] font-bold tracking-[.12em] text-blue-primary">
+            <div className="flex flex-col gap-[18px] px-6 py-8 lg:px-16 lg:py-14">
+              <div className="text-[12px] font-bold tracking-[.12em] text-blue-primary lg:text-[13px]">
                 MEMBER STORY
               </div>
               <div className="flex flex-wrap items-center gap-3.5">
-                <div className="text-[36px] font-extrabold tracking-[-0.02em] text-ink-900">
+                <div className="text-[30px] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[36px]">
                   Danielle
                 </div>
                 <span className="inline-flex h-[30px] items-center rounded-full bg-sky-tint px-3.5 text-[12px] font-bold text-blue-primary">
@@ -140,7 +140,7 @@ export default function Home() {
               <div className="mt-2.5">
                 <Link
                   href="/give"
-                  className="inline-flex h-[52px] items-center gap-2 rounded-full bg-blue-primary px-8 text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+                  className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-5 text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto sm:px-8 sm:text-base"
                 >
                   Donate to Danielle&apos;s journey{" "}
                   <Heart size={14} fill="currentColor" />

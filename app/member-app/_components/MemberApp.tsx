@@ -9,6 +9,7 @@ import GiveTab from "./GiveTab";
 import ChatTab from "./ChatTab";
 import MeTab from "./MeTab";
 import CelebrationOverlay from "./CelebrationOverlay";
+import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
 
 export type Task = { label: string; done: boolean };
 export type GuideState = "idle" | "asked" | "added";
@@ -25,9 +26,7 @@ export default function MemberApp() {
     { label: "Job interview at ABC Painting — 2:00 pm", done: false },
     { label: "ISE Course 3 · Lesson 2 — 12 min video", done: false },
   ]);
-  const [heart1, setHeart1] = useState(false);
-  const [heart2, setHeart2] = useState(false);
-  const [heart3, setHeart3] = useState(false); // shared-win post
+  const [heart3, setHeart3] = useState(false); // local fallback shared-win post
   const [vidCat, setVidCat] = useState("All");
   const [guideState, setGuideState] = useState<GuideState>("idle");
   const [askedLabel, setAskedLabel] = useState("");
@@ -52,11 +51,26 @@ export default function MemberApp() {
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
   };
 
-  const shareWin = () => {
+  const shareWin = async () => {
     setCelebrating(false);
     setLessonOpen(false);
-    setSharedWin(true);
     setTab("home");
+    // Post the win to the live community feed when signed in;
+    // fall back to the local card when signed out (or offline).
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          body: "Just completed Lesson 2 of ISE Course 3 — made a decision. +10 points and the streak lives on.",
+          kind: "win",
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      window.dispatchEvent(new Event(FEED_REFRESH_EVENT));
+    } catch {
+      setSharedWin(true);
+    }
   };
   const keepPrivate = () => {
     setCelebrating(false);
@@ -90,10 +104,6 @@ export default function MemberApp() {
             tasks={tasks}
             toggleTask={toggleTask}
             trackerPct={trackerPct}
-            heart1={heart1}
-            toggleHeart1={() => setHeart1((v) => !v)}
-            heart2={heart2}
-            toggleHeart2={() => setHeart2((v) => !v)}
             heart3={heart3}
             toggleHeart3={() => setHeart3((v) => !v)}
             sharedWin={sharedWin}

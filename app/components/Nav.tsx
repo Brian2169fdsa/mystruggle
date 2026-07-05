@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import NavDrawer from "./NavDrawer";
 
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
@@ -12,17 +13,17 @@ const WORDMARK_INDIGO =
 export default function Nav() {
   return (
     <div className="sticky top-0 z-50 bg-white shadow-[0_1px_0_rgba(11,37,69,.04)]">
-      <div className="mx-auto flex h-[76px] max-w-[1200px] items-center justify-between px-6">
+      <div className="mx-auto flex h-[64px] max-w-[1200px] items-center justify-between px-5 lg:h-[76px] lg:px-6">
         <Link href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={WORDMARK_INDIGO}
             alt="My Struggle"
-            className="block h-11 w-auto"
+            className="block h-9 w-auto lg:h-11"
           />
         </Link>
 
-        <nav className="flex items-center gap-[34px] text-[15px] font-semibold">
+        <nav className="hidden items-center gap-[34px] text-[15px] font-semibold lg:flex">
           <Link href="/about" className="text-ink-900 hover:text-blue-primary">
             About us
           </Link>
@@ -121,19 +122,20 @@ export default function Nav() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-[18px]">
+        <div className="flex items-center gap-2.5 lg:gap-[18px]">
           <Link
             href="/login"
-            className="text-[15px] font-semibold text-blue-primary"
+            className="hidden text-[15px] font-semibold text-blue-primary lg:block"
           >
             Sign in
           </Link>
           <Link
             href="/donate"
-            className="inline-flex h-[46px] items-center gap-[7px] rounded-full bg-blue-primary px-[26px] text-[15px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+            className="inline-flex h-11 items-center gap-[7px] rounded-full bg-blue-primary px-[18px] text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover lg:h-[46px] lg:px-[26px] lg:text-[15px]"
           >
             Donate <Heart size={13} fill="currentColor" />
           </Link>
+          <NavDrawer />
         </div>
       </div>
       <div className="hairline" />

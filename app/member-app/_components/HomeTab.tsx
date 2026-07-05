@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
+import CommunityFeed from "@/app/components/feed/CommunityFeed";
 import type { Task } from "./MemberApp";
 
 /** Heart-reaction pill: outline → red fill, count +1. */
@@ -42,10 +43,6 @@ export default function HomeTab({
   tasks,
   toggleTask,
   trackerPct,
-  heart1,
-  toggleHeart1,
-  heart2,
-  toggleHeart2,
   heart3,
   toggleHeart3,
   sharedWin,
@@ -53,10 +50,6 @@ export default function HomeTab({
   tasks: Task[];
   toggleTask: (i: number) => void;
   trackerPct: number;
-  heart1: boolean;
-  toggleHeart1: () => void;
-  heart2: boolean;
-  toggleHeart2: () => void;
   heart3: boolean;
   toggleHeart3: () => void;
   sharedWin: boolean;
@@ -152,6 +145,8 @@ export default function HomeTab({
           </span>
         </div>
 
+        {/* Local fallback win card — only when the celebration share
+            couldn't post to the API (signed out). */}
         {sharedWin && (
           <div className="rounded-2xl border-[1.5px] border-gold-border bg-white px-5 py-[18px] shadow-[0_2px_8px_rgba(234,179,8,.15)]">
             <div className="flex items-center gap-3">
@@ -181,52 +176,7 @@ export default function HomeTab({
           </div>
         )}
 
-        <div className="rounded-2xl border-[1.5px] border-gold-border bg-white px-5 py-[18px] shadow-[0_2px_8px_rgba(234,179,8,.15)]">
-          <div className="flex items-center gap-3">
-            <Avatar letter="M" />
-            <div>
-              <div className="text-[14px] font-bold text-ink-900">
-                Marcus T.{" "}
-                <span className="ml-1 inline-flex h-5 items-center rounded-full bg-gold-bg px-2 text-[10px] font-extrabold text-gold-ink">
-                  ◆ MILESTONE
-                </span>
-              </div>
-              <div className="text-[12px] text-ink-600">2h ago · community</div>
-            </div>
-          </div>
-          <div className="mt-3 text-[15px]/[1.6] font-medium text-ink-900">
-            One year sober today. To everyone still in week one — I was you.
-            Keep coming back.
-          </div>
-          <div className="mt-3.5 flex items-center gap-4">
-            <HeartPill liked={heart1} base={48} onToggle={toggleHeart1} />
-            <span className="text-[13px] font-semibold text-ink-600">
-              12 comments
-            </span>
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-          <div className="flex items-center gap-3">
-            <Avatar letter="J" />
-            <div>
-              <div className="text-[14px] font-bold text-ink-900">Jasmine R.</div>
-              <div className="text-[12px] text-ink-600">
-                5h ago · Laveen Center
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 text-[15px]/[1.6] font-medium text-ink-900">
-            First paycheck cashed at the center today. Groceries bought with MY
-            money. Small thing, huge thing.
-          </div>
-          <div className="mt-3.5 flex items-center gap-4">
-            <HeartPill liked={heart2} base={23} onToggle={toggleHeart2} />
-            <span className="text-[13px] font-semibold text-ink-600">
-              4 comments
-            </span>
-          </div>
-        </div>
+        <CommunityFeed compact />
       </div>
     </div>
   );
