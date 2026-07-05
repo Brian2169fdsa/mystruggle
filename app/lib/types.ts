@@ -54,7 +54,7 @@ export interface Donation {
 }
 
 export type PostKind = "regular" | "milestone" | "win";
-export type PostStatus = "approved" | "pending" | "removed";
+export type PostStatus = "approved" | "pending" | "flagged" | "removed";
 
 export interface Comment {
   id: string;

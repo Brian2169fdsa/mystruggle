@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,19 +9,23 @@ import {
   Diamond,
   Pencil,
 } from "lucide-react";
-import TabBar from "./TabBar";
+import TabBar, { type MentorView } from "./TabBar";
 import LogSheet, {
   type Duration,
   type Mode,
   MODE_LABEL,
   durationLabel,
 } from "./LogSheet";
-
-type View = "roster" | "detail" | "thread";
+import ChatThread, {
+  previewText,
+  timeAgo,
+  type ThreadSummary,
+} from "@/app/components/chat/ChatThread";
+import CommunityFeed from "@/app/components/feed/CommunityFeed";
 
 const MOOD_WORDS: Record<number, string> = {
   1: "rough",
-  2: " ",
+  2: "low",
   3: "okay",
   4: "good",
   5: "great",
@@ -29,9 +33,9 @@ const MOOD_WORDS: Record<number, string> = {
 
 const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
-/** Mentor phone app: roster → mentee detail / Tyrell thread + session-log sheet. */
+/** Mentor phone app: roster → mentee detail / live chat + session-log sheet. */
 export default function MentorApp() {
-  const [view, setView] = useState<View>("roster");
+  const [view, setView] = useState<MentorView>("roster");
   const [logOpen, setLogOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("inperson");
   const [duration, setDuration] = useState<Duration>("45");
@@ -39,15 +43,113 @@ export default function MentorApp() {
   const [cheerSent, setCheerSent] = useState(false);
   const [mood, setMood] = useState<number | null>(null);
 
+  // Live chat state — real threads when signed in as a mentor.
+  const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
+  const [threads, setThreads] = useState<ThreadSummary[]>([]);
+  const [viewerId, setViewerId] = useState("");
+  const [activeThread, setActiveThread] = useState<ThreadSummary | null>(null);
+  const [cameFrom, setCameFrom] = useState<"roster" | "chatlist">("roster");
+
+  const loadThreads = useCallback(async () => {
+    try {
+      const res = await fetch("/api/threads");
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.threads) {
+        setThreads(data.threads);
+        setViewerId(data.viewerId);
+        return data.threads as ThreadSummary[];
+      }
+    } catch {
+      /* stays on demo content */
+    }
+    return [];
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json().catch(() => null);
+        if (!alive) return;
+        if (data?.user) {
+          setSignedIn(true);
+          await loadThreads();
+        } else {
+          setSignedIn(false);
+        }
+      } catch {
+        if (alive) setSignedIn(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [loadThreads]);
+
+  const findThread = (firstName: string) =>
+    threads.find((t) =>
+      (t.other?.name ?? "").toLowerCase().startsWith(firstName.toLowerCase())
+    ) ?? null;
+
   const openDetail = () => {
     setView("detail");
     setSessionSaved(false);
     setCheerSent(false);
   };
-  const openThread = () => setView("thread");
+
+  /** Tyrell — roster card + amber nudge: real thread when signed in. */
+  const openTyrell = () => {
+    setCameFrom("roster");
+    setActiveThread(signedIn ? findThread("Tyrell") : null);
+    setView("thread");
+  };
+
+  /** Chat tab: real thread list when signed in, demo thread otherwise. */
+  const openChatTab = () => {
+    if (signedIn) {
+      setView("chatlist");
+      loadThreads();
+    } else {
+      setActiveThread(null);
+      setView("thread");
+    }
+  };
+
+  const openThreadFromList = (t: ThreadSummary) => {
+    setCameFrom("chatlist");
+    setActiveThread(t);
+    setView("thread");
+  };
+
   const backToRoster = () => {
     setView("roster");
     setLogOpen(false);
+  };
+
+  const backFromThread = () => {
+    if (cameFrom === "chatlist" && signedIn) {
+      setView("chatlist");
+      loadThreads();
+    } else {
+      backToRoster();
+    }
+  };
+
+  /** Cheer from mentee detail — banner always; real message when signed in. */
+  const sendCheer = () => {
+    setCheerSent(true);
+    const t = findThread("Danielle");
+    if (signedIn && t) {
+      fetch(`/api/threads/${t.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "cheer",
+          body: "Keep going — proud of you!",
+        }),
+      }).catch(() => {});
+    }
   };
 
   const lastSession = sessionSaved
@@ -81,7 +183,7 @@ export default function MentorApp() {
             <div className="flex flex-1 flex-col gap-3.5 p-5">
               {/* Amber nudge banner — soft signal, opens thread */}
               <div
-                onClick={openThread}
+                onClick={openTyrell}
                 className="flex cursor-pointer items-center gap-3 rounded-2xl border-[1.5px] border-gold-border bg-amber-bg px-[18px] py-3.5"
               >
                 <span className="h-2.5 w-2.5 flex-none rounded-full bg-gold-badge" />
@@ -132,7 +234,7 @@ export default function MentorApp() {
 
               {/* Tyrell — amber border, never red on a person */}
               <div
-                onClick={openThread}
+                onClick={openTyrell}
                 className={`cursor-pointer rounded-2xl border-[1.5px] border-gold-border bg-white p-5 hover:bg-amber-bg ${CARD_SHADOW}`}
               >
                 <div className="flex items-center gap-3.5">
@@ -293,7 +395,7 @@ export default function MentorApp() {
                   Log a session
                 </button>
                 <button
-                  onClick={() => setCheerSent(true)}
+                  onClick={sendCheer}
                   className="inline-flex h-14 cursor-pointer items-center justify-center gap-[7px] rounded-full border-[1.5px] border-gold-badge bg-amber-bg text-sm font-bold text-gold-ink"
                 >
                   <Diamond size={13} fill="currentColor" /> Send a cheer
@@ -371,8 +473,70 @@ export default function MentorApp() {
           </div>
         )}
 
-        {/* ============ THREAD ============ */}
-        {view === "thread" && (
+        {/* ============ CHAT — THREAD LIST (signed in) ============ */}
+        {view === "chatlist" && (
+          <div className="flex flex-1 flex-col">
+            <div className="bg-white px-5 pb-3.5 pt-[18px]">
+              <div className="text-[22px] font-extrabold tracking-[-0.02em] text-ink-900">
+                Messages
+              </div>
+              <div className="mt-0.5 text-[13px] font-medium text-ink-600">
+                Your mentees — a small nudge can change a whole day.
+              </div>
+            </div>
+            <div className="hairline" />
+
+            <div className="flex flex-1 flex-col gap-3.5 p-5">
+              {threads.length === 0 && (
+                <div className="py-8 text-center text-[13px] font-medium text-ink-400">
+                  Loading your conversations…
+                </div>
+              )}
+              {threads.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => openThreadFromList(t)}
+                  className={`flex min-h-[44px] cursor-pointer items-center gap-3.5 rounded-2xl bg-white px-5 py-[18px] text-left hover:bg-sky-tint ${CARD_SHADOW}`}
+                >
+                  <div
+                    className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-sky-tint text-[18px] font-extrabold"
+                    style={{ color: t.other?.avatarColor || "#4E5B9B" }}
+                  >
+                    {(t.other?.name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[15px] font-bold text-ink-900">
+                      {t.other?.name}
+                    </div>
+                    <div className="mt-0.5 truncate text-[13px] font-medium text-ink-600">
+                      {previewText(t.lastMessage)}
+                    </div>
+                  </div>
+                  {t.lastMessage && (
+                    <span className="flex-none self-start text-[11px] font-medium text-ink-400">
+                      {timeAgo(t.lastMessage.createdAt)}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============ THREAD — real conversation when signed in ============ */}
+        {view === "thread" && activeThread && activeThread.other && viewerId && (
+          <ChatThread
+            threadId={activeThread.id}
+            viewerId={viewerId}
+            other={activeThread.other}
+            showCheckInRequest
+            onBack={backFromThread}
+          />
+        )}
+
+        {/* ============ THREAD — static demo (signed out) ============ */}
+        {view === "thread" && !(activeThread && activeThread.other && viewerId) && (
           <div className="flex flex-1 flex-col">
             <div className="flex items-center gap-3.5 bg-white px-5 py-3.5">
               <button
@@ -394,6 +558,16 @@ export default function MentorApp() {
             <div className="hairline" />
 
             <div className="flex flex-1 flex-col gap-3.5 p-5">
+              {signedIn === false && (
+                <a
+                  href="/login"
+                  className="flex min-h-[44px] items-center justify-center rounded-2xl border-[1.5px] border-sky-tint-2 bg-sky-tint px-5 py-3 text-center text-[13px] font-bold text-blue-primary hover:bg-sky-tint-2"
+                >
+                  This is a preview — sign in as a mentor to send real
+                  messages →
+                </a>
+              )}
+
               <div className="text-center text-[11px] font-semibold text-ink-400">
                 TODAY
               </div>
@@ -466,9 +640,32 @@ export default function MentorApp() {
           </div>
         )}
 
+        {/* ============ COMMUNITY ============ */}
+        {view === "community" && (
+          <div className="flex flex-1 flex-col">
+            <div className="bg-white px-5 pb-3.5 pt-[18px]">
+              <div className="text-[22px] font-extrabold tracking-[-0.02em] text-ink-900">
+                Community
+              </div>
+              <div className="mt-0.5 text-[13px] font-medium text-ink-600">
+                Wins and milestones from the whole family.
+              </div>
+            </div>
+            <div className="hairline" />
+            <div className="flex-1 p-5">
+              <CommunityFeed compact />
+            </div>
+          </div>
+        )}
+
         {/* ============ TAB BAR (hidden on detail) ============ */}
         {view !== "detail" && (
-          <TabBar view={view} onMentees={backToRoster} onChat={openThread} />
+          <TabBar
+            view={view}
+            onMentees={backToRoster}
+            onChat={openChatTab}
+            onCommunity={() => setView("community")}
+          />
         )}
 
         {/* ============ LOG SHEET ============ */}

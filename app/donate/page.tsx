@@ -97,8 +97,8 @@ export default function Donate() {
         <span className="absolute bottom-4 right-5 rounded-md bg-[rgba(11,37,69,.5)] px-2.5 py-1 font-mono text-[11px] font-medium text-white/75">
           photo: a hand passing a bag of essentials, warm light
         </span>
-        <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-6 py-20">
-          <div className="text-[13px] font-bold tracking-[.12em] text-[#8FBCF0]">
+        <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-5 py-16 lg:px-6 lg:py-20">
+          <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
             DONATE TODAY
           </div>
           <h1 className="text-[clamp(38px,4.8vw,60px)]/[1.06] font-extrabold tracking-[-0.02em] text-white">
@@ -114,7 +114,7 @@ export default function Donate() {
 
       {/* 500,000 STAT SPLIT */}
       <section className="bg-white">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(280px,400px)_1fr] items-center gap-20 px-6 py-[100px]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-8 px-5 py-16 lg:grid-cols-[minmax(280px,400px)_1fr] lg:gap-20 lg:px-6 lg:py-[100px]">
           <div>
             <div className="tnum text-[clamp(64px,7vw,96px)]/[1] font-extrabold tracking-[-0.02em] text-blue-primary">
               500,000
@@ -137,17 +137,17 @@ export default function Donate() {
 
       {/* FOUR WAYS TO HELP */}
       <section className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 py-[100px]">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="text-center">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Four ways to help
             </div>
-            <h2 className="mt-3.5 text-[44px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
               Give the way that fits{" "}
-              <span className="script text-[56px]">you</span>
+              <span className="script text-[42px] lg:text-[56px]">you</span>
             </h2>
           </div>
-          <div className="mt-14 grid grid-cols-4 gap-6">
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
             {WAYS.map((w) => (
               <Link
                 key={w.title}
@@ -171,17 +171,17 @@ export default function Donate() {
 
       {/* WHAT DONATIONS COVER — 12-ITEM GRID */}
       <section className="bg-white">
-        <div className="mx-auto max-w-[1200px] px-6 py-[100px]">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="text-center">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               What donations cover
             </div>
-            <h2 className="mt-3.5 text-[44px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
               Twelve things your gift{" "}
-              <span className="script text-[56px]">becomes</span>
+              <span className="script text-[42px] lg:text-[56px]">becomes</span>
             </h2>
           </div>
-          <div className="mt-14 grid grid-cols-3 gap-x-7 gap-y-4">
+          <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 lg:gap-x-7 lg:gap-y-4">
             {COVERS.map((item, i) => (
               <div
                 key={item}
@@ -202,16 +202,16 @@ export default function Donate() {
 
       {/* MONTHLY TIERS */}
       <section id="tiers" className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 py-[100px]">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="text-center">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Monthly giving
             </div>
-            <h2 className="mt-3.5 text-[44px]/[1.1] font-extrabold tracking-[-0.02em] text-ink-900">
-              Pick your <span className="script text-[56px]">tier</span>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Pick your <span className="script text-[42px] lg:text-[56px]">tier</span>
             </h2>
           </div>
-          <div className="mt-14 grid grid-cols-4 items-stretch gap-6">
+          <div className="mt-10 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
             {TIERS.map((t) => (
               <div
                 key={t.name}
@@ -257,15 +257,15 @@ export default function Donate() {
 
       {/* DANIELLE DIRECT-SUPPORT BAND */}
       <section className="bg-white">
-        <div className="mx-auto max-w-[1200px] px-6 py-[90px]">
-          <div className="grid grid-cols-[minmax(240px,340px)_1fr] overflow-hidden rounded-2xl bg-navy-deep shadow-[0_8px_30px_rgba(11,37,69,.2)]">
-            <div className="relative flex items-end bg-[repeating-linear-gradient(45deg,#16335C_0_12px,#12294A_12px_24px)] p-3.5">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[90px]">
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl bg-navy-deep shadow-[0_8px_30px_rgba(11,37,69,.2)] lg:grid-cols-[minmax(240px,340px)_1fr]">
+            <div className="relative flex min-h-[200px] items-end bg-[repeating-linear-gradient(45deg,#16335C_0_12px,#12294A_12px_24px)] p-3.5 lg:min-h-0">
               <span className="rounded-md bg-[rgba(11,37,69,.6)] px-2 py-[3px] font-mono text-[10px] font-medium text-white/75">
                 photo: Danielle
               </span>
             </div>
-            <div className="flex flex-col gap-3.5 px-[52px] py-11">
-              <div className="text-[13px] font-bold tracking-[.12em] text-[#8FBCF0]">
+            <div className="flex flex-col gap-3.5 px-6 py-8 lg:px-[52px] lg:py-11">
+              <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
                 SUPPORT ONE MEMBER DIRECTLY
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -283,7 +283,7 @@ export default function Donate() {
               <div className="mt-1.5 flex flex-wrap items-center gap-5">
                 <Link
                   href="/give"
-                  className="inline-flex h-[50px] items-center gap-2 rounded-full bg-blue-primary px-[30px] text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover"
+                  className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[30px] text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
                 >
                   Give to Danielle <Heart size={14} fill="currentColor" />
                 </Link>
@@ -301,9 +301,9 @@ export default function Donate() {
 
       {/* AMAZON ASSOCIATES + ASHLEY J. TESTIMONIAL */}
       <section className="border-t border-sky-tint bg-canvas">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-2 items-center gap-10 px-6 py-[70px]">
-          <div className="rounded-2xl bg-white px-10 py-9 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-            <div className="text-[13px] font-bold uppercase tracking-[.12em] text-blue-primary">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:px-6 lg:py-[70px]">
+          <div className="rounded-2xl bg-white px-6 py-8 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:px-10 lg:py-9">
+            <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
               Shop &amp; support
             </div>
             <div className="mt-2.5 text-[20px] font-bold text-ink-900">
@@ -322,8 +322,8 @@ export default function Donate() {
               amzn.to/4gQuaR8 →
             </a>
           </div>
-          <div className="px-5">
-            <div className="text-[22px]/[1.6] italic text-ink-900">
+          <div className="px-1 lg:px-5">
+            <div className="text-[19px]/[1.6] italic text-ink-900 lg:text-[22px]">
               &ldquo;I gave $25 to a member&apos;s QR code on my lunch break.
               Two months later I got an update that she&apos;d moved into
               housing. I&apos;ve never felt a donation like that.&rdquo;
