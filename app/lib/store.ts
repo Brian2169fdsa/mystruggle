@@ -105,6 +105,35 @@ export function setAdKillSwitch(on: boolean): void {
   globalThis.__msAdKill = on;
 }
 
+/** ms_admin content-policy + frequency config (docs/15 §C). Like the kill
+ *  switch, an operational toggle held in globalThis (shared across route
+ *  modules + dev hot-reloads), NOT persisted to db.json.
+ *  - frequencyEveryN: the feed shows ≤ 1 sponsored item per this many organic
+ *    posts (/api/placements/serve reads it live).
+ *  - blockedTerms: extra off-policy terms surfaced in the console and stored
+ *    here for a future merge into ad-policy.ts's fixed screen list. */
+export type AdConfig = { frequencyEveryN: number; blockedTerms: string[] };
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __msAdConfig: AdConfig | undefined;
+}
+
+const DEFAULT_AD_CONFIG: AdConfig = { frequencyEveryN: 5, blockedTerms: [] };
+
+/** Current ad config (defaults when never set). */
+export function getAdConfig(): AdConfig {
+  const c = globalThis.__msAdConfig;
+  return c ? { ...DEFAULT_AD_CONFIG, ...c } : { ...DEFAULT_AD_CONFIG };
+}
+
+/** ms_admin updates the ad config (additive patch — only given keys change). */
+export function setAdConfig(patch: Partial<AdConfig>): AdConfig {
+  const next: AdConfig = { ...getAdConfig(), ...patch };
+  globalThis.__msAdConfig = next;
+  return next;
+}
+
 export function hashPassword(password: string, salt: string): string {
   return scryptSync(password, salt, 64).toString("hex");
 }

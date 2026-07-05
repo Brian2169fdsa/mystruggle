@@ -12,6 +12,7 @@ import {
   Megaphone,
   ShieldCheck,
   Inbox,
+  CreditCard,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -24,6 +25,7 @@ import Applications from "./_components/Applications";
 import AdManager from "./_components/AdManager";
 import AdApproval from "./_components/AdApproval";
 import LeadQueue from "./_components/LeadQueue";
+import Billing from "./_components/Billing";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -45,7 +47,8 @@ type PageSection =
   | "applications"
   | "ads"
   | "adReview"
-  | "leads";
+  | "leads"
+  | "billing";
 
 const NAV = [
   { key: "overview", label: "Overview", Icon: LayoutGrid },
@@ -56,6 +59,7 @@ const NAV = [
   { key: "ads", label: "Ad Manager", Icon: Megaphone },
   { key: "adReview", label: "Ad Review", Icon: ShieldCheck },
   { key: "leads", label: "Demo Leads", Icon: Inbox },
+  { key: "billing", label: "Billing", Icon: CreditCard },
   { key: "reports", label: "Reports", Icon: BarChart3 },
 ] as const;
 
@@ -373,6 +377,7 @@ export default function DashboardPage() {
           <AdApproval onQueueLength={setAdReviewCount} />
         )}
         {section === "leads" && <LeadQueue />}
+        {section === "billing" && <Billing />}
         {section === "giving" && (
           <GivingDesk
             overview={overview}

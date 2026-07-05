@@ -79,6 +79,57 @@ export default function AdApproval({
   const [error, setError] = useState<string | null>(null);
   const [reasons, setReasons] = useState<Record<string, string>>({});
 
+  // ── content policy & frequency config (docs/15 §C) ────────────────────
+  const [everyN, setEveryN] = useState(5);
+  const [blockedText, setBlockedText] = useState("");
+  const [savingCfg, setSavingCfg] = useState(false);
+  const [cfgSaved, setCfgSaved] = useState(false);
+  const [cfgError, setCfgError] = useState<string | null>(null);
+
+  // Load the current config once (kept separate from the polling queue load).
+  useEffect(() => {
+    fetch("/api/admin/ad-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) return;
+        if (typeof d.frequencyEveryN === "number") setEveryN(d.frequencyEveryN);
+        if (Array.isArray(d.blockedTerms))
+          setBlockedText((d.blockedTerms as string[]).join(", "));
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveConfig() {
+    setSavingCfg(true);
+    setCfgSaved(false);
+    setCfgError(null);
+    const blockedTerms = blockedText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    try {
+      const res = await fetch("/api/admin/ad-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ frequencyEveryN: everyN, blockedTerms }),
+      });
+      const d = await res.json().catch(() => null);
+      if (!res.ok) {
+        setCfgError(d?.error ?? "Couldn't save. Check the frequency value.");
+        return;
+      }
+      if (d && typeof d.frequencyEveryN === "number") setEveryN(d.frequencyEveryN);
+      if (d && Array.isArray(d.blockedTerms))
+        setBlockedText((d.blockedTerms as string[]).join(", "));
+      setCfgSaved(true);
+      setTimeout(() => setCfgSaved(false), 2500);
+    } catch {
+      setCfgError("Couldn't save. Try again.");
+    } finally {
+      setSavingCfg(false);
+    }
+  }
+
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/placements");
@@ -295,6 +346,86 @@ export default function AdApproval({
             Kill switch is ON — sponsored content is paused platform-wide.
           </div>
         )}
+      </div>
+
+      {/* ── CONTENT POLICY & FREQUENCY ───────────────────────────────── */}
+      <div className={CARD + " px-[30px] py-5"}>
+        <div className="text-[16px] font-extrabold text-ink-900">
+          Content policy &amp; frequency
+        </div>
+        <div className="mt-1 text-[13px]/[1.6] font-medium text-ink-600">
+          Platform-wide controls for how sponsored content shows in the recovery
+          community feed.
+        </div>
+
+        <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+          {/* frequency cap */}
+          <div className="lg:w-[280px]">
+            <label
+              htmlFor="ad-freq"
+              className="text-[13px] font-bold text-ink-900"
+            >
+              Show at most 1 sponsored post per N organic posts
+            </label>
+            <input
+              id="ad-freq"
+              type="number"
+              min={2}
+              max={20}
+              step={1}
+              value={everyN}
+              onChange={(e) =>
+                setEveryN(Math.trunc(Number(e.target.value) || 0))
+              }
+              className="mt-2 w-full rounded-xl border-[1.5px] border-sky-tint bg-white px-4 py-2.5 text-[14px] font-semibold text-ink-900 outline-none focus:border-blue-primary"
+            />
+            <div className="mt-1.5 text-[12px] font-medium text-ink-400">
+              Whole number between 2 and 20. The feed honors this spacing live.
+            </div>
+          </div>
+
+          {/* blocked terms */}
+          <div className="flex-1">
+            <label
+              htmlFor="ad-blocked"
+              className="text-[13px] font-bold text-ink-900"
+            >
+              Additional blocked terms
+            </label>
+            <textarea
+              id="ad-blocked"
+              value={blockedText}
+              onChange={(e) => setBlockedText(e.target.value)}
+              rows={3}
+              placeholder="comma, separated, terms"
+              className="mt-2 w-full resize-y rounded-xl border-[1.5px] border-sky-tint bg-white px-4 py-2.5 text-[14px] font-medium text-ink-900 outline-none focus:border-blue-primary"
+            />
+            <div className="mt-1.5 text-[12px] font-medium text-ink-400">
+              Comma-separated. Stored alongside the built-in off-policy screen
+              (gambling, alcohol, predatory lending, MLM, scams) and merged into
+              it in a future release.
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={saveConfig}
+            disabled={savingCfg}
+            className="inline-flex h-11 cursor-pointer items-center rounded-full bg-blue-primary px-6 text-[13px] font-bold text-white hover:bg-blue-hover disabled:opacity-60"
+          >
+            {savingCfg ? "Saving…" : "Save policy"}
+          </button>
+          {cfgSaved && (
+            <span className="text-[13px] font-bold text-success">Saved ✓</span>
+          )}
+          {cfgError && (
+            <span className="text-[13px] font-bold text-amber-ink">
+              {cfgError}
+            </span>
+          )}
+        </div>
       </div>
 
       {apiPending && !queue && (

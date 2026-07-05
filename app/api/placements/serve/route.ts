@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { db, isAdKillSwitchOn } from "@/app/lib/store";
+import { db, isAdKillSwitchOn, getAdConfig } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import { isCrisisText } from "@/app/lib/crisis";
 import { toServed } from "../_lib";
 import type { SponsoredPlacement, CarePhase } from "@/app/lib/types";
-
-/** Frequency cap: the feed shows AT MOST one sponsored item per this many
- *  organic posts, so the community stays a recovery space first (docs/15 §B).
- *  ms_admin could make this configurable; the default lives here. */
-const EVERY_N = 5;
 
 /**
  * Serve sponsored placements into a viewer's feed. Public-safe shape only:
@@ -30,7 +25,11 @@ const EVERY_N = 5;
  * everyone, immediately.
  */
 export async function GET() {
-  const empty = NextResponse.json({ placements: [], everyN: EVERY_N });
+  // Frequency cap: the feed shows AT MOST one sponsored item per this many
+  // organic posts, so the community stays a recovery space first (docs/15 §B/C).
+  // ms_admin configures it via /api/admin/ad-config; the default is 5.
+  const everyN = getAdConfig().frequencyEveryN;
+  const empty = NextResponse.json({ placements: [], everyN });
 
   // KILL SWITCH — platform-wide off switch beats everything else.
   if (isAdKillSwitchOn()) return empty;
@@ -97,5 +96,5 @@ export async function GET() {
     .sort((a, b) => b.createdAt - a.createdAt)
     .map(toServed);
 
-  return NextResponse.json({ placements, everyN: EVERY_N });
+  return NextResponse.json({ placements, everyN });
 }
