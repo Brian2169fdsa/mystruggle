@@ -28,6 +28,58 @@ type ReportsData = {
   };
 };
 
+/* ── GET /api/admin/analytics shape (recovery capital, docs/13 Part F) ─── */
+
+type CapitalAvgs = { personal: number; social: number; community: number };
+
+type CenterAnalytics = {
+  centerId: string;
+  name: string;
+  members: number;
+  avgStreak: number;
+  engagement30d: number;
+  goalsActive: number;
+  goalsAchieved: number;
+  recoveryCapitalAvgs: CapitalAvgs;
+  barcParticipation: number; // % of members with ≥1 BARC-10 self-check
+  fundedRequests: number;
+};
+
+type AnalyticsData = {
+  perCenter: CenterAnalytics[];
+  platform: Omit<CenterAnalytics, "centerId" | "name"> & {
+    goalsByMonth: { month: string; count: number }[];
+  };
+};
+
+/** Recovery-capital domains — blues + success green, never clinical reds. */
+const DOMAINS = [
+  { key: "personal", label: "Personal", bar: "bg-indigo-brand" },
+  { key: "social", label: "Social", bar: "bg-blue-primary" },
+  { key: "community", label: "Community", bar: "bg-success" },
+] as const;
+
+function DomainBars({ avgs }: { avgs: CapitalAvgs }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {DOMAINS.map((d) => (
+        <div key={d.key} className="grid grid-cols-[86px_1fr_44px] items-center gap-3">
+          <span className="text-xs font-semibold text-ink-600">{d.label}</span>
+          <div className="h-2.5 overflow-hidden rounded-full bg-sky-tint">
+            <div
+              className={"h-full rounded-full " + d.bar}
+              style={{ width: `${Math.min(100, avgs[d.key])}%` }}
+            />
+          </div>
+          <span className="tnum text-right text-[13px] font-extrabold text-ink-900">
+            {avgs[d.key]}%
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── benchmarks (New Freedom case study): 65 / 65 / 80 ─────────────────── */
 
 const BENCH_3 = 65;
@@ -97,9 +149,18 @@ function exportCohortCsv(retention: Cohort[]) {
 export default function Reports() {
   const [data, setData] = useState<ReportsData | null>(null);
   const [error, setError] = useState(false);
+  // Recovery-capital analytics load independently — a hiccup here never
+  // takes down the existing retention/giving report.
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsError, setAnalyticsError] = useState(false);
 
   const load = useCallback(async () => {
     setError(false);
+    setAnalyticsError(false);
+    fetch("/api/admin/analytics")
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((body) => setAnalytics(body as AnalyticsData))
+      .catch(() => setAnalyticsError(true));
     try {
       const res = await fetch("/api/admin/reports");
       if (!res.ok) throw new Error(String(res.status));
@@ -226,6 +287,106 @@ export default function Reports() {
               </div>
             ))}
           </div>
+
+          {/* ── recovery capital (docs/13 Part F — additive) ───────────── */}
+          {!analytics && !analyticsError && (
+            <div className={SKELETON + " h-[260px]"} />
+          )}
+          {analytics && (
+            <div className={CARD + " px-8 py-7"}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-base font-bold text-ink-900">
+                  Recovery capital
+                </div>
+                <div className="text-xs font-semibold text-ink-600">
+                  Personal · Social · Community — activity-derived domain
+                  averages, 0–100 · never clinical
+                </div>
+              </div>
+
+              {/* domain averages per center */}
+              <div className="mt-6 grid grid-cols-2 gap-10">
+                {analytics.perCenter.map((c) => (
+                  <div key={c.centerId}>
+                    <div className="mb-3.5 text-[15px] font-bold text-ink-900">
+                      <span className="mr-2.5 inline-flex h-6 items-center rounded-full bg-sky-tint px-3 text-[11px] font-extrabold text-blue-primary">
+                        {c.name}
+                      </span>
+                      {c.members} members
+                    </div>
+                    <DomainBars avgs={c.recoveryCapitalAvgs} />
+                  </div>
+                ))}
+              </div>
+
+              {/* goals-achieved trend + BARC participation */}
+              <div className="mt-7 grid grid-cols-[1.6fr_1fr] gap-10 border-t border-canvas pt-6">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[13px] font-bold text-ink-900">
+                      Goals achieved
+                    </div>
+                    <div className="text-xs font-semibold text-ink-600">
+                      last 12 months ·{" "}
+                      {analytics.platform.goalsByMonth.reduce(
+                        (s, g) => s + g.count,
+                        0
+                      )}{" "}
+                      total
+                    </div>
+                  </div>
+                  <div className="mt-4 grid h-24 grid-cols-12 items-end gap-2">
+                    {(() => {
+                      const maxGoals = Math.max(
+                        1,
+                        ...analytics.platform.goalsByMonth.map((g) => g.count)
+                      );
+                      return analytics.platform.goalsByMonth.map((g, i) => {
+                        const best = g.count === maxGoals && g.count > 0;
+                        return (
+                          <div
+                            key={g.month + i}
+                            title={`${g.month}: ${g.count} goal${g.count === 1 ? "" : "s"} achieved`}
+                            className="flex h-full flex-col items-center justify-end gap-1"
+                          >
+                            {best && (
+                              <span className="tnum text-[11px] font-bold text-success">
+                                {g.count}
+                              </span>
+                            )}
+                            <div
+                              className={
+                                "w-full rounded-t-[4px] " +
+                                (best ? "bg-success" : "bg-blue-primary")
+                              }
+                              style={{
+                                height: `${Math.max(3, Math.round((g.count / maxGoals) * 100))}%`,
+                              }}
+                            />
+                            <span className="text-[11px] font-semibold text-ink-600">
+                              {g.month}
+                            </span>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+                <div className="flex flex-col justify-center border-l border-canvas pl-10">
+                  <div className="text-[13px] font-medium text-ink-600">
+                    BARC-10 participation
+                  </div>
+                  <div className="tnum mt-1.5 text-[40px] font-extrabold tracking-[-0.02em] text-blue-primary">
+                    {analytics.platform.barcParticipation}%
+                  </div>
+                  <div className="mt-0.5 text-xs font-semibold text-ink-600">
+                    of members have taken at least one self-check ·{" "}
+                    {analytics.platform.goalsActive} goals in motion
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── giving by month mini-chart ─────────────────────────────── */}
           <div className={CARD + " px-8 py-7"}>

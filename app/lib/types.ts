@@ -153,6 +153,11 @@ export interface Post {
   topic?: Topic; // community channel (defaults to "general" when absent)
   requestId?: string; // links a support-request post to its goal
   hearts: string[]; // user ids who reacted
+  // EXPANSION (docs/13 Part B) — documented additive exception: shared-
+  // experience reactions. Optional because they're runtime-added on demand
+  // (`post.proud ??= []`) so pre-expansion posts stay untouched.
+  proud?: string[]; // "proud of you" user ids
+  same?: string[]; // "same here" user ids
   comments: Comment[];
   createdAt: number;
 }

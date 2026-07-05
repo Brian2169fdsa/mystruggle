@@ -23,6 +23,7 @@ import ChatThread, {
   type ThreadSummary,
 } from "@/app/components/chat/ChatThread";
 import CommunityFeed from "@/app/components/feed/CommunityFeed";
+import MeTab from "./MeTab";
 
 const MOOD_WORDS: Record<number, string> = {
   1: "rough",
@@ -879,6 +880,9 @@ export default function MentorApp() {
           </div>
         )}
 
+        {/* ============ ME — my mentoring analytics ============ */}
+        {view === "me" && <MeTab signedIn={signedIn} meRole={meRole} />}
+
         {/* ============ TAB BAR (hidden on detail) ============ */}
         {view !== "detail" && (
           <TabBar
@@ -886,6 +890,7 @@ export default function MentorApp() {
             onMentees={backToRoster}
             onChat={openChatTab}
             onCommunity={() => setView("community")}
+            onMe={() => setView("me")}
           />
         )}
 

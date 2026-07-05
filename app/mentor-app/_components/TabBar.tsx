@@ -7,7 +7,8 @@ export type MentorView =
   | "detail"
   | "chatlist"
   | "thread"
-  | "community";
+  | "community"
+  | "me";
 
 /** Bottom tab bar — shown everywhere except mentee detail. */
 export default function TabBar({
@@ -15,11 +16,13 @@ export default function TabBar({
   onMentees,
   onChat,
   onCommunity,
+  onMe,
 }: {
   view: MentorView;
   onMentees: () => void;
   onChat: () => void;
   onCommunity: () => void;
+  onMe: () => void;
 }) {
   const tabs = [
     {
@@ -40,7 +43,7 @@ export default function TabBar({
       active: view === "community",
       onClick: onCommunity,
     },
-    { label: "Me", Icon: CircleUser, active: false, onClick: undefined },
+    { label: "Me", Icon: CircleUser, active: view === "me", onClick: onMe },
   ];
 
   return (

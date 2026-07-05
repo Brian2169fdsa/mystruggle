@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, Send } from "lucide-react";
+import { Heart, Send, ThumbsUp, Users } from "lucide-react";
 import type { Comment, SafeUser } from "@/app/lib/types";
 import {
   AvatarTile,
@@ -109,6 +109,38 @@ export default function PostCard({
     }
   };
 
+  /* — proud / same (docs/13 Part B shared-experience reactions) — */
+  const toggleShared = async (kind: "proud" | "same") => {
+    if (temp) return;
+    if (!viewer) return showNudge();
+    const current = (kind === "proud" ? post.proud : post.same) ?? [];
+    const had = current.includes(viewer.id);
+    const flipped = had
+      ? current.filter((x) => x !== viewer.id)
+      : [...current, viewer.id];
+    onChange({ ...post, [kind]: flipped });
+    try {
+      const res = await fetch(`/api/posts/${post.id}/react`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data: {
+        counts: { hearts: number; proud: number; same: number };
+        mine: { heart: boolean; proud: boolean; same: boolean };
+      } = await res.json();
+      // reconcile to the server's authoritative count
+      const on = data.mine[kind];
+      const others = Math.max(0, data.counts[kind] - (on ? 1 : 0));
+      const filler = flipped.filter((x) => x !== viewer.id).slice(0, others);
+      while (filler.length < others) filler.push(`other-${filler.length}`);
+      onChange({ ...post, [kind]: on ? [...filler, viewer.id] : filler });
+    } catch {
+      onChange({ ...post, [kind]: current }); // revert
+    }
+  };
+
   /* — comment — */
   const submitComment = async () => {
     const text = draft.trim();
@@ -146,6 +178,10 @@ export default function PostCard({
   };
 
   const hearted = !!viewer && post.hearts.includes(viewer.id);
+  const proud = (post.proud ?? []).length;
+  const same = (post.same ?? []).length;
+  const amProud = !!viewer && (post.proud ?? []).includes(viewer.id);
+  const amSame = !!viewer && (post.same ?? []).includes(viewer.id);
   const milestone = post.kind === "milestone";
 
   return (
@@ -203,6 +239,43 @@ export default function PostCard({
             className={hearted ? "text-heart-red" : "text-ink-400"}
           />
           <span className="tnum">{post.hearts.length}</span>
+        </button>
+        {/* shared-experience pair — text pills, never emoji (house style) */}
+        <button
+          type="button"
+          onClick={() => toggleShared("proud")}
+          aria-pressed={amProud}
+          aria-label={`Proud of you (${proud})`}
+          className={
+            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] px-4 text-[13px] font-bold transition-colors " +
+            (amProud
+              ? "border-indigo-brand bg-indigo-brand/10 text-indigo-brand"
+              : "border-sky-tint bg-white text-ink-600 hover:border-sky-tint-2")
+          }
+        >
+          <ThumbsUp
+            size={15}
+            className={amProud ? "text-indigo-brand" : "text-ink-400"}
+          />
+          Proud <span className="tnum">{proud}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleShared("same")}
+          aria-pressed={amSame}
+          aria-label={`Same here (${same})`}
+          className={
+            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] px-4 text-[13px] font-bold transition-colors " +
+            (amSame
+              ? "border-blue-primary bg-sky-tint text-blue-primary"
+              : "border-sky-tint bg-white text-ink-600 hover:border-sky-tint-2")
+          }
+        >
+          <Users
+            size={15}
+            className={amSame ? "text-blue-primary" : "text-ink-400"}
+          />
+          Same here <span className="tnum">{same}</span>
         </button>
         <button
           type="button"

@@ -14,6 +14,7 @@ import LessonPlayer from "./LessonPlayer";
 import GiveTab from "./GiveTab";
 import ChatTab from "./ChatTab";
 import MeTab from "./MeTab";
+import PlanView, { type PlanGoal } from "./PlanView";
 import CelebrationOverlay from "./CelebrationOverlay";
 import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
 
@@ -34,6 +35,11 @@ export function nextLesson(
 export default function MemberApp() {
   const [tab, setTab] = useState<TabKey>("home");
   const [lessonOpen, setLessonOpen] = useState(false);
+  // My Plan (docs/13 Part C) — full-screen view within the shell, same
+  // pattern as lessonOpen. Not a 6th tab.
+  const [planOpen, setPlanOpen] = useState(false);
+  // Recovery goals (enriched) — null until signed in + loaded.
+  const [planGoals, setPlanGoals] = useState<PlanGoal[] | null>(null);
   const [celebrating, setCelebrating] = useState(false);
   const [lessonDone, setLessonDone] = useState(false);
   const [quiz, setQuiz] = useState(0);
@@ -75,6 +81,13 @@ export default function MemberApp() {
         const data = await res.json();
         if (cancelled || !data?.user) return;
         setMe({ user: data.user, requests: data.requests ?? [] });
+        // Recovery goals for the My Plan card + view (fire-and-forget).
+        fetch("/api/recovery-goals")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((g) => {
+            if (!cancelled && g?.goals) setPlanGoals(g.goals);
+          })
+          .catch(() => {});
         const cRes = await fetch("/api/courses");
         if (!cRes.ok) return;
         const cData = await cRes.json();
@@ -103,6 +116,7 @@ export default function MemberApp() {
   const goTab = (key: TabKey) => {
     setTab(key);
     setLessonOpen(false);
+    setPlanOpen(false);
   };
 
   const openCourse = (courseId: string | null) => {
@@ -225,7 +239,20 @@ export default function MemberApp() {
   return (
     <div className="flex min-h-screen justify-center bg-[#E8EDF4]">
       <div className="relative flex min-h-screen w-full max-w-[430px] flex-col bg-canvas shadow-[0_0_60px_rgba(11,37,69,.12)]">
-        {tab === "home" && (
+        {planOpen && (
+          <PlanView
+            close={() => setPlanOpen(false)}
+            user={me?.user ?? null}
+            goals={planGoals}
+            setGoals={setPlanGoals}
+            onPoints={(points, level) =>
+              setMe((m) =>
+                m ? { ...m, user: { ...m.user, points, level } } : m
+              )
+            }
+          />
+        )}
+        {!planOpen && tab === "home" && (
           <HomeTab
             tasks={tasks}
             toggleTask={toggleTask}
@@ -234,9 +261,11 @@ export default function MemberApp() {
             toggleHeart3={() => setHeart3((v) => !v)}
             sharedWin={sharedWin}
             user={me?.user ?? null}
+            planGoals={planGoals}
+            openPlan={() => setPlanOpen(true)}
           />
         )}
-        {tab === "learn" && !lessonOpen && (
+        {!planOpen && tab === "learn" && !lessonOpen && (
           <LearnTab
             lessonDone={lessonDone}
             openLesson={() => openCourse(null)}
@@ -246,7 +275,7 @@ export default function MemberApp() {
             openCourse={openCourse}
           />
         )}
-        {tab === "learn" && lessonOpen && (
+        {!planOpen && tab === "learn" && lessonOpen && (
           <LessonPlayer
             closeLesson={() => setLessonOpen(false)}
             quiz={quiz}
@@ -257,8 +286,8 @@ export default function MemberApp() {
             lessonCount={activeCourse?.lessonCount}
           />
         )}
-        {tab === "give" && <GiveTab />}
-        {tab === "chat" && (
+        {!planOpen && tab === "give" && <GiveTab />}
+        {!planOpen && tab === "chat" && (
           <ChatTab
             guideState={guideState}
             askedLabel={askedLabel}
@@ -267,7 +296,7 @@ export default function MemberApp() {
             resetGuide={resetGuide}
           />
         )}
-        {tab === "me" && (
+        {!planOpen && tab === "me" && (
           <MeTab
             points={points}
             lessonDone={lessonDone}

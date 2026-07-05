@@ -21,6 +21,16 @@ import type {
   Enrollment,
   Concern,
   MentorApplication,
+  ProfileDetails,
+  BarcSelfCheck,
+  Circle,
+  CircleMembership,
+  RecoveryGoal,
+  GoalMilestone,
+  JobApplication,
+  Resume,
+  ResumeSection,
+  RecoveryDomain,
 } from "./types";
 
 interface DB {
@@ -36,11 +46,21 @@ interface DB {
   enrollments: Enrollment[];
   concerns: Concern[];
   applications: MentorApplication[];
+  // community expansion (seed v6)
+  profileDetails: ProfileDetails[];
+  barcChecks: BarcSelfCheck[];
+  circles: Circle[];
+  circleMemberships: CircleMembership[];
+  recoveryGoals: RecoveryGoal[];
+  goalMilestones: GoalMilestone[];
+  jobApplications: JobApplication[];
+  resumes: Resume[];
+  resumeSections: ResumeSection[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 5;
+const SEED_VERSION = 6;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -185,6 +205,200 @@ const SESSION_NOTES = [
 ];
 
 const DONATION_AMOUNTS = [5, 10, 10, 15, 20, 25, 25, 25, 30, 40, 50, 50, 75, 100];
+
+// ── community-expansion templates (seed v6 — dignified voice) ───────────
+
+/** BARC-10 self-check domains — warm, non-clinical framing. */
+const BARC_DOMAINS = [
+  "sobriety",
+  "self-care",
+  "relationships",
+  "support",
+  "community",
+  "purpose",
+  "housing",
+  "finances",
+  "coping",
+  "outlook",
+];
+
+const GOAL_TEMPLATES: {
+  domain: RecoveryDomain;
+  title: string;
+  why: string;
+  milestones: string[];
+}[] = [
+  {
+    domain: "housing",
+    title: "Move into my own place",
+    why: "I want a door that locks and a key that's mine.",
+    milestones: ["Tour two transitional houses", "Save the deposit", "Sign the lease"],
+  },
+  {
+    domain: "employment",
+    title: "Land a steady job",
+    why: "Steady work means steady ground.",
+    milestones: ["Finish my résumé", "Apply to five places", "Nail the interview"],
+  },
+  {
+    domain: "education",
+    title: "Earn my GED",
+    why: "I promised myself I'd finish what I started.",
+    milestones: ["Sign up for classes", "Pass the practice test", "Take the real test"],
+  },
+  {
+    domain: "health",
+    title: "Get moving three days a week",
+    why: "A strong body keeps my head clear.",
+    milestones: ["Find a routine I like", "Two weeks consistent", "One month strong"],
+  },
+  {
+    domain: "relationships",
+    title: "Rebuild trust with my family",
+    why: "They never gave up on me. Now it's my turn.",
+    milestones: ["Weekly phone calls", "Show up on time, every time", "Host a family dinner"],
+  },
+  {
+    domain: "financial",
+    title: "Save my first $500",
+    why: "A cushion means one bad week can't knock me down.",
+    milestones: ["Open a savings account", "Save $100", "Save $250", "Hit $500"],
+  },
+  {
+    domain: "transportation",
+    title: "Get reliable transportation",
+    why: "I can't say yes to a job I can't get to.",
+    milestones: ["Get a monthly bus pass", "Save for a bike", "Map out my commute"],
+  },
+  {
+    domain: "legal",
+    title: "Clear up my old paperwork",
+    why: "I want my past filed away, not following me.",
+    milestones: ["Meet with the navigator", "Gather my documents", "File everything"],
+  },
+  {
+    domain: "education",
+    title: "Start a certification course",
+    why: "Every certificate is a door.",
+    milestones: ["Pick the program", "Enroll", "Finish the first module"],
+  },
+  {
+    domain: "other",
+    title: "Volunteer at the center monthly",
+    why: "This place gave me my start — I want to give back.",
+    milestones: ["Talk to staff about helping", "First volunteer shift"],
+  },
+];
+
+const TAGLINES = [
+  "One day at a time.",
+  "Showing up, every day.",
+  "Small steps, big wins.",
+  "Grateful and grinding.",
+  "Building something that lasts.",
+  "Still here. Still fighting.",
+  "Progress, not perfection.",
+  "New chapter, same heart.",
+];
+
+const INTEREST_POOL = [
+  "fitness",
+  "cooking",
+  "reading",
+  "music",
+  "basketball",
+  "art",
+  "hiking",
+  "gardening",
+  "chess",
+  "volunteering",
+];
+
+const RESUME_HEADLINES = [
+  "Hardworking and dependable",
+  "Reliable team member ready to work",
+  "Quick learner with steady hands",
+  "Dependable — on time, every time",
+];
+
+const RESUME_EXPERIENCE_ITEMS = [
+  { role: "Center volunteer", org: "My Struggle outreach center", dates: "2025–present" },
+  { role: "Line cook", org: "Local diner", dates: "2019–2021" },
+  { role: "Warehouse helper", org: "Seasonal contract", dates: "2023" },
+  { role: "Landscaping crew", org: "Day labor", dates: "2022–2023" },
+  { role: "Dishwasher", org: "Family restaurant", dates: "2018–2019" },
+];
+
+const SKILL_POOL = [
+  "reliability",
+  "teamwork",
+  "inventory counts",
+  "food prep",
+  "customer service",
+  "forklift (in training)",
+  "time management",
+  "deescalation",
+  "cleaning & sanitation",
+  "cash handling",
+];
+
+const JOB_COMPANIES = [
+  "Sun Valley Warehouse",
+  "Copper State Staffing",
+  "Desert Bloom Foods",
+  "Roosevelt Row Kitchen",
+  "South Mountain Logistics",
+  "Camelback Distribution",
+];
+
+const JOB_ROLES = [
+  "Warehouse Associate",
+  "Line Cook",
+  "Stocker",
+  "Custodian",
+  "Prep Cook",
+  "Delivery Helper",
+];
+
+const JOB_NOTES = [
+  "Follow up by phone this week.",
+  "Manager seemed friendly — send a thank-you note.",
+  "They asked about weekend availability. I said yes.",
+  "Bus route works — 20 minutes door to door.",
+];
+
+/** Circle-flavored post bodies, keyed by circle id. */
+const CIRCLE_POST_BODIES: Record<string, string[]> = {
+  "circle-job-seekers": [
+    "Week 2 of applications. Staying at it.",
+    "Interview tomorrow morning. Practiced my answers twice tonight.",
+    "Updated my résumé at the center today. It finally looks like me.",
+    "Got a callback! Keeping my head level, but I'm smiling.",
+  ],
+  "circle-new-in-recovery": [
+    "Day 30 today. This circle helps more than you know.",
+    "First week here. Just glad to have somewhere to say that out loud.",
+    "Rough morning, better evening. Showed up anyway.",
+  ],
+  "circle-parents-in-recovery": [
+    "My daughter told me she was proud of me today. Holding onto that.",
+    "Made it to my son's game this weekend. First one in years.",
+    "Bedtime stories over the phone until I'm home for good. It counts.",
+  ],
+  "circle-gratitude": [
+    "Three things today: my mentor, my bed, hot coffee.",
+    "Grateful for a hard week that I handled like a different person.",
+    "Win of the week: paid a bill early. Small thing, big feeling.",
+  ],
+  "circle-laveen-alumni": [
+    "Alumni meetup Saturday — who's coming?",
+    "Came back to the center to say thanks. Left with three new friends.",
+  ],
+  "circle-south-phoenix-alumni": [
+    "One year since I first walked into the center. Different person, same fight.",
+    "Stopped by to cheer on the new cohort. Full circle.",
+  ],
+};
 
 function seed(): DB {
   const now = EPOCH;
@@ -661,6 +875,495 @@ function seed(): DB {
     }
   }
 
+  // ── Community expansion (added in seed v6 — keep AFTER all v5 sections
+  //    so earlier PRNG draws and seed-* ids stay byte-identical) ─────────
+
+  // ── circles ──────────────────────────────────────────────────────────
+  const circles: Circle[] = [
+    {
+      id: "circle-job-seekers",
+      name: "Job Seekers",
+      kind: "topic",
+      description:
+        "Applications, interviews, first days — we keep each other going.",
+      staffModerated: false,
+    },
+    {
+      id: "circle-new-in-recovery",
+      name: "New in Recovery",
+      kind: "topic",
+      description: "The first weeks are the hardest. Nobody walks them alone here.",
+      staffModerated: true,
+    },
+    {
+      id: "circle-parents-in-recovery",
+      name: "Parents in Recovery",
+      kind: "topic",
+      description: "Showing up for our kids while we show up for ourselves.",
+      staffModerated: false,
+    },
+    {
+      id: "circle-gratitude",
+      name: "Gratitude Circle",
+      kind: "topic",
+      description: "Daily gratitude and wins of the week — big or small, they count.",
+      staffModerated: false,
+    },
+    {
+      id: "circle-laveen-alumni",
+      name: "Laveen Alumni",
+      kind: "alumni",
+      description: "Once Laveen, always Laveen. Stay connected, give back.",
+      staffModerated: true,
+      centerId: laveen.id,
+    },
+    {
+      id: "circle-south-phoenix-alumni",
+      name: "South Phoenix Alumni",
+      kind: "alumni",
+      description: "South Phoenix family, past and present.",
+      staffModerated: true,
+      centerId: southPhoenix.id,
+    },
+  ];
+
+  // ── Danielle flagship storyline (hand-written, kept verbatim) ─────────
+  const circleMemberships: CircleMembership[] = [
+    { id: did(), circleId: "circle-job-seekers", memberId: danielle.id, joinedAt: now - 55 * DAY },
+    { id: did(), circleId: "circle-new-in-recovery", memberId: danielle.id, joinedAt: now - 80 * DAY },
+    { id: did(), circleId: "circle-laveen-alumni", memberId: danielle.id, joinedAt: now - 35 * DAY },
+  ];
+
+  // Housing goal — linked to her existing "Hallway house" QR funding request.
+  const danielleHousingRequest = requests.find(
+    (r) => r.memberId === danielle.id && r.label === "Hallway house"
+  )!;
+  const recoveryGoals: RecoveryGoal[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      title: "Get my own place",
+      domain: "housing",
+      why: "My kids need somewhere that's ours.",
+      status: "active",
+      visibility: "mentor",
+      linkedRequestId: danielleHousingRequest.id,
+      createdAt: now - 28 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      title: "Full-time warehouse role",
+      domain: "employment",
+      why: "Steady hours mean I can plan a life, not just a week.",
+      status: "active",
+      visibility: "mentor",
+      createdAt: now - 45 * DAY,
+    },
+  ];
+  const danielleHousingGoal = recoveryGoals[0];
+  const danielleJobGoal = recoveryGoals[1];
+
+  const goalMilestones: GoalMilestone[] = [
+    { id: did(), goalId: danielleHousingGoal.id, title: "Call 3 halfway houses", done: true, sort: 0 },
+    { id: did(), goalId: danielleHousingGoal.id, title: "Save first week's rent", done: true, sort: 1 },
+    { id: did(), goalId: danielleHousingGoal.id, title: "Gather my ID documents", done: true, sort: 2 },
+    { id: did(), goalId: danielleHousingGoal.id, title: "Reach $175/week in support", done: false, sort: 3 },
+    { id: did(), goalId: danielleHousingGoal.id, title: "Sign and move in", done: false, sort: 4 },
+    { id: did(), goalId: danielleJobGoal.id, title: "Finish my résumé", done: true, sort: 0 },
+    { id: did(), goalId: danielleJobGoal.id, title: "Apply to four warehouse jobs", done: true, sort: 1 },
+    { id: did(), goalId: danielleJobGoal.id, title: "Accept the right offer", done: false, sort: 2 },
+  ];
+
+  const jobApplications: JobApplication[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      company: "Desert Logistics",
+      role: "Warehouse Associate",
+      status: "offer",
+      notes: "Offer on the table! Talking pay and schedule through with Marcus.",
+      nextActionDate: "2026-07-07",
+      createdAt: now - 21 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      company: "Fresh Start Foods",
+      role: "Warehouse Associate",
+      status: "interview",
+      notes: "Second interview Thursday. They liked my inventory experience.",
+      nextActionDate: "2026-07-09",
+      createdAt: now - 14 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      company: "Phoenix Fulfillment",
+      role: "Picker/Packer",
+      status: "applied",
+      notes: "Applied online. Follow up by phone if no word by Friday.",
+      nextActionDate: "2026-07-10",
+      createdAt: now - 8 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      company: "Metro Distribution",
+      role: "Warehouse Associate",
+      status: "closed",
+      notes: "Went with someone else. On to the next one.",
+      createdAt: now - 30 * DAY,
+    },
+  ];
+
+  const resumes: Resume[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      fullName: "Danielle R.",
+      headline: "Reliable warehouse & inventory associate",
+      summary:
+        "Dependable and detail-focused, with hands-on inventory experience from volunteering at my community center and two years on a busy kitchen line. I show up on time, count twice, and finish what I start. Currently completing my forklift certification.",
+      contact: { email: "danielle@themystruggles.com", city: "Laveen, AZ" },
+      template: "clean_blue",
+      isPrimary: true,
+      updatedAt: now - 3 * DAY,
+    },
+  ];
+  const danielleResume = resumes[0];
+
+  const resumeSections: ResumeSection[] = [
+    {
+      id: did(),
+      resumeId: danielleResume.id,
+      kind: "experience",
+      sort: 0,
+      content: {
+        items: [
+          {
+            role: "Inventory volunteer",
+            org: "My Struggle Laveen Center",
+            dates: "2025–present",
+            bullets: [
+              "Count and restock donated goods weekly; keep records accurate to the item",
+              "Trusted with intake logs and weekly supply reports",
+            ],
+          },
+          {
+            role: "Line cook",
+            org: "Local diner",
+            dates: "2019–2021",
+            bullets: [
+              "Worked a high-volume line with consistent quality and zero missed shifts in my final year",
+              "Trained two new hires on prep and station setup",
+            ],
+          },
+        ],
+      },
+    },
+    {
+      id: did(),
+      resumeId: danielleResume.id,
+      kind: "skills",
+      sort: 1,
+      content: {
+        items: [
+          "forklift (in training)",
+          "inventory counts",
+          "reliability",
+          "deescalation",
+        ],
+      },
+    },
+    {
+      id: did(),
+      resumeId: danielleResume.id,
+      kind: "education",
+      sort: 2,
+      content: {
+        items: [
+          { credential: "GED", org: "Phoenix Adult Education", year: "2026" },
+          { credential: "ISE program", org: "My Struggle Laveen Center", year: "2025–present" },
+        ],
+      },
+    },
+    {
+      id: did(),
+      resumeId: danielleResume.id,
+      kind: "certifications",
+      sort: 3,
+      content: {
+        items: [{ name: "Forklift certification", status: "in progress" }],
+      },
+    },
+  ];
+
+  const profileDetails: ProfileDetails[] = [
+    {
+      userId: danielle.id,
+      journeySince: "2025-05-03", // ~14 months before EPOCH
+      tagline: "One week at a time.",
+      interests: ["fitness", "cooking", "reading"],
+      recoveryCapitalPublic: true,
+      showMilestones: true,
+    },
+  ];
+
+  // BARC-10 trend — three self-checks over three months, trending up.
+  const barcScores = (vals: number[]): Record<string, number> =>
+    Object.fromEntries(BARC_DOMAINS.map((d, i) => [d, vals[i]]));
+  const barcChecks: BarcSelfCheck[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      takenAt: now - 75 * DAY,
+      scores: barcScores([4, 3, 2, 4, 3, 3, 2, 3, 3, 4]),
+      total: 31,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      takenAt: now - 45 * DAY,
+      scores: barcScores([4, 4, 3, 4, 4, 4, 3, 3, 3, 4]),
+      total: 36,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      takenAt: now - 14 * DAY,
+      scores: barcScores([5, 4, 4, 5, 4, 4, 4, 3, 4, 4]),
+      total: 41,
+    },
+  ];
+
+  // ── generated breadth — circles, goals, profiles, résumés, BARC ───────
+
+  // ~120 members with 1–2 circle memberships, weighted toward their
+  // center's alumni circle plus one topic circle.
+  const topicCircles = circles.filter((c) => c.kind === "topic");
+  const circleJoiners = new Set<User>();
+  while (circleJoiners.size < 120) circleJoiners.add(pick(generated));
+  for (const m of circleJoiners) {
+    const joined = new Set<Circle>();
+    if (rnd() < 0.6)
+      joined.add(m.centerId === laveen.id ? circles[4] : circles[5]);
+    joined.add(pick(topicCircles));
+    for (const c of joined) {
+      circleMemberships.push({
+        id: did(),
+        circleId: c.id,
+        memberId: m.id,
+        joinedAt: now - int(1, 180) * DAY,
+      });
+    }
+  }
+
+  // ~40 members with one recovery goal each (2–4 milestones, some achieved);
+  // ~10 of those also track 1–3 job applications.
+  const goalMemberSet = new Set<User>();
+  while (goalMemberSet.size < 40) goalMemberSet.add(pick(generated));
+  const goalMembers = [...goalMemberSet];
+  for (let gi = 0; gi < goalMembers.length; gi++) {
+    const m = goalMembers[gi];
+    const tpl = pick(GOAL_TEMPLATES);
+    const achieved = rnd() < 0.25;
+    const createdAt = now - int(20, 150) * DAY;
+    const visRoll = rnd();
+    const goal: RecoveryGoal = {
+      id: did(),
+      memberId: m.id,
+      title: tpl.title,
+      domain: tpl.domain,
+      why: tpl.why,
+      status: achieved ? "achieved" : "active",
+      achievedAt: achieved ? now - int(1, 19) * DAY : undefined,
+      visibility: visRoll < 0.4 ? "mentor" : visRoll < 0.7 ? "private" : "circle",
+      createdAt,
+    };
+    recoveryGoals.push(goal);
+    const msCount = Math.min(int(2, 4), tpl.milestones.length);
+    const doneCount = achieved ? msCount : int(0, msCount - 1);
+    for (let s = 0; s < msCount; s++) {
+      goalMilestones.push({
+        id: did(),
+        goalId: goal.id,
+        title: tpl.milestones[s],
+        done: s < doneCount,
+        sort: s,
+      });
+    }
+    if (gi < 10) {
+      const apps = int(1, 3);
+      for (let a = 0; a < apps; a++) {
+        const statusRoll = rnd();
+        const status =
+          statusRoll < 0.45
+            ? ("applied" as const)
+            : statusRoll < 0.7
+              ? ("interview" as const)
+              : statusRoll < 0.85
+                ? ("closed" as const)
+                : ("offer" as const);
+        jobApplications.push({
+          id: did(),
+          memberId: m.id,
+          company: pick(JOB_COMPANIES),
+          role: pick(JOB_ROLES),
+          status,
+          notes: rnd() < 0.6 ? pick(JOB_NOTES) : undefined,
+          nextActionDate:
+            status === "applied" || status === "interview"
+              ? `2026-07-${String(int(6, 20)).padStart(2, "0")}`
+              : undefined,
+          createdAt: now - int(2, 60) * DAY,
+        });
+      }
+    }
+  }
+
+  // ~15 members with profile details.
+  const profiled = new Set<User>();
+  while (profiled.size < 15) profiled.add(pick(generated));
+  for (const m of profiled) {
+    const nInterests = int(1, 3);
+    const interests = new Set<string>();
+    while (interests.size < nInterests) interests.add(pick(INTEREST_POOL));
+    const sinceMonths = int(3, 30);
+    const since = new Date(now - sinceMonths * 30 * DAY);
+    profileDetails.push({
+      userId: m.id,
+      journeySince: since.toISOString().slice(0, 10),
+      tagline: pick(TAGLINES),
+      interests: [...interests],
+      recoveryCapitalPublic: rnd() < 0.5,
+      showMilestones: rnd() < 0.8,
+    });
+  }
+
+  // ~10 members with a basic résumé (2 sections).
+  const resumeMembers = new Set<User>();
+  while (resumeMembers.size < 10) resumeMembers.add(pick(generated));
+  for (const m of resumeMembers) {
+    const resume: Resume = {
+      id: did(),
+      memberId: m.id,
+      fullName: `${m.name} ${String.fromCharCode(65 + int(0, 25))}.`,
+      headline: pick(RESUME_HEADLINES),
+      template: "clean_blue",
+      isPrimary: true,
+      updatedAt: now - int(1, 45) * DAY,
+    };
+    resumes.push(resume);
+    resumeSections.push({
+      id: did(),
+      resumeId: resume.id,
+      kind: "experience",
+      sort: 0,
+      content: { items: [pick(RESUME_EXPERIENCE_ITEMS)] },
+    });
+    const nSkills = int(3, 4);
+    const skills = new Set<string>();
+    while (skills.size < nSkills) skills.add(pick(SKILL_POOL));
+    resumeSections.push({
+      id: did(),
+      resumeId: resume.id,
+      kind: "skills",
+      sort: 1,
+      content: { items: [...skills] },
+    });
+  }
+
+  // ~25 BARC self-checks spread across other members.
+  const barcMembers = new Set<User>();
+  while (barcMembers.size < 25) barcMembers.add(pick(generated));
+  for (const m of barcMembers) {
+    const vals = BARC_DOMAINS.map(() => int(0, 5));
+    barcChecks.push({
+      id: did(),
+      memberId: m.id,
+      takenAt: now - int(1, 90) * DAY - int(0, 23) * 3600e3,
+      scores: barcScores(vals),
+      total: vals.reduce((a, b) => a + b, 0),
+    });
+  }
+
+  // ── circle posts (~20) — same shape as existing posts + circleId ──────
+  // Main-feed posts keep circleId undefined; circle posts are scoped.
+  type CirclePost = Post & { circleId: string };
+
+  // Danielle's circle posts (hand-written — flagship storyline).
+  const daniellePosts: CirclePost[] = [
+    {
+      id: did(),
+      authorId: danielle.id,
+      authorName: "Danielle",
+      authorRole: "member",
+      avatarColor: "#2E7CD6",
+      body: "Four applications in and one offer on the table. Talking it through with my mentor this week.",
+      kind: "win",
+      status: "approved",
+      circleId: "circle-job-seekers",
+      hearts: heartsFrom(everyone, 12),
+      comments: [],
+      createdAt: now - 6 * DAY,
+    },
+    {
+      id: did(),
+      authorId: danielle.id,
+      authorName: "Danielle",
+      authorRole: "member",
+      avatarColor: "#2E7CD6",
+      body: "Grateful for everyone at Laveen who's walked this with me. $70 to go on my weekly goal.",
+      kind: "regular",
+      status: "approved",
+      circleId: "circle-laveen-alumni",
+      hearts: heartsFrom(everyone, 8),
+      comments: [],
+      createdAt: now - 9 * DAY,
+    },
+  ];
+  posts.push(...daniellePosts);
+
+  // 18 generated circle posts from actual circle members, spread over 60
+  // days (5+ days old so the hand-written pair still leads the main feed).
+  const usersById = new Map(members.map((m) => [m.id, m]));
+  const circleMemberPools = new Map<string, User[]>();
+  for (const cm of circleMemberships) {
+    const u = usersById.get(cm.memberId);
+    if (!u) continue;
+    const list = circleMemberPools.get(cm.circleId) ?? [];
+    list.push(u);
+    circleMemberPools.set(cm.circleId, list);
+  }
+  for (let i = 0; i < 18; i++) {
+    const circle = circles[i % circles.length];
+    const pool = circleMemberPools.get(circle.id) ?? [];
+    if (!pool.length) continue;
+    const author = pick(pool);
+    const flavored = CIRCLE_POST_BODIES[circle.id] ?? [];
+    const body =
+      flavored.length && rnd() < 0.6
+        ? pick(flavored)
+        : pick(POST_BODIES_REGULAR);
+    const createdAt = now - int(5, 60) * DAY - int(0, 23) * 3600e3;
+    const cp: CirclePost = {
+      id: did(),
+      authorId: author.id,
+      authorName: author.name,
+      authorRole: "member",
+      avatarColor: author.avatarColor,
+      body,
+      kind: rnd() < 0.85 ? "regular" : "win",
+      status: "approved",
+      circleId: circle.id,
+      hearts: heartsFrom(everyone, 15),
+      comments: commentsFor(createdAt),
+      createdAt,
+    };
+    posts.push(cp);
+  }
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members],
@@ -674,6 +1377,15 @@ function seed(): DB {
     enrollments,
     concerns: [],
     applications: [],
+    profileDetails,
+    barcChecks,
+    circles,
+    circleMemberships,
+    recoveryGoals,
+    goalMilestones,
+    jobApplications,
+    resumes,
+    resumeSections,
   };
 }
 

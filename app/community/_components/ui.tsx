@@ -1,11 +1,12 @@
 // Shared building blocks for the desktop /community surface.
 // Website surface: indigo ◆ for milestones (gold is app-gamification only).
 
-import type { Post, PostKind, Topic } from "@/app/lib/types";
+import type { Circle, CircleKind, Post, PostKind, Topic } from "@/app/lib/types";
 
 /** A feed post as decorated by GET /api/posts. */
 export type FeedPost = Post & {
   authorSlug: string | null;
+  circleId?: string; // present on posts that live inside a circle
   request: {
     id: string;
     label: string;
@@ -14,6 +15,22 @@ export type FeedPost = Post & {
     status: "active" | "funded";
   } | null;
 };
+
+/** A circle as decorated by GET /api/circles. */
+export type CircleSummary = Circle & {
+  members: number;
+  joined: boolean;
+  locked: boolean; // alumni circle of another center — feed is private
+};
+
+export const CIRCLE_KIND_LABELS: Record<CircleKind, string> = {
+  topic: "Topic circle",
+  cohort: "Cohort",
+  alumni: "Alumni circle",
+};
+
+/** Fired after a join/leave so the rail's circle list stays in sync. */
+export const CIRCLES_CHANGED_EVENT = "ms:circles-changed";
 
 export const TOPIC_LABELS: Record<Topic, string> = {
   general: "General",

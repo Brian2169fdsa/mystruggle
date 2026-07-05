@@ -1,7 +1,368 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { SafeUser, SupportRequest } from "@/app/lib/types";
+
+// ── member profile + BARC self-check (docs/13 Part A) ──────────────────
+
+/** Own profile details as edited here (strings for controlled inputs). */
+type OwnDetails = {
+  tagline: string;
+  journeySince: string;
+  interests: string[];
+  recoveryCapitalPublic: boolean;
+  showMilestones: boolean;
+};
+
+type CheckPoint = { id?: string; takenAt: number; total: number };
+
+/** BARC-10 areas, framed warmly — reflection, never diagnosis. */
+const BARC_DOMAINS: { key: string; label: string }[] = [
+  { key: "housing", label: "My housing situation" },
+  { key: "employment", label: "Work & daily structure" },
+  { key: "relationships", label: "My relationships" },
+  { key: "hope", label: "Hope for the future" },
+  { key: "coping", label: "Coping with hard days" },
+  { key: "health", label: "My health" },
+  { key: "meaning", label: "Meaning & purpose" },
+  { key: "safety", label: "Feeling safe" },
+  { key: "support", label: "People I can lean on" },
+  { key: "finances", label: "My finances" },
+];
+
+function ToggleRow({
+  label,
+  hint,
+  on,
+  onToggle,
+}: {
+  label: string;
+  hint: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      onClick={onToggle}
+      className="flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-3 text-left"
+    >
+      <span>
+        <span className="block text-[13px] font-bold text-ink-900">{label}</span>
+        <span className="block text-[11px] font-medium text-ink-600">{hint}</span>
+      </span>
+      <span
+        className={
+          "relative h-6 w-11 flex-none rounded-full transition-colors " +
+          (on ? "bg-blue-primary" : "bg-[#E2E8F0]")
+        }
+      >
+        <span
+          className={
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all " +
+            (on ? "left-[22px]" : "left-0.5")
+          }
+        />
+      </span>
+    </button>
+  );
+}
+
+/** Editable profile card — optimistic POSTs to /api/profile. */
+function MyProfileCard({
+  slug,
+  details,
+  saveDetails,
+}: {
+  slug?: string;
+  details: OwnDetails;
+  saveDetails: (patch: Partial<OwnDetails>) => void;
+}) {
+  const [tagline, setTagline] = useState(details.tagline);
+  const [since, setSince] = useState(details.journeySince);
+  const [newInterest, setNewInterest] = useState("");
+
+  // re-sync local inputs when the server copy first arrives
+  useEffect(() => {
+    setTagline(details.tagline);
+    setSince(details.journeySince);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details.tagline, details.journeySince]);
+
+  const addInterest = () => {
+    const tag = newInterest.trim().slice(0, 28);
+    if (!tag || details.interests.length >= 8) return;
+    if (details.interests.some((i) => i.toLowerCase() === tag.toLowerCase()))
+      return setNewInterest("");
+    saveDetails({ interests: [...details.interests, tag] });
+    setNewInterest("");
+  };
+
+  return (
+    <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+      <label className="block">
+        <span className="text-[11px] font-bold tracking-[.06em] text-ink-600">
+          TAGLINE
+        </span>
+        <input
+          value={tagline}
+          maxLength={140}
+          onChange={(e) => setTagline(e.target.value)}
+          onBlur={() => {
+            if (tagline.trim() !== details.tagline) saveDetails({ tagline });
+          }}
+          placeholder="A few words that carry you…"
+          className="mt-1 h-11 w-full rounded-xl border border-sky-tint bg-canvas px-3.5 text-[14px] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none"
+        />
+      </label>
+
+      <label className="mt-4 block">
+        <span className="text-[11px] font-bold tracking-[.06em] text-ink-600">
+          ON THE JOURNEY SINCE
+        </span>
+        <input
+          type="date"
+          value={since}
+          onChange={(e) => {
+            setSince(e.target.value);
+            saveDetails({ journeySince: e.target.value });
+          }}
+          className="mt-1 h-11 w-full rounded-xl border border-sky-tint bg-canvas px-3.5 text-[14px] font-medium text-ink-900 focus:border-blue-primary focus:outline-none"
+        />
+      </label>
+
+      <div className="mt-4">
+        <span className="text-[11px] font-bold tracking-[.06em] text-ink-600">
+          INTERESTS
+        </span>
+        {details.interests.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {details.interests.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full bg-sky-tint px-3 text-[12px] font-semibold text-blue-primary"
+              >
+                {tag}
+                <button
+                  type="button"
+                  aria-label={`Remove ${tag}`}
+                  onClick={() =>
+                    saveDetails({
+                      interests: details.interests.filter((i) => i !== tag),
+                    })
+                  }
+                  className="cursor-pointer text-[14px] font-bold leading-none text-blue-primary/70 hover:text-blue-primary"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            value={newInterest}
+            maxLength={28}
+            onChange={(e) => setNewInterest(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addInterest();
+              }
+            }}
+            placeholder="Add an interest…"
+            className="h-11 flex-1 rounded-xl border border-sky-tint bg-canvas px-3.5 text-[13px] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={addInterest}
+            disabled={!newInterest.trim() || details.interests.length >= 8}
+            className="h-11 flex-none cursor-pointer rounded-full bg-blue-primary px-4 text-[13px] font-bold text-white transition-colors hover:bg-blue-hover disabled:cursor-default disabled:opacity-40"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col border-t border-canvas pt-2.5">
+        <ToggleRow
+          label="Show my recovery rings publicly"
+          hint="Three rings grown from your own activity — never a clinical score."
+          on={details.recoveryCapitalPublic}
+          onToggle={() =>
+            saveDetails({ recoveryCapitalPublic: !details.recoveryCapitalPublic })
+          }
+        />
+        <ToggleRow
+          label="Show my milestones"
+          hint="Level, streak, goals and courses on your public profile."
+          on={details.showMilestones}
+          onToggle={() => saveDetails({ showMilestones: !details.showMilestones })}
+        />
+      </div>
+
+      {slug && (
+        <Link
+          href={`/community/u/${slug}`}
+          className="mt-2 inline-flex min-h-[44px] items-center text-[13px] font-bold text-blue-primary"
+        >
+          View my public profile →
+        </Link>
+      )}
+    </div>
+  );
+}
+
+/** BARC-10 self-check — 10 quick 0–5 tap scales, warm and private. */
+function SelfCheckCard({
+  checks,
+  submitCheck,
+}: {
+  checks: CheckPoint[];
+  submitCheck: (scores: Record<string, number>) => Promise<CheckPoint | null>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const answered = BARC_DOMAINS.every((d) => scores[d.key] !== undefined);
+
+  const submit = async () => {
+    if (!answered || saving) return;
+    setSaving(true);
+    const prevTotal = checks.length ? checks[checks.length - 1].total : null;
+    const check = await submitCheck(scores);
+    setSaving(false);
+    if (!check) return;
+    const word =
+      prevTotal === null
+        ? "your starting point, noted with kindness."
+        : check.total > prevTotal
+          ? "trending up. Keep going."
+          : check.total === prevTotal
+            ? "holding steady. That counts."
+            : "thanks for being honest with yourself. Every check-in counts.";
+    setResult(`${check.total}/50 — ${word}`);
+    setScores({});
+    setOpen(false);
+  };
+
+  const trend = checks.slice(-6);
+
+  return (
+    <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+      <p className="text-[13px]/[1.6] font-medium text-ink-600">
+        10 quick sliders. Just for you — and the staff who support you. Never
+        public.
+      </p>
+
+      {result && (
+        <div className="mt-3 rounded-xl bg-sky-tint px-4 py-3 text-[14px] font-bold text-blue-primary">
+          {result}
+        </div>
+      )}
+
+      {trend.length > 0 && (
+        <div className="mt-4">
+          <div className="text-[11px] font-bold tracking-[.06em] text-ink-600">
+            YOUR TREND
+          </div>
+          <div className="mt-2 flex items-end gap-3">
+            {trend.map((c, i) => (
+              <div key={c.id ?? i} className="flex flex-col items-center gap-1">
+                <span className="tnum text-[11px] font-bold text-ink-600">
+                  {c.total}
+                </span>
+                <div
+                  className="w-7 rounded-t-md bg-blue-primary"
+                  style={{ height: 8 + Math.round((c.total / 50) * 34) }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(true);
+            setResult(null);
+          }}
+          className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center rounded-full bg-blue-primary px-6 text-[13px] font-bold text-white transition-colors hover:bg-blue-hover"
+        >
+          {trend.length ? "Check in again" : "Start a check-in"}
+        </button>
+      ) : (
+        <div className="mt-4 flex flex-col gap-4">
+          {BARC_DOMAINS.map((d) => (
+            <div key={d.key}>
+              <div className="flex items-baseline justify-between">
+                <span className="text-[13px] font-bold text-ink-900">
+                  {d.label}
+                </span>
+                <span className="text-[10px] font-semibold text-ink-400">
+                  not yet → strong
+                </span>
+              </div>
+              <div className="mt-1.5 flex gap-1.5">
+                {[0, 1, 2, 3, 4, 5].map((n) => {
+                  const on = scores[d.key] === n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      aria-label={`${d.label}: ${n} of 5`}
+                      aria-pressed={on}
+                      onClick={() =>
+                        setScores((s) => ({ ...s, [d.key]: n }))
+                      }
+                      className={
+                        "tnum h-10 flex-1 cursor-pointer rounded-lg border text-[13px] font-bold transition-colors " +
+                        (on
+                          ? "border-blue-primary bg-blue-primary text-white"
+                          : "border-sky-tint bg-canvas text-ink-600 hover:border-sky-tint-2")
+                      }
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={submit}
+              disabled={!answered || saving}
+              className="inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full bg-blue-primary px-6 text-[13px] font-bold text-white transition-colors hover:bg-blue-hover disabled:cursor-default disabled:opacity-40"
+            >
+              {saving ? "Saving…" : "Done — save my check-in"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="inline-flex min-h-[44px] cursor-pointer items-center px-3 text-[13px] font-semibold text-ink-600"
+            >
+              Not now
+            </button>
+          </div>
+          {!answered && (
+            <p className="text-[11px] font-medium text-ink-400">
+              Tap a number for each area — there are no wrong answers.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const JOURNEY: {
   title: string;
@@ -74,6 +435,77 @@ export default function MeTab({
   const memberNumber = user ? user.memberNumber : "039521464";
   const initial = displayName.charAt(0).toUpperCase();
   const myRequests = user ? (requests ?? []) : null;
+
+  // ── profile details + BARC trend (signed in only) ────────────────────
+  const [details, setDetails] = useState<OwnDetails | null>(null);
+  const [checks, setChecks] = useState<CheckPoint[]>([]);
+  const userId = user?.id;
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/profile");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data?.details) return;
+        setDetails({
+          tagline: data.details.tagline ?? "",
+          journeySince: data.details.journeySince ?? "",
+          interests: data.details.interests ?? [],
+          recoveryCapitalPublic: !!data.details.recoveryCapitalPublic,
+          showMilestones: data.details.showMilestones !== false,
+        });
+        setChecks(data.checks ?? []);
+      } catch {
+        // offline — the rest of the tab still works
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  /** Optimistic profile-details save — revert on failure. */
+  const saveDetails = (patch: Partial<OwnDetails>) => {
+    setDetails((prev) => {
+      if (!prev) return prev;
+      const before = prev;
+      const next = { ...prev, ...patch };
+      (async () => {
+        try {
+          const res = await fetch("/api/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(patch),
+          });
+          if (!res.ok) throw new Error(String(res.status));
+        } catch {
+          setDetails(before);
+        }
+      })();
+      return next;
+    });
+  };
+
+  const submitCheck = async (
+    scores: Record<string, number>
+  ): Promise<CheckPoint | null> => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ barc: { scores } }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      if (data?.checks) setChecks(data.checks);
+      return data?.check ?? null;
+    } catch {
+      return null;
+    }
+  };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -150,6 +582,26 @@ export default function MeTab({
                 </p>
               )}
             </div>
+
+            {/* My profile — public-profile details, consent toggles */}
+            {details && (
+              <>
+                <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
+                  MY PROFILE
+                </div>
+                <MyProfileCard
+                  slug={user.slug}
+                  details={details}
+                  saveDetails={saveDetails}
+                />
+              </>
+            )}
+
+            {/* Check in with yourself — BARC-10, private, never diagnostic */}
+            <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
+              CHECK IN WITH YOURSELF
+            </div>
+            <SelfCheckCard checks={checks} submitCheck={submitCheck} />
 
             {/* Support requests */}
             <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">

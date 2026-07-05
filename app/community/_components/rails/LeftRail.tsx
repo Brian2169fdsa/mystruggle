@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { SafeUser, Topic } from "@/app/lib/types";
+import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "../ui";
 
 const CARD =
   "rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]";
@@ -131,9 +132,11 @@ function ChannelsCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const active = searchParams.get("topic");
+  const inCircle = !!searchParams.get("circle");
 
   function select(key: Topic | null) {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("circle"); // channels and circles are separate views
     if (key) params.set("topic", key);
     else params.delete("topic");
     const qs = params.toString();
@@ -147,7 +150,7 @@ function ChannelsCard() {
       </h2>
       <ul className="space-y-0.5">
         {CHANNELS.map(({ key, label }) => {
-          const on = active === key || (!active && key === null);
+          const on = !inCircle && (active === key || (!active && key === null));
           return (
             <li key={label}>
               <button
@@ -174,6 +177,128 @@ function ChannelsCard() {
           );
         })}
       </ul>
+    </nav>
+  );
+}
+
+/* ── Circles nav (docs/13 Part B) ─────────────────────────────────── */
+
+const COLLAPSED_CIRCLES = 4;
+
+function CirclesCard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeCircle = searchParams.get("circle");
+  const [circles, setCircles] = useState<CircleSummary[] | null>(null);
+  const [browseAll, setBrowseAll] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch("/api/circles", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { circles: [] }))
+        .then((d) => alive && setCircles(d.circles ?? []))
+        .catch(() => alive && setCircles([]));
+    load();
+    // Stay in sync when the feed's Join/Leave pill flips a membership.
+    window.addEventListener(CIRCLES_CHANGED_EVENT, load);
+    return () => {
+      alive = false;
+      window.removeEventListener(CIRCLES_CHANGED_EVENT, load);
+    };
+  }, []);
+
+  function select(id: string) {
+    // Circles replace the topic view — one active lens at a time.
+    router.replace(`/community?circle=${encodeURIComponent(id)}`, {
+      scroll: false,
+    });
+  }
+
+  if (circles !== null && circles.length === 0) return null;
+
+  // Joined circles first so "my circles" are always in reach when collapsed.
+  const ordered = circles
+    ? [...circles].sort((a, b) => Number(b.joined) - Number(a.joined))
+    : null;
+  const visible =
+    ordered === null
+      ? null
+      : browseAll
+        ? ordered
+        : ordered.slice(0, COLLAPSED_CIRCLES);
+
+  return (
+    <nav className={CARD + " px-3"} aria-label="Circles">
+      <h2 className="px-3 pb-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-ink-400">
+        Circles
+      </h2>
+      {visible === null ? (
+        <div className="animate-pulse space-y-2 px-2 pb-1" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-8 rounded-xl bg-sky-tint" />
+          ))}
+        </div>
+      ) : (
+        <>
+          <ul className="space-y-0.5">
+            {visible.map((c) => {
+              const on = activeCircle === c.id;
+              return (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => select(c.id)}
+                    aria-current={on ? "page" : undefined}
+                    className={
+                      "flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl py-1.5 pl-2 pr-3 text-left text-[14px] transition-colors " +
+                      (on
+                        ? "bg-sky-tint text-blue-primary"
+                        : "text-ink-600 hover:bg-canvas hover:text-ink-900")
+                    }
+                  >
+                    <span
+                      className={
+                        "h-5 w-[3px] shrink-0 rounded-full " +
+                        (on ? "bg-blue-primary" : "bg-transparent")
+                      }
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={
+                          "block truncate " +
+                          (c.joined || on ? "font-bold" : "font-semibold")
+                        }
+                      >
+                        {c.name}
+                      </span>
+                      <span className="tnum block text-[11px] font-semibold text-ink-400">
+                        {c.members.toLocaleString("en-US")}{" "}
+                        {c.members === 1 ? "member" : "members"}
+                      </span>
+                    </span>
+                    {c.joined && (
+                      <span className="inline-flex h-5 flex-none items-center rounded-full bg-sky-tint px-2 text-[10px] font-extrabold tracking-[.04em] text-blue-primary">
+                        JOINED
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {!browseAll && ordered!.length > COLLAPSED_CIRCLES && (
+            <button
+              type="button"
+              onClick={() => setBrowseAll(true)}
+              className="mt-1 block w-full cursor-pointer rounded-lg py-2 text-center text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
+            >
+              Browse all circles →
+            </button>
+          )}
+        </>
+      )}
     </nav>
   );
 }
@@ -229,6 +354,7 @@ function LeftRailInner() {
         <SignedOutCard />
       )}
       <ChannelsCard />
+      <CirclesCard />
       <FooterLinksCard />
     </div>
   );

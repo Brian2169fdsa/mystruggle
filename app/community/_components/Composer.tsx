@@ -15,19 +15,32 @@ function suggestBody(target: number, label: string): string {
   return `I'm raising $${target}/week for ${label.trim()} — every gift splits 50/50 and goes through the center.`;
 }
 
+/** A ritual prompt handed down from the Daily Reflection card — the nonce
+ *  lets the same prompt be re-applied after the member clears the box. */
+export type ComposerPrefill = { text: string; nonce: number };
+
 /**
  * Desktop composer — topic + kind chips and an "Ask for support" flow that
  * creates the support request first, then posts with the returned requestId.
  * Crisis submissions are held server-side → warm 988 care card in place.
+ * Inside a circle (`circleId`) every share posts into that circle.
  */
 export default function Composer({
   viewer,
   topic: feedTopic,
+  circleId,
+  circleName,
+  prefill,
   onPosted,
 }: {
   viewer: SafeUser;
   /** Currently selected feed topic ("" = All) — seeds the composer topic. */
   topic: string;
+  /** When set, posts go into this circle (author must have joined). */
+  circleId?: string;
+  circleName?: string;
+  /** Daily-reflection prompt to drop into the box (see Feed's ritual card). */
+  prefill?: ComposerPrefill | null;
   onPosted: (post: FeedPost) => void;
 }) {
   const [body, setBody] = useState("");
@@ -43,11 +56,19 @@ export default function Composer({
   const [held, setHeld] = useState<{ line: string; note: string } | null>(null);
   // Last auto-suggested body — only overwrite the textarea while untouched.
   const suggestionRef = useRef<string | null>(null);
+  const boxRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Follow the feed's topic filter so posts land where the member is looking.
   useEffect(() => {
     if (TOPICS.includes(feedTopic as Topic)) setTopic(feedTopic as Topic);
   }, [feedTopic]);
+
+  // "Reflect" ritual — drop the day's prompt into the box and focus it.
+  useEffect(() => {
+    if (!prefill) return;
+    setBody(prefill.text);
+    boxRef.current?.focus();
+  }, [prefill]);
 
   // Keep the suggested support copy in sync while the member hasn't edited it.
   useEffect(() => {
@@ -91,7 +112,7 @@ export default function Composer({
       const pRes = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: body.trim(), kind, topic, requestId }),
+        body: JSON.stringify({ body: body.trim(), kind, topic, requestId, circleId }),
       });
       const pData = await pRes.json().catch(() => null);
       if (!pRes.ok) throw new Error(pData?.error ?? "That didn't go through.");
@@ -150,11 +171,16 @@ export default function Composer({
       <div className="flex items-start gap-3">
         <AvatarTile name={viewer.name} color={viewer.avatarColor} size={46} />
         <textarea
+          ref={boxRef}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
           maxLength={2000}
-          placeholder={`What's on your mind, ${viewer.name}?`}
+          placeholder={
+            circleName
+              ? `Share with ${circleName}, ${viewer.name}…`
+              : `What's on your mind, ${viewer.name}?`
+          }
           className="min-h-[76px] flex-1 resize-none rounded-xl border border-sky-tint bg-canvas px-4 py-3 text-[15px] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none"
         />
       </div>

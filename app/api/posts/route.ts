@@ -3,6 +3,12 @@ import { db, save, uid, findUserById } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import { isCrisisText } from "@/app/lib/crisis";
 import {
+  canReadCircle,
+  findCircle,
+  isCircleMember,
+  type CirclePost,
+} from "@/app/api/circles/_lib";
+import {
   TOPICS,
   type Post,
   type PostKind,
@@ -34,23 +40,47 @@ function decorate(post: Post) {
 }
 
 /** Community feed — approved posts, newest first.
- *  Query params: topic (channel filter) · author=me (own posts, any status
- *  except removed) · before=<timestamp> cursor · limit (≤50, default 20). */
+ *  Query params: topic (channel filter) · circle=<id> (that circle's posts;
+ *  alumni circles are center-private) · author=me (own posts, any status
+ *  except removed) · before=<timestamp> cursor · limit (≤50, default 20).
+ *  Without ?circle, circle posts are EXCLUDED — they live in their circle. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const topic = url.searchParams.get("topic");
+  const circleId = url.searchParams.get("circle");
   const author = url.searchParams.get("author");
   const before = Number(url.searchParams.get("before") ?? 0);
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? 20)));
 
   const user = await getSessionUser();
 
-  let posts = [...db().posts];
+  // Circle read access — anyone may read topic/cohort circles; alumni
+  // circles only that center's people or staff (docs/13 Part B).
+  if (circleId) {
+    const circle = findCircle(circleId);
+    if (!circle) {
+      return NextResponse.json({ error: "Circle not found." }, { status: 404 });
+    }
+    if (!canReadCircle(circle, user)) {
+      return NextResponse.json(
+        { error: "This alumni circle is private to its center's members." },
+        { status: 403 }
+      );
+    }
+  }
+
+  let posts: CirclePost[] = [...db().posts];
   if (author === "me") {
     if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
     posts = posts.filter((p) => p.authorId === user.id && p.status !== "removed");
   } else {
     posts = posts.filter((p) => p.status === "approved");
+  }
+  if (circleId) {
+    posts = posts.filter((p) => p.circleId === circleId);
+  } else if (author !== "me") {
+    // Main feed: circle posts stay inside their circle.
+    posts = posts.filter((p) => !p.circleId);
   }
   if (topic && TOPICS.includes(topic as Topic)) {
     posts = posts.filter((p) => (p.topic ?? "general") === topic);
@@ -67,7 +97,8 @@ export async function GET(req: Request) {
 }
 
 /** Create a post — members and mentors both. Optional topic + requestId
- *  (support-request posts link to the author's own active goal). */
+ *  (support-request posts link to the author's own active goal) + circleId
+ *  (posts into a circle the author has joined — 403 otherwise). */
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
@@ -96,13 +127,29 @@ export async function POST(req: Request) {
     requestId = r.id;
   }
 
+  // Circle posts require membership — reading is open(er), posting is not.
+  let circleId: string | undefined;
+  if (body?.circleId) {
+    const circle = findCircle(String(body.circleId));
+    if (!circle) {
+      return NextResponse.json({ error: "Circle not found." }, { status: 404 });
+    }
+    if (!isCircleMember(circle.id, user.id)) {
+      return NextResponse.json(
+        { error: "Join this circle before posting in it." },
+        { status: 403 }
+      );
+    }
+    circleId = circle.id;
+  }
+
   // SAFETY: crisis language is HELD from the feed (docs/05 §Moderation step 4).
   // Held posts get the existing "flagged" status — GET only serves "approved",
   // so they never reach the public feed. A human must follow up; the poster is
   // shown supportive resources instead of a published post.
   const crisis = isCrisisText(text);
 
-  const post = {
+  const post: CirclePost = {
     id: uid(),
     authorId: user.id,
     authorName: user.name,
@@ -112,6 +159,7 @@ export async function POST(req: Request) {
     kind,
     topic,
     requestId,
+    circleId,
     status: (crisis ? "flagged" : "approved") as PostStatus,
     hearts: [],
     comments: [],

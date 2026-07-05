@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import CommunityFeed from "@/app/components/feed/CommunityFeed";
 import type { SafeUser } from "@/app/lib/types";
 import type { Task } from "./MemberApp";
+import { DOMAIN_LABELS, type PlanGoal } from "./PlanView";
 
 /** Heart-reaction pill: outline → red fill, count +1. */
 function HeartPill({
@@ -48,6 +49,8 @@ export default function HomeTab({
   toggleHeart3,
   sharedWin,
   user = null,
+  planGoals = null,
+  openPlan,
 }: {
   tasks: Task[];
   toggleTask: (i: number) => void;
@@ -56,9 +59,12 @@ export default function HomeTab({
   toggleHeart3: () => void;
   sharedWin: boolean;
   user?: SafeUser | null;
+  planGoals?: PlanGoal[] | null;
+  openPlan?: () => void;
 }) {
   const firstName = user?.name ?? "Danielle";
   const streak = user ? (user.streak ?? 0) : 12;
+  const activeGoals = (planGoals ?? []).filter((g) => g.status === "active");
   return (
     <div className="flex flex-1 flex-col">
       {/* Header */}
@@ -115,6 +121,55 @@ export default function HomeTab({
               <div className="text-[13px] font-bold text-ink-900">My Center</div>
             </div>
           </div>
+          {/* MY PLAN — compact recovery-goal summary (docs/13 Part C),
+              signed in only. Sits between the rings and the tasks. */}
+          {user && activeGoals.length > 0 && (
+            <div className="mt-[18px] rounded-xl bg-canvas px-4 py-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold tracking-[.12em] text-indigo-brand">
+                  MY PLAN
+                </span>
+                {openPlan && (
+                  <button
+                    type="button"
+                    onClick={openPlan}
+                    className="inline-flex min-h-[32px] cursor-pointer items-center text-[12px] font-bold text-blue-primary"
+                  >
+                    Open My Plan →
+                  </button>
+                )}
+              </div>
+              <div className="mt-1 flex flex-col gap-3">
+                {activeGoals.map((g) => (
+                  <div key={g.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-[18px] flex-none items-center rounded-full bg-sky-tint px-2 text-[9px] font-extrabold tracking-[.06em] text-blue-primary">
+                        {DOMAIN_LABELS[g.domain].toUpperCase()}
+                      </span>
+                      <span className="min-w-0 truncate text-[13px] font-bold text-ink-900">
+                        {g.title}
+                      </span>
+                      <span className="tnum ml-auto flex-none text-[11px] font-extrabold text-blue-primary">
+                        {g.progressPct}%
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-[6px] w-full overflow-hidden rounded-full bg-sky-tint">
+                      <div
+                        className="h-full rounded-full bg-blue-primary"
+                        style={{ width: `${g.progressPct}%` }}
+                      />
+                    </div>
+                    {g.linkedRequest && (
+                      <div className="tnum mt-1 text-[11px] font-semibold text-ink-600">
+                        ${g.linkedRequest.raised} of $
+                        {g.linkedRequest.weeklyTarget} weekly funding raised
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-[18px] flex flex-col border-t border-sky-tint">
             {tasks.map((task, i) => (
               <button
