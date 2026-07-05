@@ -1,20 +1,73 @@
 import { NextResponse } from "next/server";
-import { db, save, uid } from "@/app/lib/store";
+import { db, save, uid, findUserById } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import { isCrisisText } from "@/app/lib/crisis";
-import type { PostKind, PostStatus } from "@/app/lib/types";
+import {
+  TOPICS,
+  type Post,
+  type PostKind,
+  type PostStatus,
+  type Topic,
+} from "@/app/lib/types";
 
-/** Community feed — approved posts, newest first, capped at 50. */
-export async function GET() {
-  const posts = db()
-    .posts.filter((p) => p.status === "approved")
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 50);
-  const user = await getSessionUser();
-  return NextResponse.json({ posts, viewerId: user?.id ?? null });
+/** Attach public-safe request/giving context to a feed post. */
+function decorate(post: Post) {
+  const d = db();
+  const author = findUserById(post.authorId);
+  const request = post.requestId
+    ? d.requests.find((r) => r.id === post.requestId)
+    : undefined;
+  return {
+    ...post,
+    // Give button target — only when the author's page is public.
+    authorSlug: author?.consentPublic ? author.slug ?? null : null,
+    request: request
+      ? {
+          id: request.id,
+          label: request.label,
+          weeklyTarget: request.weeklyTarget,
+          raised: request.raised,
+          status: request.status,
+        }
+      : null,
+  };
 }
 
-/** Create a post — members and mentors both. */
+/** Community feed — approved posts, newest first.
+ *  Query params: topic (channel filter) · author=me (own posts, any status
+ *  except removed) · before=<timestamp> cursor · limit (≤50, default 20). */
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const topic = url.searchParams.get("topic");
+  const author = url.searchParams.get("author");
+  const before = Number(url.searchParams.get("before") ?? 0);
+  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? 20)));
+
+  const user = await getSessionUser();
+
+  let posts = [...db().posts];
+  if (author === "me") {
+    if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+    posts = posts.filter((p) => p.authorId === user.id && p.status !== "removed");
+  } else {
+    posts = posts.filter((p) => p.status === "approved");
+  }
+  if (topic && TOPICS.includes(topic as Topic)) {
+    posts = posts.filter((p) => (p.topic ?? "general") === topic);
+  }
+  posts.sort((a, b) => b.createdAt - a.createdAt);
+  if (before > 0) posts = posts.filter((p) => p.createdAt < before);
+
+  const page = posts.slice(0, limit);
+  return NextResponse.json({
+    posts: page.map(decorate),
+    viewerId: user?.id ?? null,
+    nextBefore: posts.length > limit ? page[page.length - 1]?.createdAt ?? null : null,
+  });
+}
+
+/** Create a post — members and mentors both. Optional topic + requestId
+ *  (support-request posts link to the author's own active goal). */
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
@@ -24,8 +77,23 @@ export async function POST(req: Request) {
   const kind: PostKind = ["milestone", "win"].includes(body?.kind)
     ? body.kind
     : "regular";
+  const topic: Topic = TOPICS.includes(body?.topic) ? body.topic : "general";
   if (!text || text.length > 2000) {
     return NextResponse.json({ error: "Write something first (max 2,000 chars)." }, { status: 400 });
+  }
+
+  let requestId: string | undefined;
+  if (body?.requestId) {
+    const r = db().requests.find(
+      (r) => r.id === String(body.requestId) && r.memberId === user.id
+    );
+    if (!r) {
+      return NextResponse.json(
+        { error: "That support request isn't yours or doesn't exist." },
+        { status: 400 }
+      );
+    }
+    requestId = r.id;
   }
 
   // SAFETY: crisis language is HELD from the feed (docs/05 §Moderation step 4).
@@ -42,7 +110,9 @@ export async function POST(req: Request) {
     avatarColor: user.avatarColor,
     body: text,
     kind,
-    status: (crisis ? "flagged" : "approved") as PostStatus, // dashboard moderation can flag/remove after
+    topic,
+    requestId,
+    status: (crisis ? "flagged" : "approved") as PostStatus,
     hearts: [],
     comments: [],
     createdAt: Date.now(),
@@ -60,5 +130,5 @@ export async function POST(req: Request) {
       },
     });
   }
-  return NextResponse.json({ post });
+  return NextResponse.json({ post: decorate(post) });
 }

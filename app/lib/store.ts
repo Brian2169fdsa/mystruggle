@@ -40,7 +40,7 @@ interface DB {
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -487,6 +487,19 @@ function seed(): DB {
         : kind === "win"
           ? pick(POST_BODIES_WIN)
           : pick(POST_BODIES_MILESTONE);
+    // Community channel — weighted toward general/recovery; jobs/housing
+    // give the desktop community's filters real content.
+    const topicRoll = rnd();
+    const topic =
+      topicRoll < 0.34
+        ? ("general" as const)
+        : topicRoll < 0.52
+          ? ("jobs" as const)
+          : topicRoll < 0.68
+            ? ("housing" as const)
+            : topicRoll < 0.92
+              ? ("recovery" as const)
+              : ("gratitude" as const);
     // Exactly 3 pending + 2 flagged (recent) so moderation is never empty;
     // everything else approved. Approved generated posts stay older than the
     // hand-written pair so those two lead the public feed.
@@ -503,6 +516,7 @@ function seed(): DB {
       avatarColor: author.avatarColor,
       body,
       kind,
+      topic,
       status,
       hearts: heartsFrom(everyone, 30),
       comments: status === "approved" ? commentsFor(createdAt) : [],

@@ -122,6 +122,16 @@ export interface Donation {
 export type PostKind = "regular" | "milestone" | "win";
 export type PostStatus = "approved" | "pending" | "flagged" | "removed";
 
+/** Community feed topics — the recovery community's channels. */
+export type Topic = "general" | "jobs" | "housing" | "recovery" | "gratitude";
+export const TOPICS: Topic[] = [
+  "general",
+  "jobs",
+  "housing",
+  "recovery",
+  "gratitude",
+];
+
 export interface Comment {
   id: string;
   authorId: string;
@@ -140,6 +150,8 @@ export interface Post {
   body: string;
   kind: PostKind;
   status: PostStatus;
+  topic?: Topic; // community channel (defaults to "general" when absent)
+  requestId?: string; // links a support-request post to its goal
   hearts: string[]; // user ids who reacted
   comments: Comment[];
   createdAt: number;
