@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { SafeUser, SupportRequest } from "@/app/lib/types";
 import TabBar, { type TabKey } from "./TabBar";
 import HomeTab from "./HomeTab";
 import LearnTab from "./LearnTab";
@@ -31,6 +32,29 @@ export default function MemberApp() {
   const [guideState, setGuideState] = useState<GuideState>("idle");
   const [askedLabel, setAskedLabel] = useState("");
   const [sharedWin, setSharedWin] = useState(false);
+  // Signed-in session (null = signed out → styled demo everywhere).
+  const [me, setMe] = useState<{
+    user: SafeUser;
+    requests: SupportRequest[];
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data?.user)
+          setMe({ user: data.user, requests: data.requests ?? [] });
+      } catch {
+        // offline / signed out — keep demo behavior
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // My Tracker ring = % of completed one-tap tasks + the lesson itself.
   const doneCount = tasks.filter((t) => t.done).length + (lessonDone ? 1 : 0);
@@ -107,6 +131,7 @@ export default function MemberApp() {
             heart3={heart3}
             toggleHeart3={() => setHeart3((v) => !v)}
             sharedWin={sharedWin}
+            user={me?.user ?? null}
           />
         )}
         {tab === "learn" && !lessonOpen && (
@@ -135,7 +160,14 @@ export default function MemberApp() {
             resetGuide={resetGuide}
           />
         )}
-        {tab === "me" && <MeTab points={points} lessonDone={lessonDone} />}
+        {tab === "me" && (
+          <MeTab
+            points={points}
+            lessonDone={lessonDone}
+            user={me?.user ?? null}
+            requests={me?.requests ?? null}
+          />
+        )}
 
         <TabBar active={tab} onSelect={goTab} />
 

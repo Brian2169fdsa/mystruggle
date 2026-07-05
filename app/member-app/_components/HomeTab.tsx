@@ -2,6 +2,7 @@
 
 import { Heart } from "lucide-react";
 import CommunityFeed from "@/app/components/feed/CommunityFeed";
+import type { SafeUser } from "@/app/lib/types";
 import type { Task } from "./MemberApp";
 
 /** Heart-reaction pill: outline → red fill, count +1. */
@@ -46,6 +47,7 @@ export default function HomeTab({
   heart3,
   toggleHeart3,
   sharedWin,
+  user = null,
 }: {
   tasks: Task[];
   toggleTask: (i: number) => void;
@@ -53,7 +55,10 @@ export default function HomeTab({
   heart3: boolean;
   toggleHeart3: () => void;
   sharedWin: boolean;
+  user?: SafeUser | null;
 }) {
+  const firstName = user?.name ?? "Danielle";
+  const streak = user ? (user.streak ?? 0) : 12;
   return (
     <div className="flex flex-1 flex-col">
       {/* Header */}
@@ -61,15 +66,21 @@ export default function HomeTab({
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[22px] font-extrabold tracking-[-0.02em] text-ink-900">
-              Welcome home, Danielle
+              Welcome home, {firstName}
             </div>
             <div className="mt-0.5 text-[13px] font-medium text-ink-600">
               Friday, July 4 · Laveen Center
             </div>
           </div>
-          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-gold-bg px-3.5 text-[13px] font-extrabold text-gold-ink">
-            ◆ 12-day streak
-          </span>
+          {streak > 0 ? (
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-gold-bg px-3.5 text-[13px] font-extrabold text-gold-ink">
+              ◆ {streak}-day streak
+            </span>
+          ) : (
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-sky-tint px-3.5 text-[13px] font-bold text-blue-primary">
+              Start your streak today
+            </span>
+          )}
         </div>
       </div>
       <div className="hairline" />
