@@ -44,3 +44,31 @@ The platform is NOT an EHR and must never become one by accident. Being identifi
 - [ ] Background check provider selected + mentor policy signed off
 - [ ] Position of Neutrality content licensing agreement for ISE hosting
 - [ ] Privacy policy + ToS drafted (platform-specific, not the website's)
+
+### 5a. Community Ad Product (docs/15) — advertising to a vulnerable population
+
+The sponsored-placement system serves ads to people in recovery. This is
+ethically loaded and MUST be reviewed before it runs for real money.
+
+- [ ] **Advertising content policy signed off by Brian/counsel.** The code
+      enforces a keyword screen (`app/lib/ad-policy.ts`) that hard-blocks
+      gambling, alcohol, predatory lending, and MLM. Counsel must confirm the
+      category list and approve a formal written policy. A human/Claude review
+      gate on every placement is required before launch (keyword screen is a
+      stopgap, not the final gate).
+- [ ] **No health-based ad targeting** — enforced in code (the placement
+      schema has NO diagnosis/substance/health field; targeting is coarse
+      only: metro / care phase / interest tags / circle). Negative-tested:
+      a crisis-flagged member is served support resources, never ads. Counsel
+      to confirm this satisfies applicable advertising + privacy standards for
+      a health-adjacent audience.
+- [ ] **Disclosure / labeling language reviewed.** Every placement renders a
+      distinct "Sponsored by [Center]" label and is never disguised as a peer
+      post; frequency-capped so the feed stays a recovery space first. Counsel
+      to review the disclosure wording.
+- [ ] **Ethical-advertising-to-vulnerable-population note (surfaced, not
+      bypassed):** even recovery-relevant advertising to people in early
+      recovery carries risk of exploitation. Do not enable paid placements for
+      any org that is not a vetted, approved recovery center/partner. Aggregate
+      analytics only — no per-member behavioral profile is ever exposed to an
+      advertiser (enforced + tested).
