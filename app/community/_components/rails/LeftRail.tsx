@@ -86,8 +86,9 @@ function ProfileCard({ user }: { user: SafeUser }) {
               </span>
             )}
             {user.level && (
-              <span className="tnum rounded-full bg-[rgba(78,91,155,.12)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-indigo-brand">
-                {user.level} · {user.points ?? 0} pts
+              <span className="tnum rounded-full bg-[rgba(78,91,155,.12)] px-2 py-0.5 text-[11px] font-bold text-indigo-brand">
+                <span className="uppercase tracking-wide">{user.level}</span> ·{" "}
+                {user.points ?? 0} pts
               </span>
             )}
           </div>
