@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CARD, SKELETON, fmtMoney, relTime } from "./types";
 import type { AdminMember } from "./types";
+import ContinuumRibbon from "./ContinuumRibbon";
 
 /** One row of GET /api/sessions?memberId=… */
 type SessionRow = {
@@ -211,6 +212,10 @@ export default function ParticipantDetail({
           Record redemption
         </button>
       </div>
+
+      {/* CONTINUUM — the continuum-of-care ribbon (docs/14). Top of the pane,
+          above balances. */}
+      <ContinuumRibbon memberId={member.id} />
 
       {/* Tabs */}
       <div className="flex gap-2.5">

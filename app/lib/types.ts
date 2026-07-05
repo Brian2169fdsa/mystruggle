@@ -303,6 +303,78 @@ export interface ResumeSection {
   sort: number;
 }
 
+// ── Continuum of Care (docs/14 + requirements/11 §A/B/K) ──────────────
+// EXPANSION: additive only — the platform spine (the hub every other
+// module feeds). Nothing above this line changes. `care_phase` runs in
+// PARALLEL to the existing journey/level fields; it never replaces them.
+
+/** The five care phases — one person, one continuous timeline. */
+export type CarePhase =
+  | "pre_care" // in community before any center relationship (unaffiliated)
+  | "intake" // connected to a center, assessment, not yet in programming
+  | "in_program" // active in a level of care
+  | "transition" // stepping down, discharge planning, aftercare
+  | "continuing"; // post-discharge alumni, ongoing follow-up (indefinite)
+
+/** Clinical level of care during the in-program phase. */
+export type LevelOfCare =
+  | "detox"
+  | "residential"
+  | "php"
+  | "iop"
+  | "op"
+  | "recovery_maintenance";
+
+/** A person's relationship with ONE center over time (extends enrollments).
+ *  centerId absent = unaffiliated (pre-care differentiator). */
+export interface CareEpisode {
+  id: string;
+  memberId: string;
+  centerId?: string;
+  carePhase: CarePhase;
+  levelOfCare?: LevelOfCare;
+  startedAt: number;
+  phaseChangedAt: number; // when the current phase began
+  endedAt?: number; // program discharge (relationship may continue)
+  referralSource?: string; // self | community | partner | court | hospital
+  dischargeType?: string; // completed | stepped_down | left_early | transferred
+}
+
+/** Append-only log of every phase/LOC change — the outcomes gold. */
+export interface PhaseTransition {
+  id: string;
+  episodeId: string;
+  fromPhase?: CarePhase;
+  toPhase: CarePhase;
+  fromLoc?: LevelOfCare;
+  toLoc?: LevelOfCare;
+  changedBy: string; // user id of the actor (staff / mentor / system)
+  reason: string;
+  at: number;
+}
+
+/** Every module that generates a signal writes to ONE of these sources. */
+export type ContinuumSource =
+  | "community"
+  | "lms"
+  | "goal"
+  | "giving"
+  | "mentorship"
+  | "checkin"
+  | "session"
+  | "phase";
+
+/** The heartbeat: one row per meaningful action, across ALL modules, per
+ *  person. Single write path (hooks), many readers (score, timeline, export). */
+export interface ContinuumEvent {
+  id: string;
+  memberId: string;
+  source: ContinuumSource;
+  refId?: string; // the source artifact (post, lesson, goal, donation, …)
+  weight: number; // engagement weighting for scoring
+  occurredAt: number;
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 

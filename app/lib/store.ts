@@ -31,6 +31,12 @@ import type {
   Resume,
   ResumeSection,
   RecoveryDomain,
+  CareEpisode,
+  PhaseTransition,
+  ContinuumEvent,
+  CarePhase,
+  LevelOfCare,
+  ContinuumSource,
 } from "./types";
 
 interface DB {
@@ -56,11 +62,15 @@ interface DB {
   jobApplications: JobApplication[];
   resumes: Resume[];
   resumeSections: ResumeSection[];
+  // continuum of care (seed v7 — docs/14 / requirements/11 §A/B/K)
+  careEpisodes: CareEpisode[];
+  phaseTransitions: PhaseTransition[];
+  continuumEvents: ContinuumEvent[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 6;
+const SEED_VERSION = 7;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -1364,6 +1374,296 @@ function seed(): DB {
     posts.push(cp);
   }
 
+  // ── Continuum of Care (added in seed v7 — keep AFTER all v6 sections so
+  //    earlier PRNG draws and seed-* ids stay byte-identical) ─────────────
+  // The spine: care_episodes + phase_transitions + continuum_events. Danielle
+  // traverses ALL FIVE phases end to end; her continuum_events are DERIVED
+  // from her already-seeded artifacts (the "hooks in seed" idea — no module
+  // is rewritten), then enriched with her ongoing community rhythm so the
+  // ribbon + sparkline read as a living 14-month timeline.
+
+  const careEpisodes: CareEpisode[] = [];
+  const phaseTransitions: PhaseTransition[] = [];
+  const continuumEvents: ContinuumEvent[] = [];
+
+  const PHASE_ORDER: CarePhase[] = [
+    "pre_care",
+    "intake",
+    "in_program",
+    "transition",
+    "continuing",
+  ];
+  const LOC_POOL: LevelOfCare[] = [
+    "detox",
+    "residential",
+    "php",
+    "iop",
+    "op",
+    "recovery_maintenance",
+  ];
+  const REFERRAL_SOURCES = ["self", "community", "partner", "court", "hospital"];
+  const DISCHARGE_TYPES = [
+    "completed",
+    "stepped_down",
+    "left_early",
+    "transferred",
+  ];
+  const CONTINUUM_SOURCES: ContinuumSource[] = [
+    "community",
+    "lms",
+    "goal",
+    "giving",
+    "mentorship",
+    "checkin",
+    "session",
+    "phase",
+  ];
+  const BREADTH_REASONS = [
+    "Assessment complete — welcomed them into the next step of their care.",
+    "Great progress this week; ready to move forward together.",
+    "Stepped down a level after hitting their goals. Proud of them.",
+    "Discharge planning underway — housing and work goals set.",
+    "Graduated to alumni. Still showing up, still supported.",
+    "Reconnected after a quiet stretch; back on track.",
+  ];
+
+  // ── DANIELLE: one 14-month episode across all five phases ─────────────
+  // pre_care 2mo → intake 2wk → in_program (IOP) 4mo → transition 1mo →
+  // continuing since. All timestamps hang off EPOCH (never Date.now()).
+  const dStart = now - 425 * DAY; // ~14 months before EPOCH
+  const dIntakeAt = dStart + 60 * DAY;
+  const dInProgramAt = dStart + 74 * DAY; // +2wk intake
+  const dTransitionAt = dStart + 194 * DAY; // +4mo IOP
+  const dContinuingAt = dStart + 224 * DAY; // +1mo transition
+
+  const danielleEpisode: CareEpisode = {
+    id: did(),
+    memberId: danielle.id,
+    centerId: laveen.id,
+    carePhase: "continuing",
+    levelOfCare: "iop",
+    startedAt: dStart,
+    phaseChangedAt: dContinuingAt,
+    endedAt: undefined, // continuing is indefinite — the relationship stays open
+    referralSource: "community",
+    dischargeType: "completed",
+  };
+  careEpisodes.push(danielleEpisode);
+
+  const danielleTransitions: PhaseTransition[] = [
+    {
+      id: did(),
+      episodeId: danielleEpisode.id,
+      fromPhase: "pre_care",
+      toPhase: "intake",
+      changedBy: sarah.id,
+      reason:
+        "Danielle walked into Laveen and said she was ready. We started her intake that same afternoon.",
+      at: dIntakeAt,
+    },
+    {
+      id: did(),
+      episodeId: danielleEpisode.id,
+      fromPhase: "intake",
+      toPhase: "in_program",
+      toLoc: "iop",
+      changedBy: sarah.id,
+      reason:
+        "Assessment done — Danielle's a great fit for our IOP cohort. Welcome to the program.",
+      at: dInProgramAt,
+    },
+    {
+      id: did(),
+      episodeId: danielleEpisode.id,
+      fromPhase: "in_program",
+      toPhase: "transition",
+      fromLoc: "iop",
+      changedBy: sarah.id,
+      reason:
+        "Danielle finished her IOP hours. We started planning her step-down together — housing and work first.",
+      at: dTransitionAt,
+    },
+    {
+      id: did(),
+      episodeId: danielleEpisode.id,
+      fromPhase: "transition",
+      toPhase: "continuing",
+      changedBy: sarah.id,
+      reason:
+        "Danielle graduated to alumni. She's working toward her own place and still shows up every week.",
+      at: dContinuingAt,
+    },
+  ];
+  phaseTransitions.push(...danielleTransitions);
+
+  const emitSeed = (
+    source: ContinuumSource,
+    weight: number,
+    occurredAt: number,
+    refId?: string
+  ): void => {
+    continuumEvents.push({
+      id: did(),
+      memberId: danielle.id,
+      source,
+      refId,
+      weight,
+      occurredAt,
+    });
+  };
+
+  // (1) posts + comments she authored → community (weight 2), dated to each.
+  for (const p of posts) {
+    if (p.authorId === danielle.id) emitSeed("community", 2, p.createdAt, p.id);
+    for (const c of p.comments) {
+      if (c.authorId === danielle.id)
+        emitSeed("community", 2, c.createdAt, c.id);
+    }
+  }
+
+  // (2) lesson completions → lms (weight 3), spread across the in-program window.
+  const danielleEnrollments = enrollments.filter(
+    (e) => e.memberId === danielle.id
+  );
+  const totalLessons = danielleEnrollments.reduce(
+    (s, e) => s + e.completedLessons.length,
+    0
+  );
+  let lessonIdx = 0;
+  for (const e of danielleEnrollments) {
+    for (let li = 0; li < e.completedLessons.length; li++) {
+      const frac = (lessonIdx + 1) / (totalLessons + 1);
+      const at = Math.round(
+        dInProgramAt + frac * (dTransitionAt - dInProgramAt)
+      );
+      emitSeed("lms", 3, at, e.id);
+      lessonIdx++;
+    }
+  }
+
+  // (3) completed goal milestones → goal (weight 3), across transition→now.
+  const danielleGoalIds = new Set([danielleHousingGoal.id, danielleJobGoal.id]);
+  const danielleDoneMs = goalMilestones.filter(
+    (m) => danielleGoalIds.has(m.goalId) && m.done
+  );
+  for (let mi = 0; mi < danielleDoneMs.length; mi++) {
+    const frac = (mi + 1) / (danielleDoneMs.length + 1);
+    const at = Math.round(dTransitionAt + frac * (now - dTransitionAt));
+    emitSeed("goal", 3, at, danielleDoneMs[mi].id);
+  }
+
+  // (4) donations to her → giving (weight 2), dated to each donation.
+  for (const dn of donations) {
+    if (dn.memberId === danielle.id) emitSeed("giving", 2, dn.createdAt, dn.id);
+  }
+
+  // (5) Marcus sessions with her → session (weight 4).
+  for (const s of sessions) {
+    if (s.memberId === danielle.id) emitSeed("session", 4, s.createdAt, s.id);
+  }
+
+  // (6) BARC self-checks → checkin (weight 3).
+  for (const b of barcChecks) {
+    if (b.memberId === danielle.id) emitSeed("checkin", 3, b.takenAt, b.id);
+  }
+
+  // (7) one phase event (weight 5) per transition — the outcomes markers.
+  for (const t of danielleTransitions) emitSeed("phase", 5, t.at, t.id);
+
+  // (8) ongoing rhythm across the full 14-month arc — her day-to-day
+  //     community life, check-ins, and mentor touches (not re-listing a
+  //     specific artifact) so the sparkline spans every month and looks alive.
+  for (let t = dStart + 5 * DAY; t < now; t += int(8, 14) * DAY) {
+    const r = rnd();
+    const src: ContinuumSource =
+      r < 0.45 ? "community" : r < 0.75 ? "checkin" : "session";
+    const weight = src === "community" ? 2 : src === "checkin" ? 3 : 4;
+    emitSeed(src, weight, t + int(0, 23) * 3600e3);
+  }
+
+  // ── BREADTH: ~60 generated members across phases/LOCs with histories ──
+  const continuumMemberSet = new Set<User>();
+  while (continuumMemberSet.size < 60) continuumMemberSet.add(pick(generated));
+  for (const m of continuumMemberSet) {
+    const phaseRoll = rnd();
+    const carePhase: CarePhase =
+      phaseRoll < 0.15
+        ? "pre_care"
+        : phaseRoll < 0.3
+          ? "intake"
+          : phaseRoll < 0.6
+            ? "in_program"
+            : phaseRoll < 0.75
+              ? "transition"
+              : "continuing";
+    // pre-care members are unaffiliated (no center visible).
+    const centerId = carePhase === "pre_care" ? undefined : m.centerId;
+    // an LOC exists once they've been in programming.
+    const hadProgram =
+      carePhase === "in_program" ||
+      carePhase === "transition" ||
+      carePhase === "continuing";
+    const loc = hadProgram ? pick(LOC_POOL) : undefined;
+
+    const episodeStart = now - int(60, 420) * DAY;
+    const phaseChangedAt = now - int(1, 40) * DAY;
+    const ep: CareEpisode = {
+      id: did(),
+      memberId: m.id,
+      centerId,
+      carePhase,
+      levelOfCare: loc,
+      startedAt: episodeStart,
+      phaseChangedAt,
+      // continuing members completed their program (episode discharge logged).
+      endedAt: carePhase === "continuing" ? phaseChangedAt : undefined,
+      referralSource: pick(REFERRAL_SOURCES),
+      dischargeType:
+        carePhase === "continuing" || carePhase === "transition"
+          ? pick(DISCHARGE_TYPES)
+          : undefined,
+    };
+    careEpisodes.push(ep);
+
+    // 1–3 append-only transitions walking the tail of the phase order.
+    const ci = PHASE_ORDER.indexOf(carePhase);
+    const steps: { from?: CarePhase; to: CarePhase }[] = [];
+    for (let j = 0; j <= ci; j++) {
+      steps.push({ from: j > 0 ? PHASE_ORDER[j - 1] : undefined, to: PHASE_ORDER[j] });
+    }
+    const nT = Math.max(1, Math.min(int(1, 3), steps.length));
+    const chosen = steps.slice(steps.length - nT);
+    for (let k = 0; k < chosen.length; k++) {
+      const at = Math.round(
+        episodeStart +
+          ((k + 1) / (chosen.length + 1)) * (phaseChangedAt - episodeStart)
+      );
+      phaseTransitions.push({
+        id: did(),
+        episodeId: ep.id,
+        fromPhase: chosen[k].from,
+        toPhase: chosen[k].to,
+        toLoc: chosen[k].to === "in_program" ? loc : undefined,
+        changedBy: sarah.id,
+        reason: pick(BREADTH_REASONS),
+        at,
+      });
+    }
+
+    // 5–20 sparse events with generic PRNG weights (no artifact cross-ref).
+    const nE = int(5, 20);
+    for (let e = 0; e < nE; e++) {
+      continuumEvents.push({
+        id: did(),
+        memberId: m.id,
+        source: pick(CONTINUUM_SOURCES),
+        weight: int(1, 5),
+        occurredAt:
+          episodeStart + Math.floor(rnd() * (now - episodeStart)),
+      });
+    }
+  }
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members],
@@ -1386,6 +1686,9 @@ function seed(): DB {
     jobApplications,
     resumes,
     resumeSections,
+    careEpisodes,
+    phaseTransitions,
+    continuumEvents,
   };
 }
 
@@ -1484,6 +1787,30 @@ export function addMessage(
   thread.messages.push(msg);
   save();
   return msg;
+}
+
+/** The single write path into the continuum heartbeat. Every module hook
+ *  (posts, lessons, donations, sessions, BARC, goals, phase changes) calls
+ *  this — one row, many readers (score, timeline, export). Live events use
+ *  Date.now(); seed events are EPOCH-anchored. Modules are extended with a
+ *  one-line call, never rewritten. */
+export function emitContinuumEvent(
+  memberId: string,
+  source: ContinuumSource,
+  weight: number,
+  refId?: string
+): ContinuumEvent {
+  const evt: ContinuumEvent = {
+    id: uid(),
+    memberId,
+    source,
+    refId,
+    weight,
+    occurredAt: Date.now(),
+  };
+  db().continuumEvents.push(evt);
+  save();
+  return evt;
 }
 
 export function addComment(post: Post, author: User, body: string): Comment {
