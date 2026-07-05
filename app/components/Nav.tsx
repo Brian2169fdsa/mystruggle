@@ -114,9 +114,82 @@ export default function Nav() {
             </div>
           </div>
 
-          <Link href="/donate" className="text-ink-900 hover:text-blue-primary">
-            Donate today
-          </Link>
+          {/* Donate — mega-menu on hover; top-level link still navigates */}
+          <div className="group relative flex items-center">
+            <Link
+              href="/donate"
+              className="flex items-center gap-[5px] text-ink-900 group-hover:text-blue-primary"
+            >
+              Donate today <span className="text-[10px] text-ink-600">▾</span>
+            </Link>
+            <div className="pointer-events-none absolute left-1/2 top-full z-[60] hidden -translate-x-1/2 pt-[22px] group-hover:pointer-events-auto group-hover:block">
+              <div className="w-[640px] overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(11,37,69,.25)]">
+                <div className="hairline" />
+                <div className="grid grid-cols-[240px_1fr] gap-7 p-7">
+                  <Link
+                    href="/donate"
+                    className="photo-ph relative block min-h-[250px] overflow-hidden rounded-xl"
+                  >
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(11,37,69,.85))]" />
+                    <div className="absolute bottom-0 p-[18px] text-white">
+                      <div className="text-base font-bold">
+                        Every gift builds someone&rsquo;s way home
+                      </div>
+                      <div className="mt-1 text-[13px]/[1.5] italic text-white/80">
+                        &ldquo;$25 provides a week of essential services.&rdquo;
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      {
+                        href: "/donate",
+                        title: "Give monthly",
+                        desc: "Tiers from $25 — a week of essential services",
+                      },
+                      {
+                        href: "/give",
+                        title: "Give to a member",
+                        desc: "Scan a QR code or visit their page — 50/50 split",
+                      },
+                      {
+                        href: "/mentor",
+                        title: "Donate items or time",
+                        desc: "Stock The Store or mentor at a center",
+                      },
+                    ].map((it) => (
+                      <Link
+                        key={it.title}
+                        href={it.href}
+                        className="flex items-center gap-4 rounded-xl p-3 hover:bg-sky-tint"
+                      >
+                        <div className="h-[52px] w-[52px] flex-none rounded-[10px] bg-[repeating-linear-gradient(45deg,#D2E2F5_0_8px,#C3D8F0_8px_16px)]" />
+                        <div>
+                          <div className="text-[15px] font-bold text-ink-900">
+                            {it.title}
+                          </div>
+                          <div className="text-[13px] text-ink-600">
+                            {it.desc}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-5 border-t border-sky-tint bg-canvas px-7 py-4">
+                  <span className="text-[12px] font-bold tracking-[.12em] text-indigo-brand">
+                    DIRECT SUPPORT
+                  </span>
+                  <Link
+                    href="/give"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
+                  >
+                    Danielle&rsquo;s giving page →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
           <Link href="/mentor" className="text-ink-900 hover:text-blue-primary">
             Become a Mentor
           </Link>

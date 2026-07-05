@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,6 +31,46 @@ const MOOD_WORDS: Record<number, string> = {
   5: "great",
 };
 
+// Real session-log wiring — Danielle's flagship member number (roster demo).
+const DANIELLE_MEMBER_NUMBER = "039521464";
+const DEMO_NOTE = "Prepped for Thursday's interview. Confidence way up.";
+
+type ApiSessionMode = "in-person" | "phone" | "video";
+
+/** LogSheet's Mode keys → API SessionMode values. */
+const API_MODE: Record<Mode, ApiSessionMode> = {
+  inperson: "in-person",
+  phone: "phone",
+  video: "video",
+};
+
+const API_MODE_LABEL: Record<ApiSessionMode, string> = {
+  "in-person": "in person",
+  phone: "phone",
+  video: "video",
+};
+
+type ApiSession = {
+  id: string;
+  mode: ApiSessionMode;
+  minutes: number;
+  note?: string;
+  createdAt: number;
+  mentorName: string | null;
+};
+
+/** "today" / "yesterday" / "4 days ago" / "May 12" for session timestamps. */
+function dayLabel(ts: number): string {
+  const days = Math.floor((Date.now() - ts) / 86400e3);
+  if (days < 1) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(ts).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
 /** Mentor phone app: roster → mentee detail / live chat + session-log sheet. */
@@ -45,7 +85,15 @@ export default function MentorApp() {
 
   // Live chat state — real threads when signed in as a mentor.
   const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
+  const [meRole, setMeRole] = useState<string | null>(null);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
+
+  // Real logged sessions for the mentee detail (Danielle) when signed in.
+  const [sessionInfo, setSessionInfo] = useState<{
+    count: number;
+    latest: ApiSession | null;
+  } | null>(null);
+  const danielleIdRef = useRef<string | null>(null);
   const [viewerId, setViewerId] = useState("");
   const [activeThread, setActiveThread] = useState<ThreadSummary | null>(null);
   const [cameFrom, setCameFrom] = useState<"roster" | "chatlist">("roster");
@@ -74,6 +122,7 @@ export default function MentorApp() {
         if (!alive) return;
         if (data?.user) {
           setSignedIn(true);
+          setMeRole(data.user.role ?? null);
           await loadThreads();
         } else {
           setSignedIn(false);
@@ -92,10 +141,92 @@ export default function MentorApp() {
       (t.other?.name ?? "").toLowerCase().startsWith(firstName.toLowerCase())
     ) ?? null;
 
+  /** Danielle's real member id — from the loaded threads when possible,
+   *  otherwise resolved once via the roster API by member number. */
+  const resolveDanielleId = useCallback(async (): Promise<string | null> => {
+    if (danielleIdRef.current) return danielleIdRef.current;
+    const t = threads.find((t) =>
+      (t.other?.name ?? "").toLowerCase().startsWith("danielle")
+    );
+    if (t?.other?.id) {
+      danielleIdRef.current = t.other.id;
+      return t.other.id;
+    }
+    try {
+      const res = await fetch("/api/admin/members");
+      const data = await res.json().catch(() => null);
+      const m = (data?.members as { id: string; memberNumber?: string }[] | undefined)?.find(
+        (x) => x.memberNumber === DANIELLE_MEMBER_NUMBER
+      );
+      if (m?.id) {
+        danielleIdRef.current = m.id;
+        return m.id;
+      }
+    } catch {
+      /* stays on demo content */
+    }
+    return null;
+  }, [threads]);
+
+  const loadSessions = useCallback(async (memberId: string) => {
+    try {
+      const res = await fetch(`/api/sessions?memberId=${memberId}`);
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.sessions) {
+        setSessionInfo({
+          count: data.count ?? data.sessions.length,
+          latest: (data.sessions[0] as ApiSession) ?? null,
+        });
+      }
+    } catch {
+      /* stays on demo content */
+    }
+  }, []);
+
+  // Refresh Danielle's real session summary whenever the detail view opens.
+  useEffect(() => {
+    if (view !== "detail" || !signedIn) return;
+    let alive = true;
+    (async () => {
+      const id = await resolveDanielleId();
+      if (alive && id) await loadSessions(id);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [view, signedIn, resolveDanielleId, loadSessions]);
+
   const openDetail = () => {
     setView("detail");
     setSessionSaved(false);
     setCheerSent(false);
+  };
+
+  /** Save from the log sheet — optimistic banner always; real POST when
+   *  signed in as a mentor (401/signed-out keeps the local demo behavior). */
+  const saveSession = () => {
+    setLogOpen(false);
+    setSessionSaved(true);
+    if (!signedIn || meRole !== "mentor") return;
+    (async () => {
+      const memberId = await resolveDanielleId();
+      if (!memberId) return;
+      try {
+        const res = await fetch("/api/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            memberId,
+            mode: API_MODE[mode],
+            minutes: Number(duration),
+            note: DEMO_NOTE,
+          }),
+        });
+        if (res.ok) loadSessions(memberId);
+      } catch {
+        /* banner already shown — demo-grade */
+      }
+    })();
   };
 
   /** Tyrell — roster card + amber nudge: real thread when signed in. */

@@ -1,4 +1,33 @@
 import Link from "next/link";
+import NewsletterForm from "./NewsletterForm";
+
+const SOCIALS = [
+  {
+    tag: "FB",
+    label: "My Struggle on Facebook",
+    href: "https://www.facebook.com/themystruggle",
+  },
+  {
+    tag: "IG",
+    label: "My Struggle on Instagram",
+    href: "https://www.instagram.com/themystruggle",
+  },
+  {
+    tag: "TT",
+    label: "My Struggle on TikTok",
+    href: "https://www.tiktok.com/@themystruggle",
+  },
+  {
+    tag: "YT",
+    label: "My Struggle on YouTube",
+    href: "https://www.youtube.com/@themystruggle",
+  },
+  {
+    tag: "IN",
+    label: "My Struggle on LinkedIn",
+    href: "https://www.linkedin.com/company/themystruggle",
+  },
+];
 
 const WORDMARK_WHITE =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2843%29-1920w.png";
@@ -19,13 +48,17 @@ export default function Footer() {
             End the Struggle, Build the Future Together.
           </div>
           <div className="flex gap-3">
-            {["FB", "IG", "TT", "YT", "IN"].map((s) => (
-              <span
-                key={s}
+            {SOCIALS.map((s) => (
+              <a
+                key={s.tag}
+                href={s.href}
+                target="_blank"
+                rel="noopener"
+                aria-label={s.label}
                 className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-white/30 text-[11px] font-bold text-white"
               >
-                {s}
-              </span>
+                {s.tag}
+              </a>
             ))}
           </div>
         </div>
@@ -74,14 +107,7 @@ export default function Footer() {
           <div className="mt-[18px] text-[14px]/[1.6] text-white/65">
             Member milestones and center news, once a month.
           </div>
-          <div className="mt-4 flex gap-2.5">
-            <div className="flex h-12 flex-1 items-center rounded-full border border-white/30 px-5 text-[14px] text-white/50">
-              Email address
-            </div>
-            <span className="inline-flex h-12 cursor-pointer items-center rounded-full bg-blue-primary px-6 text-[14px] font-bold text-white">
-              Join
-            </span>
-          </div>
+          <NewsletterForm />
         </div>
       </div>
 

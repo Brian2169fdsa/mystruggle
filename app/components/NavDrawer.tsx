@@ -19,6 +19,12 @@ const CENTER_LINKS = [
   { href: "/mentor-app", label: "Mentor app" },
 ];
 
+const DONATE_LINKS = [
+  { href: "/donate", label: "Give monthly" },
+  { href: "/give", label: "Give to a member" },
+  { href: "/mentor", label: "Donate items or time" },
+];
+
 /**
  * Mobile nav drawer (below lg) — hamburger trigger + full-screen navy-deep
  * panel sliding in from the right. Desktop nav/mega-menu is untouched; this
@@ -27,6 +33,7 @@ const CENTER_LINKS = [
 export default function NavDrawer() {
   const [open, setOpen] = useState(false);
   const [programsOpen, setProgramsOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -130,9 +137,48 @@ export default function NavDrawer() {
             </div>
           )}
 
-          <Link href="/donate" onClick={close} className={rowClass}>
+          <button
+            type="button"
+            onClick={() => setDonateOpen((v) => !v)}
+            className={
+              rowClass +
+              " w-full cursor-pointer justify-between bg-transparent p-0 py-2.5 text-left text-[20px] font-bold text-white"
+            }
+            aria-expanded={donateOpen}
+          >
             Donate today
-          </Link>
+            <ChevronDown
+              size={20}
+              className={
+                "text-[#8FBCF0] transition-transform " +
+                (donateOpen ? "rotate-180" : "")
+              }
+            />
+          </button>
+          {donateOpen && (
+            <div className="flex flex-col border-b border-white/10 py-3">
+              {DONATE_LINKS.map((l) => (
+                <Link
+                  key={l.label}
+                  href={l.href}
+                  onClick={close}
+                  className="flex min-h-11 items-center rounded-xl px-3 text-[16px] font-semibold text-white/85 hover:bg-white/[.08]"
+                >
+                  {l.label}
+                </Link>
+              ))}
+              <div className="mt-2 px-3 text-[11px] font-bold tracking-[.12em] text-[#8FBCF0]">
+                DIRECT SUPPORT
+              </div>
+              <Link
+                href="/give"
+                onClick={close}
+                className="flex min-h-11 items-center rounded-xl px-3 text-[15px] font-semibold text-white/70 hover:bg-white/[.08]"
+              >
+                Danielle&rsquo;s giving page →
+              </Link>
+            </div>
+          )}
           <Link href="/mentor" onClick={close} className={rowClass}>
             Become a Mentor
           </Link>
