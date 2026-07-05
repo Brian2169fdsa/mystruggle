@@ -17,6 +17,8 @@ import type {
   Role,
   Center,
   Session,
+  Course,
+  Enrollment,
 } from "./types";
 
 interface DB {
@@ -28,11 +30,13 @@ interface DB {
   requests: SupportRequest[];
   centers: Center[];
   sessions: Session[];
+  courses: Course[];
+  enrollments: Enrollment[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -577,6 +581,67 @@ function seed(): DB {
     ],
   };
 
+  // ── LMS: courses + enrollments (added in seed v3 — keep AFTER all v2
+  //    sections so earlier PRNG draws and seed-* ids stay byte-identical) ─
+  const courses: Course[] = [
+    { id: "course-ise-1", title: "ISE Course 1 — Honesty", program: "PON", lessonCount: 6 },
+    { id: "course-ise-2", title: "ISE Course 2 — Hope", program: "PON", lessonCount: 6 },
+    { id: "course-ise-3", title: "ISE Course 3 — Decision", program: "PON", lessonCount: 6 },
+    { id: "course-forklift", title: "Forklift Certification", program: "VOC", lessonCount: 8 },
+    { id: "course-docs-id", title: "Documents & ID Recovery", program: "NAV", lessonCount: 4 },
+    { id: "course-relapse-basics", title: "Relapse Prevention Basics", program: "IOP", lessonCount: 5 },
+  ];
+
+  // Danielle mirrors her demo cards: ISE Course 3 in progress (lesson 3 is
+  // next — 2/6 done, the closest integers get to the demo's 45%), Forklift
+  // just started, Documents & ID fully complete.
+  const enrollments: Enrollment[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      courseId: "course-ise-3",
+      completedLessons: [1, 2],
+      updatedAt: now - 2 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      courseId: "course-forklift",
+      completedLessons: [1],
+      updatedAt: now - 5 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      courseId: "course-docs-id",
+      completedLessons: [1, 2, 3, 4],
+      updatedAt: now - 20 * DAY,
+    },
+  ];
+
+  // ~300 generated members with 1–2 enrollments and plausible progress.
+  for (let i = 0; i < 300; i++) {
+    const member = pick(generated);
+    const count = rnd() < 0.55 ? 1 : 2;
+    for (let j = 0; j < count; j++) {
+      const course = pick(courses);
+      if (
+        enrollments.some(
+          (e) => e.memberId === member.id && e.courseId === course.id
+        )
+      )
+        continue;
+      const done = int(0, course.lessonCount);
+      enrollments.push({
+        id: did(),
+        memberId: member.id,
+        courseId: course.id,
+        completedLessons: Array.from({ length: done }, (_, k) => k + 1),
+        updatedAt: now - int(0, 60) * DAY - int(0, 23) * 3600e3,
+      });
+    }
+  }
+
   return {
     seedVersion: SEED_VERSION,
     users: [...mentors, ...members],
@@ -586,6 +651,8 @@ function seed(): DB {
     requests,
     centers,
     sessions,
+    courses,
+    enrollments,
   };
 }
 

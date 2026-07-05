@@ -104,6 +104,9 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
   const [kind, setKind] = useState<PostKind>("regular");
   const [posting, setPosting] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
+  // Set when the server held a submission for crisis support (held:true) —
+  // shows a warm resource card in place of the composer until dismissed.
+  const [heldNotice, setHeldNotice] = useState<{ line: string; note: string } | null>(null);
 
   // per-post UI
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -188,10 +191,26 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
         body: JSON.stringify({ body: text, kind: temp.kind }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const data: { post: Post } = await res.json();
-      setPosts((prev) =>
-        (prev ?? []).map((p) => (p.id === temp.id ? data.post : p))
-      );
+      const data: {
+        post: Post;
+        held?: boolean;
+        resources?: { line: string; note: string };
+      } = await res.json();
+      if (data.held) {
+        // Crisis support path: the post was held, never published. Remove the
+        // optimistic card and show a gentle message where the composer was.
+        setPosts((prev) => (prev ?? []).filter((p) => p.id !== temp.id));
+        setHeldNotice(
+          data.resources ?? {
+            line: "988 Suicide & Crisis Lifeline — call or text 988",
+            note: "A member of the care team will reach out today.",
+          }
+        );
+      } else {
+        setPosts((prev) =>
+          (prev ?? []).map((p) => (p.id === temp.id ? data.post : p))
+        );
+      }
     } catch {
       setPosts((prev) => (prev ?? []).filter((p) => p.id !== temp.id));
       setDraft(text);
@@ -328,7 +347,29 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
   return (
     <div className={`flex flex-col ${compact ? "gap-4" : "gap-5"}`}>
       {/* ── composer ── */}
-      {!authChecked ? null : viewer ? (
+      {!authChecked ? null : viewer && heldNotice ? (
+        /* Crisis support card — warm, navy, no alarm color. Shown in place of
+           the composer when a submission was held; dismisses back to it. */
+        <div className={`rounded-2xl bg-navy-deep ${cardPad} text-white shadow-[0_2px_10px_rgba(11,37,69,.25)]`}>
+          <div className="text-[16px] font-extrabold">
+            We&apos;re glad you told us.
+          </div>
+          <div className="mt-2.5 rounded-xl bg-white/10 px-4 py-3 text-[14px] font-bold">
+            {heldNotice.line}
+          </div>
+          <div className="mt-2.5 text-[13px]/[1.6] font-medium text-white/85">
+            Your words weren&apos;t posted publicly. Someone from your care team
+            will reach out today.
+          </div>
+          <button
+            type="button"
+            onClick={() => setHeldNotice(null)}
+            className="mt-3.5 inline-flex h-9 cursor-pointer items-center rounded-full bg-white px-5 text-[13px] font-bold text-navy-deep"
+          >
+            Okay
+          </button>
+        </div>
+      ) : viewer ? (
         <div
           className={`rounded-2xl bg-white ${cardPad} shadow-[0_1px_3px_rgba(11,37,69,.06)]`}
         >

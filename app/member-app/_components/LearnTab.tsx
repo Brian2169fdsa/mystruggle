@@ -1,5 +1,98 @@
 "use client";
 
+import type { Course, Enrollment, Program } from "@/app/lib/types";
+import { nextLesson } from "./MemberApp";
+
+/** Program chip + ring colors, following the demo cards' palette. */
+const PROGRAM_STYLE: Record<
+  Program,
+  { chipBg: string; chipText: string; ring: string; text: string }
+> = {
+  PON: { chipBg: "#EAF2FC", chipText: "#2E7CD6", ring: "#2E7CD6", text: "#2E7CD6" },
+  VOC: { chipBg: "#F0EDFB", chipText: "#4E5B9B", ring: "#4E5B9B", text: "#4E5B9B" },
+  NAV: { chipBg: "#EAF2FC", chipText: "#2E7CD6", ring: "#2E7CD6", text: "#2E7CD6" },
+  IOP: { chipBg: "#F0EDFB", chipText: "#4E5B9B", ring: "#4E5B9B", text: "#4E5B9B" },
+};
+
+function CourseCard({
+  course,
+  enrollment,
+  openCourse,
+}: {
+  course: Course;
+  enrollment: Enrollment | undefined;
+  openCourse: (id: string) => void;
+}) {
+  const style = PROGRAM_STYLE[course.program];
+  const done = enrollment?.completedLessons.length ?? 0;
+  const pct = Math.round((done / course.lessonCount) * 100);
+  const next = nextLesson(course, enrollment);
+  const complete = next === null;
+
+  if (complete) {
+    return (
+      <div className="flex items-center gap-4 rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+        <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-[conic-gradient(#12B76A_0_100%)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[14px] font-extrabold text-success">
+            ✓
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="mb-[5px] flex gap-1.5">
+            <span
+              className="inline-flex h-5 items-center rounded-full px-[9px] text-[10px] font-extrabold"
+              style={{ background: style.chipBg, color: style.chipText }}
+            >
+              {course.program}
+            </span>
+          </div>
+          <div className="text-[15px] font-bold text-ink-900">{course.title}</div>
+          <div className="mt-0.5 text-[12px] text-success">
+            Completed · all {course.lessonCount} lessons
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => openCourse(course.id)}
+      className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white px-5 py-[18px] text-left shadow-[0_1px_3px_rgba(11,37,69,.06)] hover:bg-sky-tint"
+    >
+      <div
+        className="flex h-16 w-16 flex-none items-center justify-center rounded-full"
+        style={{
+          background: `conic-gradient(${style.ring} 0 ${pct}%, #EAF2FC ${pct}% 100%)`,
+        }}
+      >
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[13px] font-extrabold"
+          style={{ color: style.text }}
+        >
+          {pct}%
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="mb-[5px] flex gap-1.5">
+          <span
+            className="inline-flex h-5 items-center rounded-full px-[9px] text-[10px] font-extrabold"
+            style={{ background: style.chipBg, color: style.chipText }}
+          >
+            {course.program}
+          </span>
+        </div>
+        <div className="text-[15px] font-bold text-ink-900">{course.title}</div>
+        <div className="mt-0.5 text-[12px] text-ink-600">
+          Lesson {next} of {course.lessonCount} · Continue
+        </div>
+      </div>
+      <span className="text-[18px] font-bold text-blue-primary">→</span>
+    </button>
+  );
+}
+
 const VIDEOS = [
   { title: "Walking Through Step 4", cat: "STEPS", dur: "8:24" },
   { title: "Your First 90 Days", cat: "NEW FREEDOM", dur: "12:03" },

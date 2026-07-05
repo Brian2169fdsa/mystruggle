@@ -22,6 +22,28 @@ export interface User {
   level?: string;
   mentorId?: string;
   centerId?: string; // outreach center this person belongs to
+  lastActivityAt?: number; // last streak-qualifying activity (lesson complete)
+}
+
+// ── LMS ────────────────────────────────────────────────────────────────
+
+export type Program = "PON" | "VOC" | "IOP" | "NAV";
+
+/** A published course on the Learn tab. */
+export interface Course {
+  id: string;
+  title: string;
+  program: Program;
+  lessonCount: number;
+}
+
+/** A member's progress through one course. */
+export interface Enrollment {
+  id: string;
+  memberId: string;
+  courseId: string;
+  completedLessons: number[]; // 1-based lesson numbers, sorted ascending
+  updatedAt: number;
 }
 
 /** An outreach center (e.g. Laveen Center). */

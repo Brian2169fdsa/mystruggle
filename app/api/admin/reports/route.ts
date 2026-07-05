@@ -76,7 +76,7 @@ export async function GET() {
       };
     });
 
-  // ── giving by month, last 12 calendar months (current month partial) ──
+  // ── giving by month, last 12 calendar months (latest month partial) ──
   const nowDt = new Date(now);
   const givingByMonth: { month: string; total: number; count: number }[] = [];
   for (let i = 11; i >= 0; i--) {

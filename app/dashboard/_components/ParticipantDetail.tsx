@@ -1,8 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { CARD, fmtMoney } from "./types";
+import { useEffect, useState } from "react";
+import { CARD, SKELETON, fmtMoney, relTime } from "./types";
 import type { AdminMember } from "./types";
+
+/** One row of GET /api/sessions?memberId=… */
+type SessionRow = {
+  id: string;
+  mode: "in-person" | "phone" | "video";
+  minutes: number;
+  note?: string;
+  createdAt: number;
+  mentorName: string | null;
+};
+
+const SESSION_MODE_LABEL: Record<SessionRow["mode"], string> = {
+  "in-person": "In person",
+  phone: "Phone",
+  video: "Video",
+};
 
 const TABS = ["Journey", "Courses", "Mentorship", "Balances", "Consent"] as const;
 type Tab = (typeof TABS)[number];
@@ -81,6 +97,24 @@ export default function ParticipantDetail({
   // page toggle starts from the member's real consentPublic flag.
   const [pagePublic, setPagePublic] = useState(member.consentPublic);
   const [photoPublic, setPhotoPublic] = useState(false);
+
+  // Recent mentor sessions — LIVE. null = loading.
+  const [sessions, setSessions] = useState<SessionRow[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setSessions(null);
+    fetch(`/api/sessions?memberId=${member.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive) setSessions((d?.sessions as SessionRow[]) ?? []);
+      })
+      .catch(() => {
+        if (alive) setSessions([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [member.id]);
 
   const joined = new Date(member.joinedAt).toLocaleDateString("en-US", {
     month: "short",
@@ -295,6 +329,50 @@ export default function ParticipantDetail({
               <div className="mt-3 text-center text-[11px] text-ink-400">
                 Daily cash cap $100 · redeem at the giving desk
               </div>
+            </div>
+
+            {/* Recent sessions — LIVE */}
+            <div className={CARD + " px-[26px] py-[22px]"}>
+              <div className="text-[15px] font-bold text-ink-900">
+                Recent sessions
+              </div>
+              {sessions === null ? (
+                <div className="mt-3.5 flex flex-col gap-2.5">
+                  <div className={SKELETON + " h-9"} />
+                  <div className={SKELETON + " h-9"} />
+                  <div className={SKELETON + " h-9"} />
+                </div>
+              ) : sessions.length === 0 ? (
+                <div className="mt-3 text-[13px] text-ink-600">
+                  No sessions logged yet.
+                </div>
+              ) : (
+                <div className="mt-2.5 flex flex-col">
+                  {sessions.slice(0, 5).map((s, i) => (
+                    <div
+                      key={s.id}
+                      className={
+                        "flex items-center justify-between gap-3 py-2.5" +
+                        (i > 0 ? " border-t border-canvas" : "")
+                      }
+                    >
+                      <div>
+                        <div className="text-[13px] font-semibold text-ink-900">
+                          {SESSION_MODE_LABEL[s.mode]} · {s.minutes} min
+                        </div>
+                        <div className="text-[11px] text-ink-600">
+                          {s.mentorName
+                            ? `with ${s.mentorName}`
+                            : "mentor unassigned"}
+                        </div>
+                      </div>
+                      <span className="tnum flex-none text-[11px] font-medium text-ink-400">
+                        {relTime(s.createdAt)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Consent — public-page toggle starts from real consentPublic */}

@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { SafeUser, SupportRequest } from "@/app/lib/types";
+import type {
+  Course,
+  Enrollment,
+  SafeUser,
+  SupportRequest,
+} from "@/app/lib/types";
 import TabBar, { type TabKey } from "./TabBar";
 import HomeTab from "./HomeTab";
 import LearnTab from "./LearnTab";
@@ -14,6 +19,16 @@ import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
 
 export type Task = { label: string; done: boolean };
 export type GuideState = "idle" | "asked" | "added";
+
+/** Next incomplete lesson (1-based), or null when the course is done. */
+export function nextLesson(
+  course: Course,
+  enrollment: Enrollment | undefined
+): number | null {
+  const done = new Set(enrollment?.completedLessons ?? []);
+  for (let n = 1; n <= course.lessonCount; n++) if (!done.has(n)) return n;
+  return null;
+}
 
 /** Full interactive member portal — phone shell + tab router + overlays. */
 export default function MemberApp() {
@@ -37,6 +52,19 @@ export default function MemberApp() {
     user: SafeUser;
     requests: SupportRequest[];
   } | null>(null);
+  // Real Learn data (signed in only; null = signed out → demo courses).
+  const [learn, setLearn] = useState<{
+    courses: Course[];
+    enrollments: Enrollment[];
+  } | null>(null);
+  // Which real course the lesson player has open (null = demo lesson).
+  const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
+  // Last real completion — feeds the celebration copy + the win post body.
+  const [lastWin, setLastWin] = useState<{
+    courseTitle: string;
+    lesson: number;
+    streak: number;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,8 +73,16 @@ export default function MemberApp() {
         const res = await fetch("/api/auth/me");
         if (!res.ok) return;
         const data = await res.json();
-        if (!cancelled && data?.user)
-          setMe({ user: data.user, requests: data.requests ?? [] });
+        if (cancelled || !data?.user) return;
+        setMe({ user: data.user, requests: data.requests ?? [] });
+        const cRes = await fetch("/api/courses");
+        if (!cRes.ok) return;
+        const cData = await cRes.json();
+        if (!cancelled && cData?.courses)
+          setLearn({
+            courses: cData.courses,
+            enrollments: cData.enrollments ?? [],
+          });
       } catch {
         // offline / signed out — keep demo behavior
       }
@@ -69,7 +105,73 @@ export default function MemberApp() {
     setLessonOpen(false);
   };
 
-  const completeLesson = () => {
+  const openCourse = (courseId: string | null) => {
+    setActiveCourseId(courseId);
+    setLessonOpen(true);
+  };
+
+  const activeCourse =
+    (learn && activeCourseId
+      ? learn.courses.find((c) => c.id === activeCourseId)
+      : undefined) ?? null;
+  const activeEnrollment =
+    (learn && activeCourseId
+      ? learn.enrollments.find((e) => e.courseId === activeCourseId)
+      : undefined) ?? undefined;
+  const activeLesson = activeCourse
+    ? nextLesson(activeCourse, activeEnrollment)
+    : null;
+
+  const completeLesson = async () => {
+    // Signed in with a real course open → persist the completion.
+    if (me && activeCourse && activeLesson) {
+      try {
+        const res = await fetch("/api/lessons/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courseId: activeCourse.id,
+            lesson: activeLesson,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLearn((l) =>
+            l
+              ? {
+                  ...l,
+                  enrollments: [
+                    ...l.enrollments.filter(
+                      (e) => e.courseId !== activeCourse.id
+                    ),
+                    data.enrollment,
+                  ],
+                }
+              : l
+          );
+          setMe((m) =>
+            m
+              ? {
+                  ...m,
+                  user: {
+                    ...m.user,
+                    points: data.points,
+                    level: data.level,
+                    streak: data.streak,
+                  },
+                }
+              : m
+          );
+          setLastWin({
+            courseTitle: activeCourse.title,
+            lesson: activeLesson,
+            streak: data.streak,
+          });
+        }
+      } catch {
+        // offline — celebrate locally anyway; server catches up next time
+      }
+    }
     setLessonDone(true);
     setCelebrating(true);
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
@@ -81,14 +183,14 @@ export default function MemberApp() {
     setTab("home");
     // Post the win to the live community feed when signed in;
     // fall back to the local card when signed out (or offline).
+    const winBody = lastWin
+      ? `Just completed Lesson ${lastWin.lesson} of ${lastWin.courseTitle} — +10 points and the streak lives on.`
+      : "Just completed Lesson 2 of ISE Course 3 — made a decision. +10 points and the streak lives on.";
     try {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          body: "Just completed Lesson 2 of ISE Course 3 — made a decision. +10 points and the streak lives on.",
-          kind: "win",
-        }),
+        body: JSON.stringify({ body: winBody, kind: "win" }),
       });
       if (!res.ok) throw new Error(String(res.status));
       window.dispatchEvent(new Event(FEED_REFRESH_EVENT));
@@ -137,9 +239,11 @@ export default function MemberApp() {
         {tab === "learn" && !lessonOpen && (
           <LearnTab
             lessonDone={lessonDone}
-            openLesson={() => setLessonOpen(true)}
+            openLesson={() => openCourse(null)}
             vidCat={vidCat}
             setVidCat={setVidCat}
+            learn={me ? learn : null}
+            openCourse={openCourse}
           />
         )}
         {tab === "learn" && lessonOpen && (
@@ -148,6 +252,9 @@ export default function MemberApp() {
             quiz={quiz}
             setQuiz={setQuiz}
             completeLesson={completeLesson}
+            courseTitle={activeCourse?.title}
+            lessonNumber={activeLesson ?? undefined}
+            lessonCount={activeCourse?.lessonCount}
           />
         )}
         {tab === "give" && <GiveTab />}
@@ -172,7 +279,12 @@ export default function MemberApp() {
         <TabBar active={tab} onSelect={goTab} />
 
         {celebrating && (
-          <CelebrationOverlay shareWin={shareWin} keepPrivate={keepPrivate} />
+          <CelebrationOverlay
+            shareWin={shareWin}
+            keepPrivate={keepPrivate}
+            courseTitle={lastWin?.courseTitle}
+            streakDay={lastWin?.streak}
+          />
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Post, PostStatus } from "../../lib/types";
+import { isCrisisText } from "../../lib/crisis";
 import { CARD, SKELETON, relTime } from "./types";
 import type { ModerateAction } from "./types";
 
@@ -66,9 +67,16 @@ export default function Moderation({
   onModerate: (postId: string, action: ModerateAction) => void;
   goParticipants: () => void;
 }) {
-  const queue = (posts ?? [])
+  const sorted = (posts ?? [])
     .slice()
     .sort((a, b) => RANK[a.status] - RANK[b.status] || b.createdAt - a.createdAt);
+  // Crisis posts (held from the feed at creation) pin above everything until
+  // a human marks them handled; removed ones drop back into the normal list.
+  const crisisQueue = sorted.filter(
+    (p) => p.status !== "removed" && isCrisisText(p.body)
+  );
+  const crisisIds = new Set(crisisQueue.map((p) => p.id));
+  const queue = sorted.filter((p) => !crisisIds.has(p.id));
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -92,56 +100,59 @@ export default function Moderation({
         </div>
       </div>
 
-      {/* CRISIS — pinned DESIGN PREVIEW; no crisis data exists yet.
-          Crisis red lives only here. */}
-      <div className="rounded-2xl border-[1.5px] border-[#F5C6C8] bg-white px-[30px] py-6 shadow-[0_2px_10px_rgba(229,72,77,.12)]">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex h-[26px] items-center rounded-full bg-heart-red px-3 text-[11px] font-extrabold text-white">
-            CRISIS — HELD
-          </span>
-          <span className="inline-flex h-[26px] items-center rounded-full border-[1.5px] border-[#E2E8F0] bg-canvas px-3 text-[11px] font-extrabold tracking-[.04em] text-ink-600">
-            DEMO — crisis handling preview
-          </span>
-          <span className="text-[13px] font-semibold text-ink-600">
-            Anonymous to feed · staff + admin alerted 12 min ago
-          </span>
+      {/* CRISIS — real held posts, pinned above the queue.
+          Crisis red lives only here. No Approve: these never reach the feed;
+          a human must follow up, then mark handled. */}
+      {crisisQueue.map((p) => (
+        <div
+          key={p.id}
+          className="rounded-2xl border-[1.5px] border-[#F5C6C8] bg-white px-[30px] py-6 shadow-[0_2px_10px_rgba(229,72,77,.12)]"
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-[26px] items-center rounded-full bg-heart-red px-3 text-[11px] font-extrabold text-white">
+              CRISIS — HELD
+            </span>
+            <span className="text-[13px] font-semibold text-ink-600">
+              {p.authorName} · held from feed · {relTime(p.createdAt)}
+            </span>
+          </div>
+          <div className="mt-3 rounded-xl bg-canvas px-[18px] py-3.5 text-[15px]/[1.6] font-medium text-ink-900">
+            &quot;{p.body}&quot;
+          </div>
+          <div className="mt-3.5 flex items-start gap-2.5 rounded-xl bg-heart-bg px-4 py-3">
+            <span className="mt-0.5 flex-none text-[11px] font-extrabold text-heart-red">
+              AI REVIEW
+            </span>
+            <span className="text-[13px]/[1.6] font-medium text-ink-900">
+              Held from feed. Resources were shown to the member. Do not
+              resolve without human contact.
+            </span>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <button
+              type="button"
+              onClick={goParticipants}
+              className="inline-flex h-11 cursor-pointer items-center rounded-full bg-heart-red px-6 text-[13px] font-bold text-white"
+            >
+              Open member · follow up
+            </button>
+            <button
+              type="button"
+              onClick={() => onModerate(p.id, "remove")}
+              className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-[#E2E8F0] px-6 text-[13px] font-bold text-ink-600"
+            >
+              Mark handled · remove
+            </button>
+          </div>
         </div>
-        <div className="mt-3 rounded-xl bg-canvas px-[18px] py-3.5 text-[15px]/[1.6] font-medium text-ink-900">
-          &quot;I don&apos;t see the point anymore. tired of trying&quot;
-        </div>
-        <div className="mt-3.5 flex items-start gap-2.5 rounded-xl bg-heart-bg px-4 py-3">
-          <span className="mt-0.5 flex-none text-[11px] font-extrabold text-heart-red">
-            AI REVIEW
-          </span>
-          <span className="text-[13px]/[1.6] font-medium text-ink-900">
-            Self-harm signal detected. Post held from feed; author shown
-            supportive resources. Recommend: personal follow-up today — do not
-            resolve without human contact.
-          </span>
-        </div>
-        <div className="mt-4 flex gap-3">
-          <button
-            type="button"
-            onClick={goParticipants}
-            className="inline-flex h-11 cursor-pointer items-center rounded-full bg-heart-red px-6 text-[13px] font-bold text-white"
-          >
-            Open member · follow up
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-[#E2E8F0] px-6 text-[13px] font-bold text-ink-600"
-          >
-            Assign to Sarah
-          </button>
-        </div>
-      </div>
+      ))}
 
       {!posts &&
         Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className={SKELETON + " h-[150px]"} />
         ))}
 
-      {posts && queue.length === 0 && (
+      {posts && queue.length === 0 && crisisQueue.length === 0 && (
         <div className={CARD + " px-[30px] py-8 text-center text-[13px] font-semibold text-ink-400"}>
           No community posts yet.
         </div>
