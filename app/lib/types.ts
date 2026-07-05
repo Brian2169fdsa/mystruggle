@@ -21,6 +21,27 @@ export interface User {
   points?: number;
   level?: string;
   mentorId?: string;
+  centerId?: string; // outreach center this person belongs to
+}
+
+/** An outreach center (e.g. Laveen Center). */
+export interface Center {
+  id: string;
+  name: string;
+  city: string;
+}
+
+export type SessionMode = "in-person" | "phone" | "video";
+
+/** A logged mentor session with a mentee. */
+export interface Session {
+  id: string;
+  mentorId: string;
+  memberId: string;
+  mode: SessionMode;
+  minutes: number;
+  note?: string;
+  createdAt: number;
 }
 
 /** Public-safe projection of a member (what a donor may see). */

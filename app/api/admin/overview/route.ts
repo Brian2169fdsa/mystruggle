@@ -31,5 +31,14 @@ export async function GET() {
     pendingModeration: d.posts.filter(
       (p) => p.status === "pending" || p.status === "flagged"
     ).length,
+    // Additive: per-center breakdown (2 centers seeded).
+    centers: (d.centers ?? []).map((c) => ({
+      id: c.id,
+      name: c.name,
+      city: c.city,
+      members: members.filter((m) => m.centerId === c.id).length,
+      mentors: d.users.filter((u) => u.role === "mentor" && u.centerId === c.id)
+        .length,
+    })),
   });
 }

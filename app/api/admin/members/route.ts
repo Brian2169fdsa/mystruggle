@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
-import { db, findUserById } from "@/app/lib/store";
+import { db } from "@/app/lib/store";
+import type { SupportRequest } from "@/app/lib/types";
 
 /** Staff roster view — members with balances, requests, streaks, mentor.
+ *  `requests` stays inline per row (the dashboard detail pane reads it from
+ *  this payload); lookups are pre-indexed so 500 members stays O(n).
  *  Demo-open; lock behind staff auth before production. */
 export async function GET() {
   const d = db();
+  const nameById = new Map(d.users.map((u) => [u.id, u.name]));
+  const requestsByMember = new Map<string, SupportRequest[]>();
+  for (const r of d.requests) {
+    const list = requestsByMember.get(r.memberId);
+    if (list) list.push(r);
+    else requestsByMember.set(r.memberId, [r]);
+  }
   const members = d.users
     .filter((u) => u.role === "member")
     .map((m) => ({
@@ -18,8 +28,8 @@ export async function GET() {
       streak: m.streak ?? 0,
       points: m.points ?? 0,
       level: m.level ?? "Bronze",
-      mentorName: m.mentorId ? findUserById(m.mentorId)?.name ?? null : null,
-      requests: d.requests.filter((r) => r.memberId === m.id),
+      mentorName: m.mentorId ? nameById.get(m.mentorId) ?? null : null,
+      requests: requestsByMember.get(m.id) ?? [],
       joinedAt: m.createdAt,
     }));
   return NextResponse.json({ members });

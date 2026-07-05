@@ -3,11 +3,12 @@ import { db, save, uid } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { PostKind } from "@/app/lib/types";
 
-/** Community feed — approved posts, newest first. */
+/** Community feed — approved posts, newest first, capped at 50. */
 export async function GET() {
   const posts = db()
     .posts.filter((p) => p.status === "approved")
-    .sort((a, b) => b.createdAt - a.createdAt);
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 50);
   const user = await getSessionUser();
   return NextResponse.json({ posts, viewerId: user?.id ?? null });
 }
