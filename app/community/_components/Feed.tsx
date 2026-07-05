@@ -7,6 +7,8 @@ import { ShieldCheck, Sparkles, Users } from "lucide-react";
 import { TOPICS, type SafeUser, type Topic } from "@/app/lib/types";
 import Composer, { type ComposerPrefill } from "./Composer";
 import PostCard from "./PostCard";
+import SponsoredCard, { type Placement } from "./SponsoredCard";
+import SponsoredControls, { readReducePref } from "./SponsoredControls";
 import {
   CIRCLES_CHANGED_EVENT,
   CIRCLE_KIND_LABELS,
@@ -23,6 +25,50 @@ type FeedResponse = {
   viewerId: string | null;
   nextBefore: number | null;
 };
+
+/** GET /api/placements/serve — the server enforces crisis/signed-out exclusion. */
+type ServeResponse = { placements: Placement[]; everyN: number };
+
+/**
+ * Weave sponsored cards into the organic post stream for render only — the
+ * posts array is never mutated. A card is inserted after every `everyN`
+ * organic posts (spacing rule), cycling through available placements, so two
+ * are never adjacent. Dismissed placements are excluded (never reinserted),
+ * and when the member has reduced sponsored content we place at most one.
+ */
+type FeedItem =
+  | { type: "post"; post: FeedPost }
+  | { type: "sponsored"; placement: Placement; slot: number };
+
+function interleave(
+  posts: FeedPost[],
+  placements: Placement[],
+  everyN: number,
+  reduced: boolean,
+  dismissed: Set<string>
+): FeedItem[] {
+  const avail = placements.filter((p) => !dismissed.has(p.id));
+  if (avail.length === 0) return posts.map((post) => ({ type: "post", post }));
+
+  const step = Math.max(1, Math.floor(everyN) || 1);
+  const cap = reduced ? 1 : Infinity;
+  const items: FeedItem[] = [];
+  let placed = 0;
+
+  posts.forEach((post, i) => {
+    items.push({ type: "post", post });
+    // …after positions everyN, 2*everyN, … (1-based count of organic posts)
+    if ((i + 1) % step === 0 && placed < cap) {
+      items.push({
+        type: "sponsored",
+        placement: avail[placed % avail.length],
+        slot: placed,
+      });
+      placed++;
+    }
+  });
+  return items;
+}
 
 function feedUrl(topic: string, circle: string, before?: number | null): string {
   const qs = new URLSearchParams({ limit: String(PAGE_SIZE) });
@@ -292,6 +338,11 @@ export default function Feed({
   const [blocked, setBlocked] = useState(false); // 403 — private alumni circle
   const [circleInfo, setCircleInfo] = useState<CircleSummary | null>(null);
   const [prefill, setPrefill] = useState<ComposerPrefill | null>(null);
+  // Sponsored placements (docs/15 §B) — fetched once, woven into render only.
+  const [placements, setPlacements] = useState<Placement[]>([]);
+  const [everyN, setEveryN] = useState(4);
+  const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
+  const [reduceSponsored, setReduceSponsored] = useState(false);
   // Guards stale async responses after a filter switch.
   const filterRef = useRef(filterKey);
   filterRef.current = filterKey;
@@ -308,6 +359,38 @@ export default function Feed({
     return () => {
       alive = false;
     };
+  }, []);
+
+  /* — sponsored placements: fetched once on mount, defensively —
+     If the serve API isn't live (404) or errors, render NO sponsored cards;
+     the server returns { placements: [] } for crisis-state and signed-out
+     members, so an empty list simply means the feed stays as it is today. */
+  useEffect(() => {
+    setReduceSponsored(readReducePref());
+    let alive = true;
+    fetch("/api/placements/serve", { cache: "no-store" })
+      .then((r) => (r.ok ? (r.json() as Promise<ServeResponse>) : null))
+      .then((data) => {
+        if (!alive || !data) return;
+        setPlacements(Array.isArray(data.placements) ? data.placements : []);
+        if (typeof data.everyN === "number" && data.everyN > 0) {
+          setEveryN(data.everyN);
+        }
+      })
+      .catch(() => {
+        /* API not live / offline — no sponsored cards this session */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const dismissPlacement = useCallback((id: string) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
   }, []);
 
   /* — circle header info (from the /api/circles directory) — */
@@ -518,14 +601,23 @@ export default function Feed({
         </div>
       ) : (
         <>
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              viewer={viewer}
-              onChange={replacePost}
-            />
-          ))}
+          {interleave(posts, placements, everyN, reduceSponsored, dismissed).map(
+            (item) =>
+              item.type === "post" ? (
+                <PostCard
+                  key={item.post.id}
+                  post={item.post}
+                  viewer={viewer}
+                  onChange={replacePost}
+                />
+              ) : (
+                <SponsoredCard
+                  key={`sp-${item.placement.id}-${item.slot}`}
+                  placement={item.placement}
+                  onDismiss={dismissPlacement}
+                />
+              )
+          )}
           {nextBefore && (
             <button
               type="button"
@@ -535,6 +627,12 @@ export default function Feed({
             >
               {loadingMore ? "Loading…" : "Load more"}
             </button>
+          )}
+          {placements.length > 0 && (
+            <SponsoredControls
+              reduced={reduceSponsored}
+              onChange={setReduceSponsored}
+            />
           )}
         </>
       )}
