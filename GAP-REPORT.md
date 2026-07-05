@@ -1,4 +1,44 @@
-# Gap Report — run 2026-07-05-4/5 (website expansion + community expansion)
+# Gap Report — run 2026-07-05-6 (fixes + continuum of care)
+
+## Run 6 summary
+Quick fixes shipped + pushed: footer text readability (inline color
+fallbacks — arbitrary utilities weren't rendering), street address removed,
+phone → 602-402-5121, hero "Become a mentor" forced white, FOR EMPLOYERS
+band on Home, HIRING card on the community rail, and the "Treatment ends.
+The continuum doesn't." ribbon story on /centers. In flight this run: AI
+Guide chat widget replacing the floating PROTOTYPE bar; continuum-of-care
+data spine (care_episodes / phase_transitions / continuum_events + seed v7
+Danielle 5-phase storyline + /api/continuum); dashboard continuum ribbon.
+Note: Fable ran out of credits mid-run (5 agents died); resumed on Opus,
+re-verified partial edits, completed the missing EmployerBand.
+
+## GAP REGISTER — run 6 deferrals (per user instruction)
+1. **PHOTOS NOT IN REPO**: user's images (Danielle member-story portrait,
+   GED celebration, pantry restock, day-at-center video, Position of
+   Neutrality) were expected in GitHub but are absent as of this pull.
+   When present in public/, wire them into: Home Danielle spotlight
+   (replace striped placeholder), Home social wall (GED + pantry + center
+   video cards), and the PON section. Currently still striped placeholders.
+2. **Continuum-event hook wiring**: emitContinuumEvent() helper exists but
+   the live routes (posts create, lessons/complete, donations, sessions,
+   BARC) don't call it yet — new activity won't append to timelines until
+   wired. (Seed backfills Danielle's history so the demo ribbon is alive.)
+3. Continuum requirements/11 remaining: intake consent handshake, in-program
+   care_channels (staff↔client + cohort group + announcements), LOC course
+   targeting + kiosk mode, transition/discharge planning, continuing
+   follow-up cadence 30/60/90/180/365, alumni dashboard + relapse-risk,
+   the licensed outcomes data product (mv_continuum_score/care_outcomes/
+   efficacy + two data planes + de-identification k≥11), program cockpit.
+4. Employer accounts / dashboards (create-a-dashboard for employers to post
+   jobs into the system) — messaging in place ("contact us / coming soon");
+   the actual employer role + posting flow is not built.
+5. Carried from run 5: AI Companion (plan-aware Guide), dashboard My Plan /
+   résumé / BARC panes, milestone→journey_task mirror, report/block, real
+   PDF export, Supabase schema for the 9 expansion + continuum tables.
+6. Standing DECISIONS-NEEDED: Stripe keys, Supabase project keys, verbatim
+   copy, GitHub-app push connection.
+
+# Prior run — 2026-07-05-4/5 (website expansion + community expansion)
 
 ## Run 4 summary (website)
 Footer redesigned for contrast (hairline, #8FBCF0 headings, sky-tint links);
