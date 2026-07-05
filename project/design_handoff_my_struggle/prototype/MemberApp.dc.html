@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Allura&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E8EDF4;font-family:Montserrat,sans-serif}a{text-decoration:none}</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center">
+<div style="width:100%;max-width:430px;background:#F7FAFE;min-height:100vh;box-shadow:0 0 60px rgba(11,37,69,.12);display:flex;flex-direction:column;position:relative">
+
+  <!-- ============ HOME ============ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:18px 20px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font:800 22px Montserrat;letter-spacing:-0.02em;color:#111827">Welcome home, Danielle</div><div style="font:500 13px Montserrat;color:#4B5563;margin-top:2px">Friday, July 4 · Laveen Center</div></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:#FEF6DC;color:#A16207;border-radius:999px;font:800 13px Montserrat">◆ 12-day streak</span>
+      </div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:22px 20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="width:110px;height:110px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:{{ trackerRingBg }}"><div style="width:84px;height:84px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="font:800 24px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">{{ trackerPct }}%</div></div></div>
+            <div style="font:700 13px Montserrat;color:#111827">My Tracker</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="width:110px;height:110px;border-radius:999px;background:conic-gradient(#4E5B9B 0 45%,#EAF2FC 45% 100%);display:flex;align-items:center;justify-content:center"><div style="width:84px;height:84px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="font:800 24px Montserrat;color:#4E5B9B;font-variant-numeric:tabular-nums">45%</div></div></div>
+            <div style="font:700 13px Montserrat;color:#111827">My Center</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;margin-top:18px;border-top:1px solid #EAF2FC">
+          <sc-for list="{{ tasks }}" as="task" hint-placeholder-count="3">
+            <div onClick="{{ task.toggle }}" style="display:flex;align-items:center;gap:14px;min-height:52px;border-bottom:1px solid #F7FAFE;cursor:pointer">
+              <span style="width:26px;height:26px;border-radius:8px;flex:none;display:inline-flex;align-items:center;justify-content:center;font:700 14px Montserrat;box-sizing:border-box;background:{{ task.boxBg }};border:{{ task.boxBorder }};color:#fff">{{ task.check }}</span>
+              <span style="font:500 14px Montserrat;color:{{ task.textColor }};text-decoration:{{ task.deco }}">{{ task.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">COMMUNITY</span><span style="font:600 12px Montserrat;color:#4B5563">Laveen Center ▾</span></div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(234,179,8,.15);border:1.5px solid #F5E6B3;padding:18px 20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat;color:#4E5B9B">M</div>
+          <div><div style="font:700 14px Montserrat;color:#111827">Marcus T. <span style="display:inline-flex;align-items:center;height:20px;padding:0 8px;background:#FEF6DC;color:#A16207;border-radius:999px;font:800 10px Montserrat;margin-left:4px">◆ MILESTONE</span></div><div style="font:400 12px Montserrat;color:#4B5563">2h ago · community</div></div>
+        </div>
+        <div style="font:500 15px/1.6 Montserrat;color:#111827;margin-top:12px">One year sober today. To everyone still in week one — I was you. Keep coming back.</div>
+        <div style="display:flex;gap:16px;margin-top:14px;align-items:center">
+          <span onClick="{{ toggleHeart1 }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;font:700 13px Montserrat;cursor:pointer;background:{{ heart1Bg }};color:{{ heart1Color }};border:{{ heart1Border }}">{{ heart1Label }}</span>
+          <span style="font:600 13px Montserrat;color:#4B5563">12 comments</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat;color:#4E5B9B">J</div>
+          <div><div style="font:700 14px Montserrat;color:#111827">Jasmine R.</div><div style="font:400 12px Montserrat;color:#4B5563">5h ago · Laveen Center</div></div>
+        </div>
+        <div style="font:500 15px/1.6 Montserrat;color:#111827;margin-top:12px">First paycheck cashed at the center today. Groceries bought with MY money. Small thing, huge thing.</div>
+        <div style="display:flex;gap:16px;margin-top:14px;align-items:center">
+          <span onClick="{{ toggleHeart2 }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;font:700 13px Montserrat;cursor:pointer;background:{{ heart2Bg }};color:{{ heart2Color }};border:{{ heart2Border }}">{{ heart2Label }}</span>
+          <span style="font:600 13px Montserrat;color:#4B5563">4 comments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ LEARN ============ -->
+  <sc-if value="{{ isLearn }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:18px 20px 14px"><div style="font:800 22px Montserrat;letter-spacing:-0.02em;color:#111827">Learn</div></div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">MY COURSES</div>
+
+      <div onClick="{{ openLesson }}" style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px;display:flex;align-items:center;gap:16px;cursor:pointer" style-hover="background:#EAF2FC">
+        <div style="width:64px;height:64px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:none;background:{{ courseRingBg }}"><div style="width:48px;height:48px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 13px Montserrat;color:#2E7CD6">{{ coursePct }}%</div></div>
+        <div style="flex:1">
+          <div style="display:flex;gap:6px;margin-bottom:5px"><span style="display:inline-flex;height:20px;padding:0 9px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 10px Montserrat;align-items:center">PON</span><span style="font:600 11px Montserrat;color:#E5484D;align-self:center">Due Sunday</span></div>
+          <div style="font:700 15px Montserrat;color:#111827">ISE Course 3 — Decision</div>
+          <div style="font:400 12px Montserrat;color:#4B5563;margin-top:2px">{{ courseSub }}</div>
+        </div>
+        <span style="font:700 18px Montserrat;color:#2E7CD6">→</span>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px;display:flex;align-items:center;gap:16px">
+        <div style="width:64px;height:64px;border-radius:999px;background:conic-gradient(#4E5B9B 0 20%,#EAF2FC 20% 100%);display:flex;align-items:center;justify-content:center;flex:none"><div style="width:48px;height:48px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 13px Montserrat;color:#4E5B9B">20%</div></div>
+        <div style="flex:1">
+          <div style="display:flex;gap:6px;margin-bottom:5px"><span style="display:inline-flex;height:20px;padding:0 9px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 10px Montserrat;align-items:center">VOC</span></div>
+          <div style="font:700 15px Montserrat;color:#111827">Forklift Certification Prep</div>
+          <div style="font:400 12px Montserrat;color:#4B5563;margin-top:2px">Module 1 of 4 · self-paced</div>
+        </div>
+        <span style="font:700 18px Montserrat;color:#2E7CD6">→</span>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px;display:flex;align-items:center;gap:16px">
+        <div style="width:64px;height:64px;border-radius:999px;background:conic-gradient(#12B76A 0 100%);display:flex;align-items:center;justify-content:center;flex:none"><div style="width:48px;height:48px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 14px Montserrat;color:#12B76A">✓</div></div>
+        <div style="flex:1">
+          <div style="display:flex;gap:6px;margin-bottom:5px"><span style="display:inline-flex;height:20px;padding:0 9px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 10px Montserrat;align-items:center">NAV</span></div>
+          <div style="font:700 15px Montserrat;color:#111827">Documents &amp; ID Recovery</div>
+          <div style="font:400 12px Montserrat;color:#12B76A;margin-top:2px">Completed · +100 points</div>
+        </div>
+      </div>
+
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:8px">VIDEO LIBRARY</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ vidChips }}" as="chip" hint-placeholder-count="4">
+          <span onClick="{{ chip.select }}" style="display:inline-flex;align-items:center;height:38px;padding:0 18px;border-radius:999px;cursor:pointer;font:{{ chip.fontStyle }};background:{{ chip.bg }};color:{{ chip.color }};border:{{ chip.border }}">{{ chip.label }}</span>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <sc-for list="{{ videos }}" as="vid" hint-placeholder-count="2">
+          <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);overflow:hidden">
+            <div style="position:relative;height:96px;background:repeating-linear-gradient(45deg,#DFEAF9 0 10px,#D2E2F5 10px 20px)"><div style="position:absolute;inset:0;background:rgba(11,37,69,.35)"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:11px solid #2E7CD6;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px"></div></div></div><span style="position:absolute;bottom:6px;right:8px;font:700 10px Montserrat;color:#fff;background:rgba(11,37,69,.7);padding:2px 7px;border-radius:6px">{{ vid.dur }}</span></div>
+            <div style="padding:12px 14px"><div style="font:700 13px/1.4 Montserrat;color:#111827">{{ vid.title }}</div><div style="font:600 10px Montserrat;color:#4E5B9B;margin-top:4px">{{ vid.cat }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ LESSON ============ -->
+  <sc-if value="{{ isLesson }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#0B2545;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+      <span onClick="{{ closeLesson }}" style="font:700 20px Montserrat;color:#fff;min-width:44px;cursor:pointer">←</span>
+      <div style="text-align:center"><div style="font:700 14px Montserrat;color:#fff">ISE Course 3 — Decision</div><div style="font:500 11px Montserrat;color:#8FBCF0">Lesson 2 of 6</div></div>
+      <span style="min-width:44px"></span>
+    </div>
+    <div style="position:relative;height:220px;background:repeating-linear-gradient(45deg,#16335C 0 14px,#12294A 14px 28px)">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="width:64px;height:64px;border-radius:999px;background:#2E7CD6;box-shadow:0 8px 24px rgba(11,37,69,.5);display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:0;height:0;border-left:18px solid #fff;border-top:12px solid transparent;border-bottom:12px solid transparent;margin-left:5px"></div></div></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:5px;background:rgba(255,255,255,.2)"><div style="width:35%;height:100%;background:#2E7CD6"></div></div>
+      <span style="position:absolute;bottom:12px;right:14px;font:700 11px Montserrat;color:#fff;background:rgba(11,37,69,.7);padding:3px 8px;border-radius:6px">4:12 / 12:04</span>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="font:800 19px Montserrat;letter-spacing:-0.02em;color:#111827">Made a decision — what it actually means</div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 12px Montserrat;letter-spacing:.12em;color:#4E5B9B">JOURNAL · PRIVATE</span><span style="font:600 11px Montserrat;color:#12B76A">✓ Draft saved</span></div>
+        <div style="font:600 15px/1.5 Montserrat;color:#111827;margin-top:10px">What decision have you been circling but not making? What would deciding look like this week?</div>
+        <div style="min-height:96px;border-radius:14px;border:1.5px solid #EAF2FC;background:#F7FAFE;padding:14px 16px;font:400 14px/1.6 Montserrat;color:#111827;margin-top:12px">Honestly I've been putting off calling my sister. Deciding looks like just dialing…</div>
+        <div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:8px">Only you and your assigned staff can read this. Saved offline, syncs when connected.</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px">
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">QUICK CHECK · 1 OF 1</div>
+        <div style="font:600 15px/1.5 Montserrat;color:#111827;margin-top:10px">In Step 3, "made a decision" means:</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <sc-for list="{{ quizOptions }}" as="opt" hint-placeholder-count="3">
+            <div onClick="{{ opt.select }}" style="min-height:48px;border-radius:14px;display:flex;align-items:center;padding:10px 16px;cursor:pointer;border:{{ opt.border }};background:{{ opt.bg }};font:{{ opt.fontStyle }};color:{{ opt.color }}">{{ opt.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <span onClick="{{ completeLesson }}" style="display:inline-flex;align-items:center;justify-content:center;height:56px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 16px Montserrat;box-shadow:0 6px 16px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">Complete lesson · +10 points</span>
+      <div style="text-align:center;font:500 12px Montserrat;color:#9CA3AF;padding-bottom:12px">Lesson 3 unlocks when this one's done</div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ GIVE ============ -->
+  <sc-if value="{{ isGive }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:18px 20px 14px"><div style="font:800 22px Montserrat;letter-spacing:-0.02em;color:#111827">Give</div></div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="background:#0B2545;border-radius:16px;box-shadow:0 8px 24px rgba(11,37,69,.25);padding:24px;display:flex;align-items:center;gap:20px">
+        <div style="width:120px;height:120px;border-radius:12px;background:#fff;padding:10px;flex:none;box-sizing:border-box">
+          <div style="width:100%;height:100%;background:repeating-linear-gradient(0deg,#0B2545 0 6px,#fff 6px 12px),repeating-linear-gradient(90deg,#0B2545 0 6px,#fff 6px 12px);background-blend-mode:screen;border:4px solid #0B2545;box-sizing:border-box"></div>
+        </div>
+        <div>
+          <div style="font:700 11px Montserrat;letter-spacing:.12em;color:#8FBCF0">MY QR CODE</div>
+          <div style="font:700 16px Montserrat;color:#fff;margin-top:6px">give.my-struggle.org<br>/p/danielle</div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <a href="Give.dc.html" style="display:inline-flex;align-items:center;height:36px;padding:0 16px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 12px Montserrat">View page</a>
+            <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;font:700 12px Montserrat;cursor:pointer">Print card</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px"><div style="font:700 12px Montserrat;color:#4B5563">Cash</div><div style="font:800 34px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">$64</div><div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:2px">redeem at any center</div></div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px"><div style="font:700 12px Montserrat;color:#4B5563">Store Credits</div><div style="font:800 34px Montserrat;color:#4E5B9B;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">$58</div><div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:2px">spend at The Store</div></div>
+      </div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font:700 12px Montserrat;color:#4B5563">Reentry Savings <span style="font:600 10px Montserrat;color:#12B76A;background:#E8F8F0;padding:2px 8px;border-radius:999px;margin-left:4px">LOCKED FOR MY FUTURE</span></div><div style="font:800 34px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">$240</div></div>
+        <span style="display:inline-flex;align-items:center;height:44px;padding:0 20px;border:1.5px solid #12B76A;color:#12B76A;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#E8F8F0">Save more</span>
+      </div>
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:6px">RECENT ACTIVITY</div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06)">
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #F7FAFE">
+          <span style="width:36px;height:36px;border-radius:999px;background:#E8F8F0;color:#12B76A;display:inline-flex;align-items:center;justify-content:center;font:800 16px Montserrat;flex:none">+</span>
+          <div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">Gift received · $25</div><div style="font:400 12px Montserrat;color:#4B5563">$12.50 cash · $12.50 credits · today</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #F7FAFE">
+          <span style="width:36px;height:36px;border-radius:999px;background:#EAF2FC;color:#2E7CD6;display:inline-flex;align-items:center;justify-content:center;font:800 16px Montserrat;flex:none">−</span>
+          <div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">Cash redeemed · $20</div><div style="font:400 12px Montserrat;color:#4B5563">Laveen Center · Tuesday</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px">
+          <span style="width:36px;height:36px;border-radius:999px;background:#F0EDFB;color:#4E5B9B;display:inline-flex;align-items:center;justify-content:center;font:800 14px Montserrat;flex:none">◆</span>
+          <div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">Moved $40 to Reentry Savings</div><div style="font:400 12px Montserrat;color:#4B5563">last week</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ CHAT ============ -->
+  <sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:18px 20px 14px"><div style="font:800 22px Montserrat;letter-spacing:-0.02em;color:#111827">Chat</div></div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px;display:flex;align-items:center;gap:14px">
+        <div style="position:relative;flex:none"><div style="width:48px;height:48px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 18px Montserrat;color:#4E5B9B">M</div><span style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-radius:999px;background:#12B76A;border:2px solid #fff"></span></div>
+        <div style="flex:1"><div style="font:700 15px Montserrat;color:#111827">Marcus T. <span style="font:600 11px Montserrat;color:#4E5B9B;background:#F0EDFB;padding:2px 8px;border-radius:999px;margin-left:4px">MY MENTOR</span></div><div style="font:500 13px Montserrat;color:#4B5563;margin-top:2px">Proud of you for today. Same time Thursday?</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span style="font:500 11px Montserrat;color:#9CA3AF">2:41 pm</span><span style="width:20px;height:20px;border-radius:999px;background:#2E7CD6;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 11px Montserrat">1</span></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px"><div style="height:1px;background:#E2E8F0;flex:1"></div><span style="font:700 11px Montserrat;letter-spacing:.12em;color:#4E5B9B">THE GUIDE</span><div style="height:1px;background:#E2E8F0;flex:1"></div></div>
+
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#4E5B9B,#2E7CD6);display:flex;align-items:center;justify-content:center;font-family:Allura,cursive;font-size:20px;color:#fff;flex:none">M</div>
+        <div style="background:#fff;border-radius:16px;border-top-left-radius:6px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 18px;font:500 14px/1.6 Montserrat;color:#111827;max-width:280px">Hi Danielle — I'm The Guide. I can help with housing, documents, jobs, and anything on your journey. What do you need today?</div>
+      </div>
+
+      <sc-if value="{{ guideIdle }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:8px;padding-left:46px">
+          <sc-for list="{{ guideChips }}" as="chip" hint-placeholder-count="3">
+            <span onClick="{{ chip.ask }}" style="display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border:1.5px solid #2E7CD6;color:#2E7CD6;border-radius:999px;font:700 13px Montserrat;align-self:flex-start;cursor:pointer" style-hover="background:#EAF2FC">{{ chip.label }}</span>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ guideAsked }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:flex-end"><div style="background:#2E7CD6;border-radius:16px;border-top-right-radius:6px;padding:14px 18px;font:500 14px/1.6 Montserrat;color:#fff;max-width:280px">{{ askedLabel }}</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#4E5B9B,#2E7CD6);display:flex;align-items:center;justify-content:center;font-family:Allura,cursive;font-size:20px;color:#fff;flex:none">M</div>
+            <div style="background:#fff;border-radius:16px;border-top-left-radius:6px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 18px;font:500 14px/1.6 Montserrat;color:#111827;max-width:290px">{{ guideAnswer }}</div>
+          </div>
+          <div style="display:flex;gap:8px;padding-left:46px">
+            <span onClick="{{ addGuideTask }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 20px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#2668B8">Yes, add it to my tracker</span>
+            <span onClick="{{ resetGuide }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border:1.5px solid #E2E8F0;color:#4B5563;border-radius:999px;font:700 13px Montserrat;cursor:pointer">Not now</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ guideTaskAdded }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:center"><span style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;background:#E8F8F0;color:#12B76A;border-radius:999px;font:700 13px Montserrat">✓ Added to My Tracker — check your Home tab</span></div>
+      </sc-if>
+    </div>
+    <div style="background:#fff;border-top:1px solid #EAF2FC;padding:12px 16px;display:flex;gap:10px;align-items:center">
+      <div style="flex:1;height:48px;border-radius:999px;border:1.5px solid #EAF2FC;background:#F7FAFE;display:flex;align-items:center;padding:0 20px;font:400 14px Montserrat;color:#9CA3AF">Message The Guide…</div>
+      <span style="width:48px;height:48px;border-radius:999px;background:#2E7CD6;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 18px Montserrat;flex:none">↑</span>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ ME ============ -->
+  <sc-if value="{{ isMe }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#0B2545;padding:28px 20px 24px;text-align:center">
+      <div style="width:84px;height:84px;border-radius:999px;background:#EAF2FC;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 30px Montserrat;color:#4E5B9B;border:3px solid rgba(255,255,255,.25)">D</div>
+      <div style="font:800 22px Montserrat;color:#fff;margin-top:12px">Danielle</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 12px;background:rgba(255,255,255,.12);color:#8FBCF0;border-radius:999px;font:700 11px Montserrat">Member #039521464</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 12px;background:rgba(234,179,8,.18);color:#EAB308;border-radius:999px;font:800 11px Montserrat">◆ SILVER · {{ points }} pts</span>
+      </div>
+      <div style="max-width:260px;margin:14px auto 0"><div style="display:flex;justify-content:space-between;font:600 10px Montserrat;color:#8FBCF0"><span>Silver</span><span>Gold at 1,000</span></div><div style="height:6px;border-radius:999px;background:rgba(255,255,255,.15);margin-top:5px;overflow:hidden"><div style="height:100%;background:#EAB308;border-radius:999px;width:{{ levelPct }}"></div></div></div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">MY BADGES</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 8px;text-align:center;border:1.5px solid #F5E6B3"><div style="width:40px;height:40px;border-radius:999px;background:#FEF6DC;color:#A16207;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat">◆</div><div style="font:700 10px/1.3 Montserrat;color:#111827;margin-top:8px">First Week</div></div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 8px;text-align:center;border:1.5px solid #F5E6B3"><div style="width:40px;height:40px;border-radius:999px;background:#FEF6DC;color:#A16207;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat">◆</div><div style="font:700 10px/1.3 Montserrat;color:#111827;margin-top:8px">GED Earned</div></div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 8px;text-align:center;border:1.5px solid #F5E6B3"><div style="width:40px;height:40px;border-radius:999px;background:#FEF6DC;color:#A16207;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat">◆</div><div style="font:700 10px/1.3 Montserrat;color:#111827;margin-top:8px">30-Day Streak</div></div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:14px 8px;text-align:center;border:{{ champBorder }};opacity:{{ champOpacity }}"><div style="width:40px;height:40px;border-radius:999px;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 16px Montserrat;background:{{ champBg }};color:{{ champColor }}">{{ champGlyph }}</div><div style="font:700 10px/1.3 Montserrat;color:#111827;margin-top:8px">Course Champ</div></div>
+      </div>
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:6px">MY JOURNEY</div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 24px 20px">
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 11px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#12B76A;min-height:26px"></div></div><div style="padding-bottom:18px"><div style="font:700 14px Montserrat;color:#111827">Outreach</div><div style="font:400 12px Montserrat;color:#4B5563">Met the Laveen team · Oct 2025</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 11px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#12B76A;min-height:26px"></div></div><div style="padding-bottom:18px"><div style="font:700 14px Montserrat;color:#111827">Stabilization</div><div style="font:400 12px Montserrat;color:#4B5563">Matched with Marcus · Nov 2025</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 11px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#2E7CD6;min-height:26px"></div></div><div style="padding-bottom:18px"><div style="font:700 14px Montserrat;color:#111827">In Program</div><div style="font:400 12px Montserrat;color:#4B5563">GED + first job · Feb 2026</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:999px;background:#2E7CD6;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 10px Montserrat;flex:none;box-shadow:0 0 0 4px #EAF2FC">●</span><div style="width:2px;flex:1;background:#E2E8F0;min-height:26px"></div></div><div style="padding-bottom:18px"><div style="font:700 14px Montserrat;color:#2E7CD6">Transitional — you are here</div><div style="font:400 12px Montserrat;color:#4B5563">Hallway house · $175/week goal</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:999px;border:2px solid #E2E8F0;flex:none;box-sizing:border-box"></span></div><div><div style="font:700 14px Montserrat;color:#9CA3AF">Independent</div><div style="font:400 12px Montserrat;color:#9CA3AF">A place of her own</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ TAB BAR ============ -->
+  <div style="background:#fff;border-top:1px solid #EAF2FC;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 22px;position:sticky;bottom:0;z-index:20">
+    <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="5">
+      <div onClick="{{ tab.go }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center;cursor:pointer">
+        <span style="font-size:19px;color:{{ tab.color }}">{{ tab.icon }}</span>
+        <span style="font:{{ tab.fontStyle }};color:{{ tab.color }}">{{ tab.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ============ CELEBRATION OVERLAY ============ -->
+  <sc-if value="{{ celebrating }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:40;background:rgba(11,37,69,.78);overflow:hidden">
+      <div style="position:absolute;top:60px;left:40px;width:10px;height:10px;background:#2E7CD6;transform:rotate(25deg)"></div>
+      <div style="position:absolute;top:110px;right:60px;width:8px;height:14px;background:#EAB308;transform:rotate(-30deg)"></div>
+      <div style="position:absolute;top:180px;left:90px;width:12px;height:6px;background:#EAB308;transform:rotate(60deg)"></div>
+      <div style="position:absolute;top:90px;left:200px;width:8px;height:8px;border-radius:999px;background:#8FBCF0"></div>
+      <div style="position:absolute;top:220px;right:110px;width:10px;height:10px;background:#4E5B9B;transform:rotate(45deg)"></div>
+      <div style="position:absolute;top:150px;right:30px;width:8px;height:8px;border-radius:999px;background:#EAB308"></div>
+      <div style="position:absolute;top:250px;left:40px;width:6px;height:12px;background:#2E7CD6;transform:rotate(-15deg)"></div>
+      <div style="position:absolute;top:60px;left:300px;width:12px;height:6px;background:#8FBCF0;transform:rotate(30deg)"></div>
+      <div style="position:absolute;top:300px;right:50px;width:8px;height:8px;background:#EAB308;transform:rotate(20deg)"></div>
+      <div style="position:absolute;top:330px;left:120px;width:8px;height:8px;border-radius:999px;background:#2E7CD6"></div>
+      <div style="position:absolute;left:24px;right:24px;top:240px;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(11,37,69,.5);padding:36px 28px;text-align:center">
+        <div style="width:88px;height:88px;border-radius:999px;background:#FEF6DC;border:3px solid #EAB308;margin:0 auto;display:flex;align-items:center;justify-content:center;font:800 34px Montserrat;color:#A16207">◆</div>
+        <div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827;margin-top:18px">Lesson complete!</div>
+        <div style="font:500 15px/1.6 Montserrat;color:#4B5563;margin-top:8px">ISE Course 3 — Decision<br><span style="font:800 15px Montserrat;color:#2E7CD6">+10 points</span> · streak kept: <span style="font:800 15px Montserrat;color:#A16207">day 12</span></div>
+        <div style="font:700 15px Montserrat;color:#111827;margin-top:22px">Share your win?</div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <span onClick="{{ shareWin }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:52px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 15px Montserrat;box-shadow:0 6px 16px rgba(46,124,214,.35);cursor:pointer" style-hover="background:#2668B8">✓ Post</span>
+          <span onClick="{{ keepPrivate }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:52px;border:1.5px solid #E2E8F0;color:#4B5563;border-radius:999px;font:700 15px Montserrat;cursor:pointer">✗ Keep private</span>
+        </div>
+        <div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:12px">Nothing posts without you. You have 5 minutes to decide.</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</div>
+
+<div style="position:fixed;bottom:16px;right:16px;z-index:100;background:#0B2545;border-radius:999px;padding:8px 10px;display:flex;gap:2px;align-items:center;box-shadow:0 8px 24px rgba(11,37,69,.35)">
+  <span style="font:800 10px Montserrat;color:#8FBCF0;letter-spacing:.08em;padding:0 8px">PROTOTYPE</span>
+  <a href="Home.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Site</a>
+  <a href="Give.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Giving</a>
+  <a href="MemberApp.dc.html" style="font:700 11px Montserrat;color:#fff;background:#2E7CD6;padding:6px 10px;border-radius:999px">Member</a>
+  <a href="MentorApp.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Mentor</a>
+  <a href="Dashboard.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Center</a>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    tab: 'home',
+    lessonOpen: false,
+    celebrating: false,
+    lessonDone: false,
+    quiz: 0,
+    tasks: [
+      { label: 'Mood check-in with Marcus', done: true },
+      { label: 'Job interview at ABC Painting — 2:00 pm', done: false },
+      { label: 'ISE Course 3 · Lesson 2 — 12 min video', done: false }
+    ],
+    heart1: false, heart2: false,
+    vidCat: 'All',
+    guideState: 'idle', // idle | asked | added
+    askedLabel: ''
+  };
+
+  renderVals() {
+    const s = this.state;
+    const doneCount = s.tasks.filter(t => t.done).length + (s.lessonDone ? 1 : 0);
+    const total = s.tasks.length + 1;
+    const trackerPct = Math.round((doneCount / total) * 100);
+
+    const tasks = s.tasks.map((t, i) => ({
+      label: t.label,
+      check: t.done ? '✓' : '',
+      boxBg: t.done ? '#12B76A' : '#fff',
+      boxBorder: t.done ? '2px solid #12B76A' : '2px solid #C7DBF4',
+      textColor: t.done ? '#9CA3AF' : '#111827',
+      deco: t.done ? 'line-through' : 'none',
+      toggle: () => this.setState(st => {
+        const tasks = st.tasks.map((x, j) => j === i ? { ...x, done: !x.done } : x);
+        return { tasks };
+      })
+    }));
+
+    const tabDefs = [
+      { key: 'home', label: 'Home', icon: '⌂' },
+      { key: 'learn', label: 'Learn', icon: '▦' },
+      { key: 'give', label: 'Give', icon: '♥' },
+      { key: 'chat', label: 'Chat', icon: '✉' },
+      { key: 'me', label: 'Me', icon: '◯' }
+    ];
+    const activeTab = s.tab;
+    const tabs = tabDefs.map(d => {
+      const on = activeTab === d.key;
+      return {
+        label: d.label, icon: d.icon,
+        color: on ? '#2E7CD6' : '#9CA3AF',
+        fontStyle: (on ? '700' : '600') + ' 11px Montserrat',
+        go: () => this.setState({ tab: d.key, lessonOpen: false })
+      };
+    });
+
+    const vidAll = [
+      { title: 'Walking Through Step 4', cat: 'STEPS', dur: '8:24' },
+      { title: 'Your First 90 Days', cat: 'NEW FREEDOM', dur: '12:03' },
+      { title: 'Why Showing Up Works', cat: 'MOTIVATIONAL', dur: '6:41' },
+      { title: 'Step 3 in Real Life', cat: 'STEPS', dur: '9:17' }
+    ];
+    const catMap = { 'All': null, 'New Freedom': 'NEW FREEDOM', 'Motivational': 'MOTIVATIONAL', 'Steps': 'STEPS' };
+    const videos = vidAll.filter(v => !catMap[s.vidCat] || v.cat === catMap[s.vidCat]).slice(0, 4);
+    const vidChips = Object.keys(catMap).map(c => {
+      const on = s.vidCat === c;
+      return {
+        label: c,
+        select: () => this.setState({ vidCat: c }),
+        bg: on ? '#2E7CD6' : '#fff',
+        color: on ? '#fff' : '#4B5563',
+        border: on ? '1.5px solid #2E7CD6' : '1.5px solid #EAF2FC',
+        fontStyle: (on ? '700' : '600') + ' 13px Montserrat'
+      };
+    });
+
+    const quizOpts = [
+      'A choice you keep making, one day at a time',
+      'A one-time event you complete',
+      'Something your mentor decides for you'
+    ];
+    const quizOptions = quizOpts.map((label, i) => {
+      const on = s.quiz === i;
+      return {
+        label,
+        select: () => this.setState({ quiz: i }),
+        border: on ? '2px solid #2E7CD6' : '1.5px solid #EAF2FC',
+        bg: on ? '#EAF2FC' : '#fff',
+        color: on ? '#2E7CD6' : '#4B5563',
+        fontStyle: (on ? '700' : '600') + ' 14px Montserrat'
+      };
+    });
+
+    const guideAnswers = {
+      "I need my driver's license back": "In Arizona that usually means clearing reinstatement fees at MVD. Three steps:\n1. Check your status on azdot.gov\n2. Ask staff about the fee-assistance fund\n3. Book the MVD visit.\nWant me to add \u201cMVD reinstatement visit\u201d as a task?",
+      'I\u2019m looking for a halfway house': 'There are 3 partner halfway houses near Laveen with openings this month. Your center coordinator, Sarah, handles placements \u2014 I can flag your interest and add \u201cAsk Sarah about halfway house openings\u201d to your tracker. Sound good?',
+      'Help me find a job': 'Your VOC program has 2 employer partners hiring now \u2014 ABC Painting and Desert Logistics. You already have an interview at ABC Painting! Want me to add \u201cPrep 3 interview answers\u201d as a task for today?'
+    };
+    const guideChips = ['I\u2019m looking for a halfway house', "I need my driver's license back", 'Help me find a job'].map(label => ({
+      label,
+      ask: () => this.setState({ guideState: 'asked', askedLabel: label })
+    }));
+
+    const pointsVal = 640 + (s.lessonDone ? 10 : 0);
+
+    return {
+      // tabs & views
+      tabs,
+      isHome: activeTab === 'home',
+      isLearn: activeTab === 'learn' && !s.lessonOpen,
+      isLesson: activeTab === 'learn' && s.lessonOpen,
+      isGive: activeTab === 'give',
+      isChat: activeTab === 'chat',
+      isMe: activeTab === 'me',
+      // home
+      trackerPct,
+      trackerRingBg: 'conic-gradient(#2E7CD6 0 ' + trackerPct + '%, #EAF2FC ' + trackerPct + '% 100%)',
+      tasks,
+      heart1Label: (s.heart1 ? '♥ ' : '♡ ') + (48 + (s.heart1 ? 1 : 0)),
+      heart1Bg: s.heart1 ? '#FDF0F0' : '#fff',
+      heart1Color: s.heart1 ? '#E5484D' : '#4B5563',
+      heart1Border: s.heart1 ? '1.5px solid #FDF0F0' : '1.5px solid #EAF2FC',
+      toggleHeart1: () => this.setState(st => ({ heart1: !st.heart1 })),
+      heart2Label: (s.heart2 ? '♥ ' : '♡ ') + (23 + (s.heart2 ? 1 : 0)),
+      heart2Bg: s.heart2 ? '#FDF0F0' : '#fff',
+      heart2Color: s.heart2 ? '#E5484D' : '#4B5563',
+      heart2Border: s.heart2 ? '1.5px solid #FDF0F0' : '1.5px solid #EAF2FC',
+      toggleHeart2: () => this.setState(st => ({ heart2: !st.heart2 })),
+      // learn
+      openLesson: () => this.setState({ lessonOpen: true }),
+      closeLesson: () => this.setState({ lessonOpen: false }),
+      coursePct: s.lessonDone ? 60 : 45,
+      courseRingBg: 'conic-gradient(#2E7CD6 0 ' + (s.lessonDone ? 60 : 45) + '%, #EAF2FC ' + (s.lessonDone ? 60 : 45) + '% 100%)',
+      courseSub: s.lessonDone ? 'Lesson 3 of 6 · unlocked today' : 'Lesson 2 of 6 · next: 12 min video',
+      vidChips, videos,
+      quizOptions,
+      completeLesson: () => this.setState({ celebrating: true, lessonDone: true }),
+      // celebration
+      celebrating: s.celebrating,
+      shareWin: () => this.setState({ celebrating: false, lessonOpen: false, tab: 'home' }),
+      keepPrivate: () => this.setState({ celebrating: false, lessonOpen: false }),
+      // chat / guide
+      guideIdle: s.guideState === 'idle',
+      guideAsked: s.guideState === 'asked',
+      guideTaskAdded: s.guideState === 'added',
+      guideChips,
+      askedLabel: s.askedLabel,
+      guideAnswer: guideAnswers[s.askedLabel] || '',
+      addGuideTask: () => this.setState(st => ({
+        guideState: 'added',
+        tasks: [...st.tasks, { label: 'From The Guide: ' + (st.askedLabel === "I need my driver's license back" ? 'MVD reinstatement visit' : st.askedLabel === 'Help me find a job' ? 'Prep 3 interview answers' : 'Ask Sarah about halfway house openings'), done: false }]
+      })),
+      resetGuide: () => this.setState({ guideState: 'idle', askedLabel: '' }),
+      // me
+      points: pointsVal,
+      levelPct: Math.round((pointsVal / 1000) * 100) + '%',
+      champGlyph: s.lessonDone ? '◆' : '◇',
+      champBg: s.lessonDone ? '#FEF6DC' : '#F1F5F9',
+      champColor: s.lessonDone ? '#A16207' : '#9CA3AF',
+      champBorder: s.lessonDone ? '1.5px solid #F5E6B3' : '1.5px solid #fff',
+      champOpacity: s.lessonDone ? '1' : '.45'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Allura&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E8EDF4;font-family:Montserrat,sans-serif}a{text-decoration:none}</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center">
+<div style="width:100%;max-width:430px;background:#F7FAFE;min-height:100vh;box-shadow:0 0 60px rgba(11,37,69,.12);display:flex;flex-direction:column;position:relative">
+
+  <!-- ============ ROSTER ============ -->
+  <sc-if value="{{ isRoster }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font:800 22px Montserrat;letter-spacing:-0.02em;color:#111827">Good morning, Marcus</div><div style="font:500 13px Montserrat;color:#4B5563;margin-top:2px">3 mentees · Laveen Center</div></div>
+      <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 11px Montserrat">MENTOR</span>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;flex:1">
+      <div onClick="{{ openThread }}" style="background:#FFF9EC;border:1.5px solid #F5E6B3;border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer">
+        <span style="width:10px;height:10px;border-radius:999px;background:#EAB308;flex:none"></span>
+        <div style="font:600 13px/1.5 Montserrat;color:#111827;flex:1">Tyrell hasn't checked in for 6 days. A quick hello goes a long way.</div>
+        <span style="font:700 13px Montserrat;color:#2E7CD6;flex:none">Message →</span>
+      </div>
+
+      <div onClick="{{ openDetail }}" style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px;cursor:pointer" style-hover="background:#EAF2FC">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:52px;height:52px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 20px Montserrat;color:#4E5B9B;flex:none">D</div>
+          <div style="flex:1"><div style="font:700 16px Montserrat;color:#111827">Danielle</div><div style="font:500 12px Montserrat;color:#12B76A">Active today · mood good</div></div>
+          <span style="font:700 18px Montserrat;color:#2E7CD6">→</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 12px;background:#FEF6DC;color:#A16207;border-radius:999px;font:800 11px Montserrat">◆ 12-day streak</span>
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:700 11px Montserrat">Course 45%</span>
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#E8F8F0;color:#12B76A;border-radius:999px;font:700 11px Montserrat">Mood 4/5</span>
+        </div>
+      </div>
+
+      <div onClick="{{ openThread }}" style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px;border:1.5px solid #F5E6B3;cursor:pointer" style-hover="background:#FFF9EC">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:52px;height:52px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 20px Montserrat;color:#4E5B9B;flex:none">T</div>
+          <div style="flex:1"><div style="font:700 16px Montserrat;color:#111827">Tyrell</div><div style="font:500 12px Montserrat;color:#A16207">Last active 6 days ago</div></div>
+          <span style="font:700 18px Montserrat;color:#2E7CD6">→</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#F1F5F9;color:#4B5563;border-radius:999px;font:700 11px Montserrat">Streak paused</span>
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:700 11px Montserrat">Course 15%</span>
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#FFF9EC;color:#A16207;border-radius:999px;font:700 11px Montserrat">Mood 2/5 · Mon</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:52px;height:52px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 20px Montserrat;color:#4E5B9B;flex:none">A</div>
+          <div style="flex:1"><div style="font:700 16px Montserrat;color:#111827">Andre <span style="display:inline-flex;align-items:center;height:20px;padding:0 8px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 10px Montserrat;margin-left:4px">NEW</span></div><div style="font:500 12px Montserrat;color:#4B5563">Joined today · first meeting Friday</div></div>
+          <span style="font:700 18px Montserrat;color:#2E7CD6">→</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#F1F5F9;color:#4B5563;border-radius:999px;font:700 11px Montserrat">Day 1</span>
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#F1F5F9;color:#4B5563;border-radius:999px;font:700 11px Montserrat">No check-ins yet</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ DETAIL ============ -->
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px">
+      <span onClick="{{ backToRoster }}" style="font:700 20px Montserrat;color:#111827;min-width:44px;cursor:pointer">←</span>
+      <div style="width:44px;height:44px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 17px Montserrat;color:#4E5B9B">D</div>
+      <div><div style="font:700 16px Montserrat;color:#111827">Danielle</div><div style="font:500 12px Montserrat;color:#4B5563">Member #039521464 · Transitional</div></div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1">
+      <sc-if value="{{ sessionSaved }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:center"><span style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;background:#E8F8F0;color:#12B76A;border-radius:999px;font:700 13px Montserrat">✓ Session saved · +15 points for Danielle</span></div>
+      </sc-if>
+      <sc-if value="{{ cheerSent }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:center"><span style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;background:#FEF6DC;color:#A16207;border-radius:999px;font:700 13px Montserrat">◆ Cheer sent — Danielle will see it on her Home</span></div>
+      </sc-if>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px">
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">JOURNEY SNAPSHOT</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;text-align:center">
+          <div><div style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">45%</div><div style="font:600 11px Montserrat;color:#4B5563">ISE Course 3</div></div>
+          <div><div style="font:800 22px Montserrat;color:#A16207;font-variant-numeric:tabular-nums">12<span style="font-size:14px">d</span></div><div style="font:600 11px Montserrat;color:#4B5563">streak</div></div>
+          <div><div style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">4/5</div><div style="font:600 11px Montserrat;color:#4B5563">mood · today</div></div>
+        </div>
+        <div style="margin-top:16px;border-top:1px solid #EAF2FC;padding-top:14px">
+          <div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>Hallway house · $175/week</span><span style="color:#2E7CD6">$105</span></div>
+          <div style="height:8px;border-radius:999px;background:#EAF2FC;margin-top:8px;overflow:hidden"><div style="width:60%;height:100%;border-radius:999px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <span onClick="{{ openLog }}" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;height:56px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 14px Montserrat;box-shadow:0 6px 16px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">Log a session</span>
+        <span onClick="{{ sendCheer }}" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;height:56px;border:1.5px solid #EAB308;background:#FFF9EC;color:#A16207;border-radius:999px;font:700 14px Montserrat;cursor:pointer">◆ Send a cheer</span>
+      </div>
+
+      <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">RECENT</div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06)">
+        <div style="display:flex;gap:14px;align-items:center;padding:16px 20px;border-bottom:1px solid #F7FAFE"><span style="width:34px;height:34px;border-radius:999px;background:#E8F8F0;color:#12B76A;display:inline-flex;align-items:center;justify-content:center;font:800 14px Montserrat;flex:none">✓</span><div><div style="font:700 13px Montserrat;color:#111827">Completed ISE 3 · Lesson 1</div><div style="font:400 11px Montserrat;color:#4B5563">yesterday</div></div></div>
+        <div style="display:flex;gap:14px;align-items:center;padding:16px 20px;border-bottom:1px solid #F7FAFE"><span style="width:34px;height:34px;border-radius:999px;background:#EAF2FC;color:#2E7CD6;display:inline-flex;align-items:center;justify-content:center;font:800 14px Montserrat;flex:none">✎</span><div><div style="font:700 13px Montserrat;color:#111827">Journal entry · private</div><div style="font:400 11px Montserrat;color:#4B5563">yesterday · visible to assigned staff only</div></div></div>
+        <div style="display:flex;gap:14px;align-items:center;padding:16px 20px"><span style="width:34px;height:34px;border-radius:999px;background:#FEF6DC;color:#A16207;display:inline-flex;align-items:center;justify-content:center;font:800 13px Montserrat;flex:none">◆</span><div><div style="font:700 13px Montserrat;color:#111827">Earned 30-Day Streak badge</div><div style="font:400 11px Montserrat;color:#4B5563">last week</div></div></div>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:18px 20px">
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6">SESSIONS</div>
+        <div style="font:600 14px Montserrat;color:#111827;margin-top:12px">{{ lastSession }}</div>
+        <div style="font:400 13px/1.6 Montserrat;color:#4B5563;margin-top:6px">{{ lastSessionNote }}</div>
+      </div>
+
+      <div style="text-align:center;margin-top:auto;padding-bottom:8px"><span style="font:600 13px Montserrat;color:#9CA3AF;border-bottom:1px solid #E2E8F0;padding-bottom:2px;cursor:pointer">I'm concerned about Danielle</span></div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ THREAD ============ -->
+  <sc-if value="{{ isThread }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div style="background:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px">
+      <span onClick="{{ backToRoster }}" style="font:700 20px Montserrat;color:#111827;min-width:44px;cursor:pointer">←</span>
+      <div style="position:relative"><div style="width:44px;height:44px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 17px Montserrat;color:#4E5B9B">T</div></div>
+      <div><div style="font:700 16px Montserrat;color:#111827">Tyrell</div><div style="font:500 12px Montserrat;color:#A16207">last seen 6 days ago</div></div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#4E5B9B,#2E7CD6)"></div>
+
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;flex:1">
+      <div style="text-align:center;font:600 11px Montserrat;color:#9CA3AF">TODAY</div>
+      <div style="display:flex;justify-content:flex-end"><div style="background:#2E7CD6;border-radius:16px;border-top-right-radius:6px;padding:13px 17px;font:500 14px/1.55 Montserrat;color:#fff;max-width:270px">Hey T — been thinking about you. No pressure, no agenda. You good?</div></div>
+
+      <div style="background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(11,37,69,.08);border:1.5px solid #EAF2FC;padding:20px">
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#4E5B9B">QUICK CHECK-IN · SENT WITH YOUR MESSAGE</div>
+        <div style="font:600 15px Montserrat;color:#111827;margin-top:8px">How's today feeling, Tyrell?</div>
+        <div style="display:flex;justify-content:space-between;margin-top:16px;padding:0 4px">
+          <sc-for list="{{ moods }}" as="mood" hint-placeholder-count="5">
+            <div onClick="{{ mood.select }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
+              <span style="width:44px;height:44px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:800 15px Montserrat;box-sizing:border-box;border:{{ mood.border }};background:{{ mood.bg }};color:{{ mood.color }}">{{ mood.n }}</span>
+              <span style="font:600 10px Montserrat;color:{{ mood.labelColor }}">{{ mood.word }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:14px;text-align:center">Shared with Marcus and the care team only.</div>
+      </div>
+
+      <div style="font:400 12px Montserrat;color:#9CA3AF;text-align:center;margin-top:auto">Tyrell will see your message and check-in the next time he opens the app.</div>
+    </div>
+
+    <div style="background:#fff;border-top:1px solid #EAF2FC;padding:12px 16px 24px;display:flex;gap:10px;align-items:center">
+      <div style="flex:1;height:48px;border-radius:999px;border:1.5px solid #EAF2FC;background:#F7FAFE;display:flex;align-items:center;padding:0 20px;font:400 14px Montserrat;color:#9CA3AF">Message Tyrell…</div>
+      <span style="width:48px;height:48px;border-radius:999px;background:#2E7CD6;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 18px Montserrat;flex:none;cursor:pointer">↑</span>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ TAB BAR ============ -->
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+  <div style="background:#fff;border-top:1px solid #EAF2FC;display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 22px;position:sticky;bottom:0;z-index:20">
+    <div onClick="{{ backToRoster }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center;cursor:pointer"><span style="font-size:18px;color:{{ rosterColor }}">◎</span><span style="font:700 11px Montserrat;color:{{ rosterColor }}">Mentees</span></div>
+    <div onClick="{{ openThread }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center;cursor:pointer"><span style="font-size:18px;color:{{ chatColor }}">✉</span><span style="font:600 11px Montserrat;color:{{ chatColor }}">Chat</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center;cursor:pointer"><span style="font-size:20px;color:#9CA3AF">⌂</span><span style="font:600 11px Montserrat;color:#9CA3AF">Community</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center;cursor:pointer"><span style="font-size:18px;color:#9CA3AF">◯</span><span style="font:600 11px Montserrat;color:#9CA3AF">Me</span></div>
+  </div>
+  </sc-if>
+
+  <!-- ============ LOG SHEET ============ -->
+  <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:40">
+      <div onClick="{{ closeLog }}" style="position:absolute;inset:0;background:rgba(11,37,69,.5)"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -16px 50px rgba(11,37,69,.3);padding:14px 24px 34px">
+        <div style="width:44px;height:5px;border-radius:999px;background:#E2E8F0;margin:0 auto"></div>
+        <div style="font:800 20px Montserrat;letter-spacing:-0.02em;color:#111827;margin-top:18px">Log a session with Danielle</div>
+
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:20px">HOW DID YOU MEET?</div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+            <span onClick="{{ m.select }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;height:48px;border-radius:999px;cursor:pointer;box-sizing:border-box;border:{{ m.border }};background:{{ m.bg }};font:{{ m.fontStyle }};color:{{ m.color }}">{{ m.label }}</span>
+          </sc-for>
+        </div>
+
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:20px">HOW LONG?</div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <sc-for list="{{ durations }}" as="d" hint-placeholder-count="4">
+            <span onClick="{{ d.select }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;height:48px;border-radius:999px;cursor:pointer;box-sizing:border-box;border:{{ d.border }};background:{{ d.bg }};font:{{ d.fontStyle }};color:{{ d.color }}">{{ d.label }}</span>
+          </sc-for>
+        </div>
+
+        <div style="font:700 12px Montserrat;letter-spacing:.12em;color:#2E7CD6;margin-top:20px">NOTE <span style="font:400 11px Montserrat;color:#9CA3AF;letter-spacing:0">— optional, staff-visible</span></div>
+        <div style="min-height:84px;border-radius:14px;border:1.5px solid #EAF2FC;background:#F7FAFE;padding:14px 16px;font:400 14px/1.6 Montserrat;color:#111827;margin-top:10px">Prepped for Thursday's interview. Confidence way up.</div>
+
+        <span onClick="{{ saveSession }}" style="display:flex;align-items:center;justify-content:center;height:56px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 16px Montserrat;margin-top:22px;box-shadow:0 6px 16px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">Save session · +15 points for Danielle</span>
+        <div onClick="{{ closeLog }}" style="text-align:center;font:400 12px Montserrat;color:#9CA3AF;margin-top:12px;cursor:pointer">Cancel</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</div>
+
+<div style="position:fixed;bottom:16px;right:16px;z-index:100;background:#0B2545;border-radius:999px;padding:8px 10px;display:flex;gap:2px;align-items:center;box-shadow:0 8px 24px rgba(11,37,69,.35)">
+  <span style="font:800 10px Montserrat;color:#8FBCF0;letter-spacing:.08em;padding:0 8px">PROTOTYPE</span>
+  <a href="Home.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Site</a>
+  <a href="Give.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Giving</a>
+  <a href="MemberApp.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Member</a>
+  <a href="MentorApp.dc.html" style="font:700 11px Montserrat;color:#fff;background:#2E7CD6;padding:6px 10px;border-radius:999px">Mentor</a>
+  <a href="Dashboard.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Center</a>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    view: 'roster', // roster | detail | thread
+    logOpen: false,
+    mode: 'inperson',
+    duration: '45',
+    sessionSaved: false,
+    cheerSent: false,
+    mood: null
+  };
+
+  renderVals() {
+    const s = this.state;
+    const pill = (on) => ({
+      border: on ? '2px solid #2E7CD6' : '1.5px solid #E2E8F0',
+      bg: on ? '#EAF2FC' : '#fff',
+      color: on ? '#2E7CD6' : '#4B5563',
+      fontStyle: (on ? '700' : '600') + ' 14px Montserrat'
+    });
+
+    const modes = [
+      { key: 'inperson', label: 'In person' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'video', label: 'Video' }
+    ].map(m => Object.assign({ label: m.label, select: () => this.setState({ mode: m.key }) }, pill(s.mode === m.key)));
+
+    const durations = ['15', '30', '45', '60'].map(d => Object.assign({
+      label: d === '60' ? '1 hr+' : d + ' min',
+      select: () => this.setState({ duration: d })
+    }, pill(s.duration === d)));
+
+    const moodWords = { 1: 'rough', 2: ' ', 3: 'okay', 4: 'good', 5: 'great' };
+    const moods = [1, 2, 3, 4, 5].map(n => {
+      const on = s.mood === n;
+      return {
+        n: String(n),
+        word: moodWords[n],
+        select: () => this.setState({ mood: n }),
+        border: on ? '2px solid #2E7CD6' : '1.5px solid #E2E8F0',
+        bg: on ? '#EAF2FC' : '#fff',
+        color: on ? '#2E7CD6' : '#4B5563',
+        labelColor: on ? '#2E7CD6' : '#9CA3AF'
+      };
+    });
+
+    const modeLabel = { inperson: 'in person', phone: 'phone', video: 'video' }[s.mode];
+    const durLabel = s.duration === '60' ? '1 hr+' : s.duration + ' min';
+
+    return {
+      isRoster: s.view === 'roster',
+      isDetail: s.view === 'detail',
+      isThread: s.view === 'thread',
+      isLog: s.logOpen,
+      showTabs: s.view !== 'detail',
+      openDetail: () => this.setState({ view: 'detail', sessionSaved: false, cheerSent: false }),
+      openThread: () => this.setState({ view: 'thread' }),
+      backToRoster: () => this.setState({ view: 'roster', logOpen: false }),
+      rosterColor: s.view === 'roster' ? '#2E7CD6' : '#9CA3AF',
+      chatColor: s.view === 'thread' ? '#2E7CD6' : '#9CA3AF',
+      openLog: () => this.setState({ logOpen: true }),
+      closeLog: () => this.setState({ logOpen: false }),
+      saveSession: () => this.setState({ logOpen: false, sessionSaved: true }),
+      sendCheer: () => this.setState({ cheerSent: true }),
+      sessionSaved: s.sessionSaved,
+      cheerSent: s.cheerSent,
+      modes,
+      durations,
+      moods,
+      lastSession: s.sessionSaved
+        ? 'Last session: today · ' + modeLabel + ' · ' + durLabel
+        : 'Last session: Tuesday · in person · 45 min',
+      lastSessionNote: s.sessionSaved
+        ? '"Prepped for Thursday\u2019s interview. Confidence way up."'
+        : '"Talked through the ABC Painting interview. She\u2019s ready."'
+    };
+  }
+}
+</script>
+</body>
+</html>

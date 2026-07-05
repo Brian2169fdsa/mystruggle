@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Allura&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F7FAFE;font-family:Montserrat,sans-serif}a{text-decoration:none}</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex">
+  <!-- SIDEBAR -->
+  <div style="width:240px;background:#0B2545;padding:28px 0 24px;display:flex;flex-direction:column;flex:none;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <img src="https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2843%29-1920w.png" alt="My Struggle" style="height:38px;width:auto;align-self:flex-start;margin:0 24px 30px">
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+      <div onClick="{{ item.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 24px;cursor:pointer;border-left:{{ item.borderLeft }};background:{{ item.bg }};font:{{ item.fontStyle }};color:{{ item.color }}"><span style="font-size:15px">{{ item.icon }}</span>{{ item.label }}<sc-if value="{{ item.showBadge }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;display:inline-flex;align-items:center;height:20px;padding:0 8px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 11px Montserrat">{{ item.badge }}</span></sc-if></div>
+    </sc-for>
+    <div style="margin-top:auto;padding:20px 24px 0;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px"><div style="width:38px;height:38px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 14px Montserrat;color:#4E5B9B">S</div><div><div style="font:700 13px Montserrat;color:#fff">Sarah K.</div><div style="font:500 11px Montserrat;color:rgba(255,255,255,.55)">Laveen Center · staff</div></div></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="flex:1;padding:30px 36px;display:flex;flex-direction:column;gap:20px;min-width:0">
+
+  <!-- ============ OVERVIEW ============ -->
+  <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Overview</div><div style="font:500 13px Montserrat;color:#4B5563;margin-top:2px">Laveen Center · Friday, July 4</div></div>
+      <span style="display:inline-flex;align-items:center;height:44px;padding:0 22px;border:1.5px solid #2E7CD6;color:#2E7CD6;border-radius:999px;font:700 14px Montserrat;cursor:pointer" style-hover="background:#EAF2FC">Jan 1 – Jul 4 · Edit</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 26px"><span style="display:inline-flex;height:24px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 11px Montserrat;align-items:center">PON</span><div style="font:800 52px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:10px">128</div><div style="font:500 13px Montserrat;color:#4B5563">active enrollments</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 26px"><span style="display:inline-flex;height:24px;padding:0 12px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 11px Montserrat;align-items:center">VOC</span><div style="font:800 52px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:10px">64</div><div style="font:500 13px Montserrat;color:#4B5563">active enrollments</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 26px"><span style="display:inline-flex;height:24px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 11px Montserrat;align-items:center">IOP</span><div style="font:800 52px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:10px">43</div><div style="font:500 13px Montserrat;color:#4B5563">active enrollments</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 26px"><span style="display:inline-flex;height:24px;padding:0 12px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 11px Montserrat;align-items:center">NAV</span><div style="font:800 52px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:10px">87</div><div style="font:500 13px Montserrat;color:#4B5563">active enrollments</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px 26px"><div style="font:500 13px Montserrat;color:#4B5563">Weekly engagement</div><div style="font:800 34px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">71% <span style="font:600 13px Montserrat;color:#4B5563">/ 65% goal</span></div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px 26px"><div style="font:500 13px Montserrat;color:#4B5563">Cash redeemed this week</div><div style="font:800 34px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">$1,240</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px 26px"><div style="font:500 13px Montserrat;color:#4B5563">Reentry savings held</div><div style="font:800 34px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">$18,400</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:20px 26px"><div style="font:500 13px Montserrat;color:#4B5563">Avg streak</div><div style="font:800 34px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:4px">8.5 <span style="font:600 13px Montserrat;color:#4B5563">days</span></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 16px Montserrat;color:#111827">Engagement trend</div><div style="display:flex;gap:16px;font:600 12px Montserrat;color:#4B5563"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#2E7CD6"></span>weekly active %</span><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:2px;background:#12B76A"></span>65% goal</span></div></div>
+        <div style="position:relative;height:180px;margin-top:22px">
+          <div style="position:absolute;left:0;right:0;bottom:65%;border-top:2px dashed #12B76A"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:flex-end;gap:10px">
+            <div style="flex:1;height:52%;background:#C7DBF4;border-radius:6px 6px 0 0"></div><div style="flex:1;height:58%;background:#C7DBF4;border-radius:6px 6px 0 0"></div><div style="flex:1;height:55%;background:#C7DBF4;border-radius:6px 6px 0 0"></div><div style="flex:1;height:63%;background:#8FBCF0;border-radius:6px 6px 0 0"></div><div style="flex:1;height:60%;background:#C7DBF4;border-radius:6px 6px 0 0"></div><div style="flex:1;height:67%;background:#2E7CD6;border-radius:6px 6px 0 0"></div><div style="flex:1;height:64%;background:#8FBCF0;border-radius:6px 6px 0 0"></div><div style="flex:1;height:70%;background:#2E7CD6;border-radius:6px 6px 0 0"></div><div style="flex:1;height:66%;background:#2E7CD6;border-radius:6px 6px 0 0"></div><div style="flex:1;height:72%;background:#2E7CD6;border-radius:6px 6px 0 0"></div><div style="flex:1;height:69%;background:#2E7CD6;border-radius:6px 6px 0 0"></div><div style="flex:1;height:71%;background:#2E7CD6;border-radius:6px 6px 0 0"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font:500 11px Montserrat;color:#9CA3AF;margin-top:8px"><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span></div>
+      </div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px">
+        <div style="font:700 16px Montserrat;color:#111827">Journey stages</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:20px">
+          <div><div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>Outreach</span><span style="color:#2E7CD6;font-variant-numeric:tabular-nums">124</span></div><div style="height:12px;border-radius:999px;background:#EAF2FC;margin-top:6px"><div style="width:100%;height:100%;border-radius:999px;background:#2E7CD6"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>Stabilization</span><span style="color:#2E7CD6;font-variant-numeric:tabular-nums">96</span></div><div style="height:12px;border-radius:999px;background:#EAF2FC;margin-top:6px"><div style="width:77%;height:100%;border-radius:999px;background:#4E7BC4"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>In Program</span><span style="color:#2E7CD6;font-variant-numeric:tabular-nums">71</span></div><div style="height:12px;border-radius:999px;background:#EAF2FC;margin-top:6px"><div style="width:57%;height:100%;border-radius:999px;background:#4E5B9B"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>Transitional</span><span style="color:#2E7CD6;font-variant-numeric:tabular-nums">38</span></div><div style="height:12px;border-radius:999px;background:#EAF2FC;margin-top:6px"><div style="width:31%;height:100%;border-radius:999px;background:#8FBCF0"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#111827"><span>Independent</span><span style="color:#12B76A;font-variant-numeric:tabular-nums">22</span></div><div style="height:12px;border-radius:999px;background:#EAF2FC;margin-top:6px"><div style="width:18%;height:100%;border-radius:999px;background:#12B76A"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px">
+        <div style="font:700 16px Montserrat;color:#111827">Needs attention</div>
+        <div style="display:flex;flex-direction:column;margin-top:14px">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F7FAFE"><span style="width:10px;height:10px;border-radius:999px;background:#EAB308;flex:none"></span><div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">Tyrell — inactive 6 days</div><div style="font:400 12px Montserrat;color:#4B5563">Mentor Marcus nudged today</div></div><span onClick="{{ goParticipants }}" style="font:700 13px Montserrat;color:#2E7CD6;cursor:pointer">Open</span></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F7FAFE"><span style="width:10px;height:10px;border-radius:999px;background:#E5484D;flex:none"></span><div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">Maria — mood 1/5 two days running</div><div style="font:400 12px Montserrat;color:#4B5563">Mentor raised a concern · follow up today</div></div><span onClick="{{ goParticipants }}" style="font:700 13px Montserrat;color:#2E7CD6;cursor:pointer">Open</span></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0"><span style="width:10px;height:10px;border-radius:999px;background:#EAB308;flex:none"></span><div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">{{ pendingLabel }}</div><div style="font:400 12px Montserrat;color:#4B5563">oldest: 40 minutes</div></div><span onClick="{{ goModeration }}" style="font:700 13px Montserrat;color:#2E7CD6;cursor:pointer">Review</span></div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px">
+        <div style="font:700 16px Montserrat;color:#111827">Milestones this week</div>
+        <div style="display:flex;flex-direction:column;margin-top:14px">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F7FAFE"><span style="width:32px;height:32px;border-radius:999px;background:#FEF6DC;color:#A16207;display:inline-flex;align-items:center;justify-content:center;font:800 13px Montserrat;flex:none">◆</span><div style="font:600 14px Montserrat;color:#111827">Danielle earned <strong>30-Day Streak</strong></div></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F7FAFE"><span style="width:32px;height:32px;border-radius:999px;background:#E8F8F0;color:#12B76A;display:inline-flex;align-items:center;justify-content:center;font:800 13px Montserrat;flex:none">✓</span><div style="font:600 14px Montserrat;color:#111827">Jasmine advanced to <strong>Transitional</strong></div></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0"><span style="width:32px;height:32px;border-radius:999px;background:#EAF2FC;color:#2E7CD6;display:inline-flex;align-items:center;justify-content:center;font:800 13px Montserrat;flex:none">♥</span><div style="font:600 14px Montserrat;color:#111827">Marcus T.'s housing goal <strong>fully funded</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ PARTICIPANTS ============ -->
+  <sc-if value="{{ isParticipants }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Participants <span style="font:600 15px Montserrat;color:#4B5563">· 214 members</span></div>
+      <span style="display:inline-flex;align-items:center;height:44px;padding:0 24px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 14px Montserrat;box-shadow:0 4px 12px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">+ New member</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="width:300px;height:44px;border-radius:999px;border:1.5px solid #EAF2FC;background:#fff;display:flex;align-items:center;padding:0 20px;font:400 14px Montserrat;color:#9CA3AF">Search name or member #…</div>
+      <span style="display:inline-flex;align-items:center;height:40px;padding:0 18px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 13px Montserrat;cursor:pointer">All stages ▾</span>
+      <span style="display:inline-flex;align-items:center;height:40px;padding:0 18px;background:#fff;border:1.5px solid #EAF2FC;color:#4B5563;border-radius:999px;font:600 13px Montserrat;cursor:pointer">Program: any ▾</span>
+      <span onClick="{{ toggleRisk }}" style="display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:999px;cursor:pointer;font:{{ riskFontStyle }};background:{{ riskBg }};color:{{ riskColor }};border:{{ riskBorder }}">Needs attention only</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);overflow:hidden">
+      <div style="display:grid;grid-template-columns:2.2fr 1.3fr 1fr 1fr 1fr 1.1fr .8fr;padding:14px 26px;background:#F7FAFE;font:700 12px Montserrat;letter-spacing:.06em;color:#4B5563">
+        <span>MEMBER</span><span>STAGE</span><span>PROGRAM</span><span>STREAK</span><span>COURSE</span><span>LAST ACTIVE</span><span>RISK</span>
+      </div>
+      <sc-for list="{{ rows }}" as="row" hint-placeholder-count="6">
+        <div onClick="{{ row.open }}" style="display:grid;grid-template-columns:2.2fr 1.3fr 1fr 1fr 1fr 1.1fr .8fr;padding:16px 26px;align-items:center;border-top:1px solid #F7FAFE;cursor:pointer" style-hover="background:#EAF2FC">
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:36px;height:36px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 14px Montserrat;color:#4E5B9B">{{ row.initial }}</div><div><div style="font:700 15px Montserrat;color:#111827">{{ row.name }}</div><div style="font:400 12px Montserrat;color:#4B5563">{{ row.num }}</div></div></div>
+          <span><span style="display:inline-flex;height:26px;padding:0 12px;border-radius:999px;font:700 11px Montserrat;align-items:center;background:{{ row.stageBg }};color:{{ row.stageColor }}">{{ row.stage }}</span></span>
+          <span style="font:700 13px Montserrat;color:#4E5B9B">{{ row.program }}</span>
+          <span style="font:700 14px Montserrat;color:{{ row.streakColor }};font-variant-numeric:tabular-nums">{{ row.streak }}</span>
+          <span style="font:600 14px Montserrat;color:#111827;font-variant-numeric:tabular-nums">{{ row.course }}</span>
+          <span style="font:600 13px Montserrat;color:{{ row.activeColor }}">{{ row.active }}</span>
+          <span><sc-if value="{{ row.hasRisk }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;height:24px;padding:0 10px;border-radius:999px;font:700 11px Montserrat;align-items:center;background:{{ row.riskBg }};color:{{ row.riskColor }}">{{ row.risk }}</span></sc-if><sc-if value="{{ row.noRisk }}" hint-placeholder-val="{{ true }}"><span style="font:600 13px Montserrat;color:#9CA3AF">—</span></sc-if></span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;justify-content:space-between;font:600 13px Montserrat;color:#4B5563"><span>{{ showingLabel }}</span><span style="color:#2E7CD6">1 · 2 · 3 · … · 36 →</span></div>
+  </div>
+  </sc-if>
+
+  <!-- ============ PARTICIPANT DETAIL ============ -->
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="font:600 13px Montserrat;color:#4B5563"><span onClick="{{ goParticipants }}" style="cursor:pointer;color:#2E7CD6">Participants</span> / <span style="color:#111827;font-weight:700">Danielle</span></div>
+    <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px;display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+      <div style="width:72px;height:72px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 28px Montserrat;color:#4E5B9B;flex:none">D</div>
+      <div style="flex:1;min-width:260px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Danielle</div><span style="display:inline-flex;height:26px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:700 11px Montserrat;align-items:center">#039521464</span><span style="display:inline-flex;height:26px;padding:0 12px;background:#DDEBFB;color:#2E7CD6;border-radius:999px;font:700 11px Montserrat;align-items:center">Transitional</span></div>
+        <div style="font:500 13px Montserrat;color:#4B5563;margin-top:4px">Joined Oct 2025 · mentor Marcus T. · PON program</div>
+      </div>
+      <span style="display:inline-flex;align-items:center;height:44px;padding:0 22px;border:1.5px solid #2E7CD6;color:#2E7CD6;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#EAF2FC">Print ID card</span>
+      <span onClick="{{ goGiving }}" style="display:inline-flex;align-items:center;height:44px;padding:0 22px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#2668B8">Record redemption</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:26px 30px">
+        <div style="font:700 15px Montserrat;color:#111827">Journey timeline</div>
+        <div style="display:flex;flex-direction:column;margin-top:16px">
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:20px;height:20px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 10px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#12B76A;min-height:22px"></div></div><div style="padding-bottom:14px"><div style="font:700 13px Montserrat;color:#111827">Outreach — met Laveen team</div><div style="font:400 12px Montserrat;color:#4B5563">Oct 12, 2025</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:20px;height:20px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 10px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#12B76A;min-height:22px"></div></div><div style="padding-bottom:14px"><div style="font:700 13px Montserrat;color:#111827">Stabilization — matched with Marcus, IOP intake</div><div style="font:400 12px Montserrat;color:#4B5563">Nov 3, 2025</div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:20px;height:20px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 10px Montserrat;flex:none">✓</span><div style="width:2px;flex:1;background:#2E7CD6;min-height:22px"></div></div><div style="padding-bottom:14px"><div style="font:700 13px Montserrat;color:#111827">In Program — GED earned, first job at ABC Painting</div><div style="font:400 12px Montserrat;color:#4B5563">Feb 20, 2026 · <span style="color:#A16207;font-weight:700">◆ GED badge</span></div></div></div>
+          <div style="display:flex;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:20px;height:20px;border-radius:999px;background:#2E7CD6;flex:none;box-shadow:0 0 0 4px #EAF2FC"></span></div><div><div style="font:700 13px Montserrat;color:#2E7CD6">Transitional — hallway house, $175/wk goal live</div><div style="font:400 12px Montserrat;color:#4B5563">May 4, 2026 · current stage</div></div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:22px 26px">
+          <div style="font:700 15px Montserrat;color:#111827">Balances</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;text-align:center">
+            <div><div style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">{{ cashBalance }}</div><div style="font:600 11px Montserrat;color:#4B5563">cash</div></div>
+            <div><div style="font:800 22px Montserrat;color:#4E5B9B;font-variant-numeric:tabular-nums">$58</div><div style="font:600 11px Montserrat;color:#4B5563">credits</div></div>
+            <div><div style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">$240</div><div style="font:600 11px Montserrat;color:#4B5563">reentry</div></div>
+          </div>
+          <div style="font:400 11px Montserrat;color:#9CA3AF;margin-top:12px;text-align:center">Daily cash cap $100 · {{ redeemedToday }} redeemed today</div>
+        </div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:22px 26px">
+          <div style="font:700 15px Montserrat;color:#111827">Consent</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;font:600 13px Montserrat;color:#111827">
+            <div style="display:flex;justify-content:space-between;align-items:center">Public giving page <span onClick="{{ togglePage }}" style="width:44px;height:26px;border-radius:999px;position:relative;cursor:pointer;transition:background .2s;background:{{ pageToggleBg }}"><span style="position:absolute;top:2px;width:22px;height:22px;border-radius:999px;background:#fff;transition:left .2s;left:{{ pageKnob }}"></span></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center">Story approved <span style="font:700 12px Montserrat;color:#12B76A">✓ Jun 2, 2026</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center">Photo on page <span onClick="{{ togglePhoto }}" style="width:44px;height:26px;border-radius:999px;position:relative;cursor:pointer;transition:background .2s;background:{{ photoToggleBg }}"><span style="position:absolute;top:2px;width:22px;height:22px;border-radius:999px;background:#fff;transition:left .2s;left:{{ photoKnob }}"></span></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center">Milestone updates to donors <span style="width:44px;height:26px;border-radius:999px;background:#12B76A;position:relative"><span style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:999px;background:#fff"></span></span></div>
+          </div>
+          <div style="font:400 11px/1.5 Montserrat;color:#9CA3AF;margin-top:12px">{{ consentNote }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ GIVING DESK ============ -->
+  <sc-if value="{{ isGiving }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Giving desk</div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:30px 34px">
+        <sc-if value="{{ giveDone }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:30px 0;display:flex;flex-direction:column;gap:14px;align-items:center">
+            <div style="width:80px;height:80px;border-radius:999px;background:#E8F8F0;color:#12B76A;display:flex;align-items:center;justify-content:center;font:800 34px Montserrat">✓</div>
+            <div style="font:800 24px Montserrat;letter-spacing:-0.02em;color:#111827">$20 cash recorded for Danielle</div>
+            <div style="font:400 14px/1.7 Montserrat;color:#4B5563;max-width:380px">Ledger entry created with dual record — Danielle's card scan + your staff PIN. Her app balance updated instantly: cash now $44.</div>
+            <span onClick="{{ resetGiving }}" style="display:inline-flex;align-items:center;height:48px;padding:0 28px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 14px Montserrat;cursor:pointer;margin-top:6px" style-hover="background:#2668B8">New redemption</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ giveActive }}" hint-placeholder-val="{{ true }}">
+        <div>
+        <div style="display:flex;gap:0;align-items:center;margin-bottom:26px">
+          <span style="display:flex;align-items:center;gap:8px;font:700 13px Montserrat;color:#12B76A"><span style="width:26px;height:26px;border-radius:999px;background:#12B76A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 12px Montserrat">✓</span>Scan card</span>
+          <div style="flex:1;height:2px;margin:0 12px;background:{{ step2LineBg }}"></div>
+          <span style="display:flex;align-items:center;gap:8px;font:700 13px Montserrat;color:{{ step2Color }}"><span style="width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:700 12px Montserrat;box-sizing:border-box;background:{{ step2Bg }};color:{{ step2NumColor }};border:{{ step2Border }}">{{ step2Glyph }}</span>Amount</span>
+          <div style="flex:1;height:2px;margin:0 12px;background:{{ step3LineBg }}"></div>
+          <span style="display:flex;align-items:center;gap:8px;font:700 13px Montserrat;color:{{ step3Color }}"><span style="width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:700 12px Montserrat;box-sizing:border-box;background:{{ step3Bg }};color:{{ step3NumColor }};border:{{ step3Border }}">3</span>Confirm</span>
+        </div>
+        <div style="display:flex;gap:20px;align-items:center;background:#EAF2FC;border-radius:16px;padding:18px 22px">
+          <div style="width:56px;height:56px;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 22px Montserrat;color:#4E5B9B;flex:none">D</div>
+          <div style="flex:1"><div style="font:700 17px Montserrat;color:#111827">Danielle <span style="font:600 12px Montserrat;color:#4B5563">#039521464</span></div><div style="font:600 13px Montserrat;color:#12B76A;margin-top:2px">✓ ID card verified · photo match confirmed by staff</div></div>
+          <div style="text-align:right"><div style="font:800 24px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">$64</div><div style="font:600 11px Montserrat;color:#4B5563">cash available</div></div>
+        </div>
+        <sc-if value="{{ isAmountStep }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="margin-top:22px">
+            <div style="font:700 13px Montserrat;color:#111827">Redemption amount</div>
+            <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+              <div style="flex:1;height:64px;border-radius:16px;border:2px solid #2E7CD6;background:#fff;display:flex;align-items:center;padding:0 24px;font:800 30px Montserrat;color:#111827;font-variant-numeric:tabular-nums">${{ redeemAmount }}</div>
+              <sc-for list="{{ quickAmounts }}" as="qa" hint-placeholder-count="3">
+                <span onClick="{{ qa.select }}" style="display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 20px;border:1.5px solid #EAF2FC;color:#4B5563;border-radius:999px;font:700 14px Montserrat;cursor:pointer" style-hover="background:#EAF2FC">{{ qa.label }}</span>
+              </sc-for>
+            </div>
+            <div style="font:500 12px Montserrat;color:#4B5563;margin-top:10px">Daily cap $100 · $20 already redeemed today → <strong style="color:#111827">$80 remaining</strong></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:24px;align-items:center">
+            <span onClick="{{ toPinStep }}" style="display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 36px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 16px Montserrat;box-shadow:0 6px 16px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">Continue → staff PIN</span>
+            <span style="font:400 13px Montserrat;color:#9CA3AF">Dual record: card scan + staff PIN, both logged</span>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ isPinStep }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-top:22px;text-align:center">
+            <div style="font:700 15px Montserrat;color:#111827">Confirm ${{ redeemAmount }} cash to Danielle</div>
+            <div style="font:400 13px Montserrat;color:#4B5563;margin-top:6px">Enter your staff PIN to complete the dual record.</div>
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:18px">
+              <span style="width:52px;height:60px;border-radius:14px;border:2px solid #2E7CD6;background:#EAF2FC;display:inline-flex;align-items:center;justify-content:center;font:800 24px Montserrat;color:#111827">•</span>
+              <span style="width:52px;height:60px;border-radius:14px;border:2px solid #2E7CD6;background:#EAF2FC;display:inline-flex;align-items:center;justify-content:center;font:800 24px Montserrat;color:#111827">•</span>
+              <span style="width:52px;height:60px;border-radius:14px;border:1.5px solid #EAF2FC;background:#fff;display:inline-flex;align-items:center;justify-content:center;font:800 24px Montserrat;color:#111827"></span>
+              <span style="width:52px;height:60px;border-radius:14px;border:1.5px solid #EAF2FC;background:#fff;display:inline-flex;align-items:center;justify-content:center;font:800 24px Montserrat;color:#111827"></span>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:24px">
+              <span onClick="{{ confirmGive }}" style="display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 36px;background:#12B76A;color:#fff;border-radius:999px;font:700 16px Montserrat;box-shadow:0 6px 16px rgba(18,183,106,.28);cursor:pointer">Confirm redemption</span>
+              <span onClick="{{ backToAmount }}" style="display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 24px;border:1.5px solid #E2E8F0;color:#4B5563;border-radius:999px;font:700 14px Montserrat;cursor:pointer">Back</span>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        </div>
+        </sc-if>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 28px">
+          <div style="font:700 15px Montserrat;color:#111827">Split utilization · this quarter</div>
+          <div style="display:flex;height:16px;border-radius:999px;overflow:hidden;margin-top:16px">
+            <div style="width:44%;background:#2E7CD6"></div><div style="width:38%;background:#4E5B9B"></div><div style="width:18%;background:#12B76A"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;font:600 13px Montserrat;color:#111827">
+            <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:#2E7CD6"></span>Cash redeemed</span><span style="font-variant-numeric:tabular-nums">$9,180 · 44%</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:#4E5B9B"></span>Store credits spent</span><span style="font-variant-numeric:tabular-nums">$7,940 · 38%</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:#12B76A"></span>Saved for reentry</span><span style="font-variant-numeric:tabular-nums">$3,760 · 18%</span></div>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 28px">
+          <div style="font:700 15px Montserrat;color:#111827">QR giving funnel · 30 days</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;text-align:center">
+            <div><div style="font:800 26px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">1,204</div><div style="font:600 11px Montserrat;color:#4B5563">scans</div></div>
+            <div><div style="font:800 26px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">312</div><div style="font:600 11px Montserrat;color:#4B5563">gifts · 26%</div></div>
+            <div><div style="font:800 26px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">84</div><div style="font:600 11px Montserrat;color:#4B5563">weekly recurring</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ MODERATION ============ -->
+  <sc-if value="{{ isModeration }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Moderation queue <span style="font:600 15px Montserrat;color:#4B5563">· {{ pendingCount }} pending</span></div>
+      <div style="display:flex;gap:10px"><span style="display:inline-flex;align-items:center;height:38px;padding:0 18px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 13px Montserrat">Pending</span><span style="display:inline-flex;align-items:center;height:38px;padding:0 18px;background:#fff;border:1.5px solid #EAF2FC;color:#4B5563;border-radius:999px;font:600 13px Montserrat;cursor:pointer">Resolved</span></div>
+    </div>
+
+    <div style="background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(229,72,77,.12);border:1.5px solid #F5C6C8;padding:24px 30px">
+      <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;height:26px;padding:0 12px;background:#E5484D;color:#fff;border-radius:999px;font:800 11px Montserrat;align-items:center">CRISIS — HELD</span><span style="font:600 13px Montserrat;color:#4B5563">Anonymous to feed · staff + admin alerted 12 min ago</span></div>
+      <div style="font:500 15px/1.6 Montserrat;color:#111827;margin-top:12px;background:#F7FAFE;border-radius:12px;padding:14px 18px">"I don't see the point anymore. tired of trying"</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;background:#FDF0F0;border-radius:12px;padding:12px 16px"><span style="font:800 11px Montserrat;color:#E5484D;flex:none;margin-top:2px">AI REVIEW</span><span style="font:500 13px/1.6 Montserrat;color:#111827">Self-harm signal detected. Post held from feed; author shown supportive resources. Recommend: personal follow-up today — do not resolve without human contact.</span></div>
+      <div style="display:flex;gap:12px;margin-top:16px"><span onClick="{{ goParticipants }}" style="display:inline-flex;align-items:center;height:44px;padding:0 24px;background:#E5484D;color:#fff;border-radius:999px;font:700 13px Montserrat;cursor:pointer">Open member · follow up</span><span style="display:inline-flex;align-items:center;height:44px;padding:0 24px;border:1.5px solid #E2E8F0;color:#4B5563;border-radius:999px;font:700 13px Montserrat;cursor:pointer">Assign to Sarah</span></div>
+    </div>
+
+    <sc-for list="{{ modPosts }}" as="post" hint-placeholder-count="2">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 30px;opacity:{{ post.opacity }}">
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:999px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;font:800 15px Montserrat;color:#4E5B9B">{{ post.initial }}</div><div style="flex:1"><div style="font:700 14px Montserrat;color:#111827">{{ post.author }}</div><div style="font:400 12px Montserrat;color:#4B5563">{{ post.meta }}</div></div><sc-if value="{{ post.resolved }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;height:26px;padding:0 12px;border-radius:999px;font:800 11px Montserrat;align-items:center;background:{{ post.verdictBg }};color:{{ post.verdictColor }}">{{ post.verdict }}</span></sc-if></div>
+        <div style="font:500 15px/1.6 Montserrat;color:#111827;margin-top:12px;background:#F7FAFE;border-radius:12px;padding:14px 18px">{{ post.text }}</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;border-radius:12px;padding:12px 16px;background:{{ post.aiBg }}"><span style="font:800 11px Montserrat;flex:none;margin-top:2px;color:{{ post.aiColor }}">AI REVIEW</span><span style="font:500 13px/1.6 Montserrat;color:#111827">{{ post.aiText }}</span></div>
+        <sc-if value="{{ post.pending }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:12px;margin-top:16px">
+            <span onClick="{{ post.approve }}" style="display:inline-flex;align-items:center;height:44px;padding:0 24px;background:#12B76A;color:#fff;border-radius:999px;font:700 13px Montserrat;cursor:pointer">✓ Approve</span>
+            <span onClick="{{ post.flag }}" style="display:inline-flex;align-items:center;height:44px;padding:0 24px;border:1.5px solid #EAB308;color:#A16207;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#FFF9EC">⚑ Flag · request edit</span>
+            <span onClick="{{ post.remove }}" style="display:inline-flex;align-items:center;height:44px;padding:0 24px;border:1.5px solid #E2E8F0;color:#4B5563;border-radius:999px;font:700 13px Montserrat;cursor:pointer">Remove</span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+
+  <!-- ============ REPORTS ============ -->
+  <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font:800 26px Montserrat;letter-spacing:-0.02em;color:#111827">Outcomes &amp; retention</div>
+      <div style="display:flex;gap:12px">
+        <span style="display:inline-flex;align-items:center;height:44px;padding:0 22px;border:1.5px solid #2E7CD6;color:#2E7CD6;border-radius:999px;font:700 13px Montserrat;cursor:pointer" style-hover="background:#EAF2FC">2026 cohorts ▾</span>
+        <span style="display:inline-flex;align-items:center;height:44px;padding:0 22px;background:#2E7CD6;color:#fff;border-radius:999px;font:700 13px Montserrat;box-shadow:0 4px 12px rgba(46,124,214,.28);cursor:pointer" style-hover="background:#2668B8">Export CSV / PDF</span>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:28px 32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div style="font:700 16px Montserrat;color:#111827">Retention by program</div><div style="font:600 12px Montserrat;color:#4B5563">Benchmarks: 65% (3-mo) · 65% (6-mo) · 80% (12-mo program completion)</div></div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;margin-top:20px;font:700 12px Montserrat;letter-spacing:.06em;color:#4B5563;padding:0 4px"><span>PROGRAM</span><span>3-MONTH</span><span>6-MONTH</span><span>12-MONTH</span></div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;align-items:center;padding:16px 4px;border-top:1px solid #F7FAFE;margin-top:10px">
+        <span style="font:700 15px Montserrat;color:#111827"><span style="display:inline-flex;height:24px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 11px Montserrat;align-items:center;margin-right:10px">PON</span>128 enrolled</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">74% <span style="font:600 11px Montserrat;color:#4B5563">▲ +9 vs goal</span></span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">68%</span>
+        <span style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">81%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;align-items:center;padding:16px 4px;border-top:1px solid #F7FAFE">
+        <span style="font:700 15px Montserrat;color:#111827"><span style="display:inline-flex;height:24px;padding:0 12px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 11px Montserrat;align-items:center;margin-right:10px">VOC</span>64 enrolled</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">70%</span>
+        <span style="font:800 22px Montserrat;color:#E5484D;font-variant-numeric:tabular-nums">58% <span style="font:600 11px Montserrat;color:#4B5563">▼ −7 vs goal</span></span>
+        <span style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">76%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;align-items:center;padding:16px 4px;border-top:1px solid #F7FAFE">
+        <span style="font:700 15px Montserrat;color:#111827"><span style="display:inline-flex;height:24px;padding:0 12px;background:#EAF2FC;color:#2E7CD6;border-radius:999px;font:800 11px Montserrat;align-items:center;margin-right:10px">IOP</span>43 enrolled</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">69%</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">66%</span>
+        <span style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">83%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;align-items:center;padding:16px 4px;border-top:1px solid #F7FAFE">
+        <span style="font:700 15px Montserrat;color:#111827"><span style="display:inline-flex;height:24px;padding:0 12px;background:#F0EDFB;color:#4E5B9B;border-radius:999px;font:800 11px Montserrat;align-items:center;margin-right:10px">NAV</span>87 enrolled</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">77%</span>
+        <span style="font:800 22px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums">71%</span>
+        <span style="font:800 22px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums">85%</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 28px"><div style="font:500 13px Montserrat;color:#4B5563">Stage advances this year</div><div style="font:800 40px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:6px">96</div><div style="font:600 12px Montserrat;color:#12B76A;margin-top:2px">▲ 18% vs 2025</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 28px"><div style="font:500 13px Montserrat;color:#4B5563">Reached Independent</div><div style="font:800 40px Montserrat;color:#12B76A;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:6px">22</div><div style="font:600 12px Montserrat;color:#4B5563;margin-top:2px">avg 9.5 months in program</div></div>
+      <div style="background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(11,37,69,.06);padding:24px 28px"><div style="font:500 13px Montserrat;color:#4B5563">Reentry savings released</div><div style="font:800 40px Montserrat;color:#2E7CD6;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-top:6px">$41,200</div><div style="font:600 12px Montserrat;color:#4B5563;margin-top:2px">to 31 members at stage advance</div></div>
+    </div>
+  </div>
+  </sc-if>
+
+  </div>
+</div>
+
+<div style="position:fixed;bottom:16px;right:16px;z-index:100;background:#0B2545;border-radius:999px;padding:8px 10px;display:flex;gap:2px;align-items:center;box-shadow:0 8px 24px rgba(11,37,69,.35)">
+  <span style="font:800 10px Montserrat;color:#8FBCF0;letter-spacing:.08em;padding:0 8px">PROTOTYPE</span>
+  <a href="Home.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Site</a>
+  <a href="Give.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Giving</a>
+  <a href="MemberApp.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Member</a>
+  <a href="MentorApp.dc.html" style="font:700 11px Montserrat;color:rgba(255,255,255,.8);padding:6px 10px;border-radius:999px" style-hover="color:#fff">Mentor</a>
+  <a href="Dashboard.dc.html" style="font:700 11px Montserrat;color:#fff;background:#2E7CD6;padding:6px 10px;border-radius:999px">Center</a>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    section: 'overview', // overview | participants | detail | giving | moderation | reports
+    riskOnly: false,
+    givingStep: 'amount', // amount | pin | done
+    redeemAmount: 20,
+    pagePublic: true,
+    photoPublic: false,
+    modStatus: { jasmine: 'pending', kevin: 'pending' } // pending | approved | flagged | removed
+  };
+
+  renderVals() {
+    const s = this.state;
+    const pendingCount = 1 + Object.values(s.modStatus).filter(v => v === 'pending').length;
+
+    const navDefs = [
+      { key: 'overview', label: 'Overview', icon: '▦' },
+      { key: 'participants', label: 'Participants', icon: '◎' },
+      { key: 'giving', label: 'Giving desk', icon: '♥' },
+      { key: 'moderation', label: 'Moderation', icon: '⚑', badge: pendingCount },
+      { key: 'reports', label: 'Reports', icon: '◧' }
+    ];
+    const activeKey = s.section === 'detail' ? 'participants' : s.section;
+    const navItems = navDefs.map(d => {
+      const on = activeKey === d.key;
+      return {
+        label: d.label, icon: d.icon,
+        go: () => this.setState({ section: d.key }),
+        borderLeft: on ? '3px solid #2E7CD6' : '3px solid transparent',
+        bg: on ? 'rgba(46,124,214,.14)' : 'transparent',
+        fontStyle: (on ? '700' : '600') + ' 14px Montserrat',
+        color: on ? '#EAF2FC' : 'rgba(255,255,255,.65)',
+        showBadge: d.key === 'moderation' && pendingCount > 0,
+        badge: String(pendingCount)
+      };
+    });
+
+    const allRows = [
+      { name: 'Danielle', num: '#039521464', stage: 'Transitional', stageBg: '#DDEBFB', stageColor: '#2E7CD6', program: 'PON', streak: '◆ 12d', streakColor: '#A16207', course: '45%', active: 'today', activeColor: '#12B76A', risk: null, clickable: true },
+      { name: 'Tyrell', num: '#039521502', stage: 'In Program', stageBg: '#F0EDFB', stageColor: '#4E5B9B', program: 'IOP', streak: 'paused', streakColor: '#9CA3AF', course: '15%', active: '6 days', activeColor: '#A16207', risk: 'watch', riskBg: '#FFF9EC', riskColor: '#A16207' },
+      { name: 'Maria', num: '#039521477', stage: 'Stabilization', stageBg: '#F0EDFB', stageColor: '#4E5B9B', program: 'PON', streak: '◆ 3d', streakColor: '#A16207', course: '22%', active: 'today', activeColor: '#12B76A', risk: 'follow up', riskBg: '#FDF0F0', riskColor: '#E5484D' },
+      { name: 'Andre', num: '#039521511', stage: 'Outreach', stageBg: '#EAF2FC', stageColor: '#2E7CD6', program: 'NAV', streak: 'day 1', streakColor: '#9CA3AF', course: '—', active: 'today', activeColor: '#12B76A', risk: null },
+      { name: 'Jasmine', num: '#039521433', stage: 'Transitional', stageBg: '#DDEBFB', stageColor: '#2E7CD6', program: 'VOC', streak: '◆ 21d', streakColor: '#A16207', course: '78%', active: 'today', activeColor: '#12B76A', risk: null },
+      { name: 'Robert', num: '#039521390', stage: 'Independent', stageBg: '#E8F8F0', stageColor: '#12B76A', program: 'PON', streak: 'alumni', streakColor: '#9CA3AF', course: '100%', active: '2 weeks', activeColor: '#4B5563', risk: null }
+    ];
+    const filtered = s.riskOnly ? allRows.filter(r => r.risk) : allRows;
+    const rows = filtered.map(r => ({
+      ...r,
+      initial: r.name[0],
+      hasRisk: !!r.risk,
+      noRisk: !r.risk,
+      open: () => { if (r.name === 'Danielle') this.setState({ section: 'detail' }); }
+    }));
+
+    const riskOn = s.riskOnly;
+
+    const done = s.givingStep === 'done';
+    const pin = s.givingStep === 'pin';
+
+    const aiInfo = {
+      jasmine: {
+        author: 'Jasmine R. · update with photo', initial: 'J', meta: '40 min ago · Laveen Center audience',
+        text: '"First paycheck cashed at the center today. Groceries bought with MY money."',
+        aiText: 'Recommend approve. Photo pended for routine review (faces of others not detected). No policy concerns.',
+        aiBg: '#EAF2FC', aiColor: '#2E7CD6'
+      },
+      kevin: {
+        author: 'Kevin D. · question', initial: 'K', meta: '2 hrs ago · community audience',
+        text: '"anyone got a number for the guy who does day labor pickups on 35th? hmu 602-555-…"',
+        aiText: 'Recommend flag: personal contact info shared publicly. Suggest asking author to route through center staff — job leads should go via the NAV program.',
+        aiBg: '#FFF9EC', aiColor: '#A16207'
+      }
+    };
+    const verdictStyles = {
+      approved: { label: '✓ APPROVED', bg: '#E8F8F0', color: '#12B76A' },
+      flagged: { label: '⚑ FLAGGED — EDIT REQUESTED', bg: '#FFF9EC', color: '#A16207' },
+      removed: { label: 'REMOVED', bg: '#F1F5F9', color: '#4B5563' }
+    };
+    const modPosts = ['jasmine', 'kevin'].map(key => {
+      const status = s.modStatus[key];
+      const v = verdictStyles[status];
+      const setStatus = (st) => this.setState(prev => ({ modStatus: { ...prev.modStatus, [key]: st } }));
+      return {
+        ...aiInfo[key],
+        pending: status === 'pending',
+        resolved: status !== 'pending',
+        verdict: v ? v.label : '',
+        verdictBg: v ? v.bg : '#fff',
+        verdictColor: v ? v.color : '#111827',
+        opacity: status === 'removed' ? '.5' : '1',
+        approve: () => setStatus('approved'),
+        flag: () => setStatus('flagged'),
+        remove: () => setStatus('removed')
+      };
+    });
+
+    return {
+      navItems,
+      isOverview: s.section === 'overview',
+      isParticipants: s.section === 'participants',
+      isDetail: s.section === 'detail',
+      isGiving: s.section === 'giving',
+      isModeration: s.section === 'moderation',
+      isReports: s.section === 'reports',
+      goParticipants: () => this.setState({ section: 'participants' }),
+      goModeration: () => this.setState({ section: 'moderation' }),
+      goGiving: () => this.setState({ section: 'giving' }),
+      pendingLabel: pendingCount + ' post' + (pendingCount === 1 ? '' : 's') + ' waiting in moderation',
+      // roster
+      rows,
+      toggleRisk: () => this.setState(prev => ({ riskOnly: !prev.riskOnly })),
+      riskBg: riskOn ? '#EAF2FC' : '#fff',
+      riskColor: riskOn ? '#2E7CD6' : '#4B5563',
+      riskBorder: riskOn ? '1.5px solid #2E7CD6' : '1.5px solid #EAF2FC',
+      riskFontStyle: (riskOn ? '700' : '600') + ' 13px Montserrat',
+      showingLabel: 'Showing 1\u2013' + filtered.length + ' of ' + (s.riskOnly ? filtered.length : 214),
+      // detail
+      cashBalance: done ? '$44' : '$64',
+      redeemedToday: done ? '$40' : '$20',
+      pageToggleBg: s.pagePublic ? '#12B76A' : '#E2E8F0',
+      pageKnob: s.pagePublic ? '20px' : '2px',
+      togglePage: () => this.setState(prev => ({ pagePublic: !prev.pagePublic })),
+      photoToggleBg: s.photoPublic ? '#12B76A' : '#E2E8F0',
+      photoKnob: s.photoPublic ? '20px' : '2px',
+      togglePhoto: () => this.setState(prev => ({ photoPublic: !prev.photoPublic })),
+      consentNote: s.pagePublic
+        ? 'Revoking flips the public page to a generic org-giving state within minutes.'
+        : 'Public page is OFF — give.my-struggle.org/p/danielle now shows the generic org-giving state.',
+      // giving desk
+      giveActive: !done,
+      giveDone: done,
+      isAmountStep: s.givingStep === 'amount',
+      isPinStep: pin,
+      redeemAmount: s.redeemAmount,
+      quickAmounts: [10, 40, 64].map(v => ({
+        label: v === 64 ? 'All $64' : '$' + v,
+        select: () => this.setState({ redeemAmount: v })
+      })),
+      toPinStep: () => this.setState({ givingStep: 'pin' }),
+      backToAmount: () => this.setState({ givingStep: 'amount' }),
+      confirmGive: () => this.setState({ givingStep: 'done' }),
+      resetGiving: () => this.setState({ givingStep: 'amount', redeemAmount: 20 }),
+      step2Color: pin ? '#12B76A' : '#2E7CD6',
+      step2Bg: pin ? '#12B76A' : '#2E7CD6',
+      step2NumColor: '#fff',
+      step2Border: 'none',
+      step2Glyph: pin ? '✓' : '2',
+      step2LineBg: '#12B76A',
+      step3Color: pin ? '#2E7CD6' : '#9CA3AF',
+      step3Bg: pin ? '#2E7CD6' : '#fff',
+      step3NumColor: pin ? '#fff' : '#9CA3AF',
+      step3Border: pin ? 'none' : '2px solid #E2E8F0',
+      step3LineBg: pin ? '#12B76A' : '#E2E8F0',
+      // moderation
+      pendingCount,
+      modPosts
+    };
+  }
+}
+</script>
+</body>
+</html>
