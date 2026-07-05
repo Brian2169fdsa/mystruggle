@@ -375,6 +375,99 @@ export interface ContinuumEvent {
   occurredAt: number;
 }
 
+// ── Community Ad Product (docs/15 §B + requirements/12 §B/E) ───────────
+// EXPANSION: additive only — nothing above this line changes. The buyer is
+// the recovery center; the audience is members in recovery. Member trust is
+// the product, so the trust rules are enforced in CODE (see app/api/placements
+// /serve for the crisis-exclusion + frequency-cap + coarse-targeting gates),
+// not left to policy docs. Ads live in the community feed as clearly labeled
+// "Sponsored by [Center]" items — never disguised as a peer Post.
+
+/** What a sponsored placement is selling — recovery-relevant categories ONLY.
+ *  There is deliberately no "product"/"offer" free-for-all kind; every value
+ *  here is something a person in recovery should be able to see safely. */
+export type PlacementKind =
+  | "service"
+  | "alumni_event"
+  | "job_opening"
+  | "program"
+  | "announcement";
+
+/** Placement lifecycle: center drafts → submits for review → ms_admin approves
+ *  (→ running) or rejects. running↔paused while live; ended when scheduled out. */
+export type PlacementStatus =
+  | "draft"
+  | "pending_review"
+  | "approved"
+  | "running"
+  | "paused"
+  | "ended"
+  | "rejected";
+
+/** How broadly a placement is shown. COARSE only — see targeting note below. */
+export type AudienceScope = "community" | "geo" | "circle" | "phase";
+
+/** Coarse, NON-CLINICAL targeting. THIS IS THE WHOLE OBJECT — there is
+ *  deliberately NO field for health, diagnosis, substance, symptom, or any
+ *  sensitive attribute, and none may ever be added. Targeting a vulnerable
+ *  population by their condition is structurally impossible here: an advertiser
+ *  literally cannot express "show this to people with <diagnosis>" because the
+ *  schema has no place to put it. Only metro/geo, care phase (e.g. alumni),
+ *  interest tags, and a circle topic are allowed. (docs/10 + docs/15 §B.) */
+export interface PlacementTargeting {
+  metro?: string; // e.g. "Phoenix, AZ" — geographic, non-clinical
+  phase?: CarePhase; // e.g. "continuing" (alumni) — care stage, NOT a health status
+  interestTags?: string[]; // e.g. ["employment", "housing"] — coarse interests
+  circleId?: string; // a community circle topic (Circle.id)
+}
+
+/** A center's sponsored placement in the community feed. orgId === centerId —
+ *  only approved orgs (centers) advertise; there are no arbitrary advertisers. */
+export interface SponsoredPlacement {
+  id: string;
+  orgId: string; // === Center.id — the buying center
+  orgName: string; // shown to members as "Sponsored by [orgName]"
+  title: string;
+  body: string;
+  ctaLabel: string; // e.g. "RSVP", "Apply", "Learn more"
+  ctaUrl: string;
+  kind: PlacementKind;
+  audienceScope: AudienceScope;
+  targeting: PlacementTargeting; // coarse, non-clinical ONLY (see type above)
+  status: PlacementStatus;
+  startsAt?: number;
+  endsAt?: number;
+  budgetCents?: number; // flat placement fee v1 (not an auction)
+  approvedBy?: string; // ms_admin (staff) user id who approved
+  rejectionReason?: string;
+  createdAt: number;
+}
+
+/** An interaction with a placement. memberId is stored SERVER-SIDE ONLY for
+ *  frequency-capping and dedup — it is NEVER exposed to advertiser reads
+ *  (GET /api/placements returns aggregate counts, never per-member rows). */
+export interface PlacementEvent {
+  id: string;
+  placementId: string;
+  kind: "impression" | "click" | "dismiss" | "report";
+  memberId?: string; // internal only — never surfaced to the center
+  occurredAt: number;
+}
+
+/** A demo/contact-sales request from the "For Recovery Centers" marketing
+ *  page. Public form in → staff lead queue. */
+export interface DemoLead {
+  id: string;
+  orgName: string;
+  contactName: string;
+  email: string;
+  phone?: string;
+  message?: string;
+  source?: string; // where the lead came from (e.g. "centers-page")
+  status: "new" | "contacted" | "closed";
+  createdAt: number;
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 
