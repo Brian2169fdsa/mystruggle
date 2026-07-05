@@ -137,6 +137,10 @@ export default function NavDrawer() {
             </div>
           )}
 
+          <Link href="/community" onClick={close} className={rowClass}>
+            Community
+          </Link>
+
           <button
             type="button"
             onClick={() => setDonateOpen((v) => !v)}

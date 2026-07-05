@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Site", match: ["/", "/about", "/donate", "/mentor"] },
+  { href: "/community", label: "Feed", match: ["/community"] },
   { href: "/give", label: "Giving", match: ["/give"] },
   { href: "/member-app", label: "Member", match: ["/member-app"] },
   { href: "/mentor-app", label: "Mentor", match: ["/mentor-app"] },

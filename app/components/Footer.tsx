@@ -70,6 +70,7 @@ export default function Footer() {
           <div className="mt-[18px] flex flex-col gap-3 text-[15px] font-medium">
             {[
               { href: "/about", label: "About us" },
+              { href: "/community", label: "Community" },
               { href: "/donate", label: "Donate today" },
               { href: "/mentor", label: "Become a Mentor" },
               { href: "/give", label: "QR Code Giving" },

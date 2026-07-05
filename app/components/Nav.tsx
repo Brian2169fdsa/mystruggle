@@ -114,6 +114,13 @@ export default function Nav() {
             </div>
           </div>
 
+          <Link
+            href="/community"
+            className="text-ink-900 hover:text-blue-primary"
+          >
+            Community
+          </Link>
+
           {/* Donate — mega-menu on hover; top-level link still navigates */}
           <div className="group relative flex items-center">
             <Link

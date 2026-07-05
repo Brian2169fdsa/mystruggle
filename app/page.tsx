@@ -305,6 +305,9 @@ export default function Home() {
       {/* SOCIAL WALL */}
       <SocialWall />
 
+      {/* COMMUNITY TEASER */}
+      <CommunityTeaser />
+
       {/* FAQ */}
       <section className="bg-canvas">
         <div className="mx-auto max-w-[900px] px-5 py-16 lg:px-6 lg:py-[110px]">
@@ -395,6 +398,134 @@ const FAQ = [
     ),
   },
 ];
+
+function CommunityTeaser() {
+  return (
+    <section className="bg-canvas">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
+        <div className="mx-auto flex max-w-[680px] flex-col items-center gap-3.5 text-center">
+          <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
+            The community
+          </div>
+          <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+            One feed, five hundred journeys, zero{" "}
+            <span className="script text-[42px] text-indigo-brand lg:text-[56px]">
+              judgment
+            </span>
+          </h2>
+          <div className="text-base text-ink-600">
+            Members and mentors share wins, jobs, housing leads, and support
+            requests — and anyone can give directly.
+          </div>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3 lg:mt-[52px] lg:gap-6">
+          {/* Win post */}
+          <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-tint text-[11px] font-extrabold text-indigo-brand">
+                DM
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-bold text-ink-900">
+                  Danielle M.
+                </div>
+                <div className="text-[11px] text-ink-400">Member · 2h ago</div>
+              </div>
+              <span className="ml-auto inline-flex h-[22px] items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-bold tracking-[.06em] text-blue-primary">
+                WIN
+              </span>
+            </div>
+            <div className="mt-3 text-[14px]/[1.6] text-ink-900">
+              Eight months in transitional housing and today I signed the lease
+              on my own place. My mentor was my first call.
+            </div>
+            <div className="mt-3 flex items-center gap-1.5 text-[12px] font-semibold text-ink-400">
+              <Heart size={12} className="text-blue-primary" /> 214 cheering
+              her on
+            </div>
+          </div>
+
+          {/* Jobs post */}
+          <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-tint text-[11px] font-extrabold text-indigo-brand">
+                MT
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-bold text-ink-900">
+                  Marcus T.
+                </div>
+                <div className="text-[11px] text-ink-400">Mentor · 1d ago</div>
+              </div>
+              <span className="ml-auto inline-flex h-[22px] items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-bold tracking-[.06em] text-blue-primary">
+                JOBS
+              </span>
+            </div>
+            <div className="mt-3 text-[14px]/[1.6] text-ink-900">
+              A warehouse in Laveen is hiring — second-chance friendly, weekly
+              pay, on the bus line. I can walk you through the application.
+            </div>
+            <div className="mt-3 text-[12px] font-bold text-blue-primary">
+              3 members connected →
+            </div>
+          </div>
+
+          {/* Support request */}
+          <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-tint text-[11px] font-extrabold text-indigo-brand">
+                JR
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-bold text-ink-900">
+                  James R.
+                </div>
+                <div className="text-[11px] text-ink-400">Member · 3h ago</div>
+              </div>
+              <span className="ml-auto inline-flex h-[22px] items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-bold tracking-[.06em] text-blue-primary">
+                SUPPORT
+              </span>
+            </div>
+            <div className="mt-3 text-[14px]/[1.6] text-ink-900">
+              A monthly bus pass gets me to my new job and back — $64 covers
+              the whole month.
+            </div>
+            <div className="mt-3.5">
+              <div className="flex justify-between text-[12px] font-semibold text-ink-900">
+                <span>Bus pass · $64</span>
+                <span className="tnum text-blue-primary">$41 raised</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-sky-tint">
+                <div className="h-full w-[64%] rounded-full bg-[linear-gradient(90deg,#4E5B9B,#2E7CD6)]" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-blue-primary px-4 text-[12px] font-bold text-white">
+                Give <Heart size={11} fill="currentColor" />
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row sm:gap-4 lg:mt-[52px]">
+          <Link
+            href="/community"
+            className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto"
+          >
+            Visit the community →
+          </Link>
+          <Link
+            href="/signup"
+            className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-blue-primary px-[34px] text-base font-bold text-blue-primary hover:bg-sky-tint sm:w-auto"
+          >
+            Create your account
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function SocialWall() {
   const cards = [
