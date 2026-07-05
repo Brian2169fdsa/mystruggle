@@ -283,12 +283,22 @@ export default function MentorApp() {
     }
   };
 
+  // Real data when signed in; the just-saved optimistic copy wins right
+  // after a save; static demo copy when signed out.
+  const latest = signedIn ? sessionInfo?.latest ?? null : null;
   const lastSession = sessionSaved
     ? `Last session: today · ${MODE_LABEL[mode]} · ${durationLabel(duration)}`
-    : "Last session: Tuesday · in person · 45 min";
+    : latest
+      ? `Last session: ${dayLabel(latest.createdAt)} · ${API_MODE_LABEL[latest.mode]} · ${latest.minutes} min`
+      : "Last session: Tuesday · in person · 45 min";
   const lastSessionNote = sessionSaved
     ? "“Prepped for Thursday’s interview. Confidence way up.”"
-    : "“Talked through the ABC Painting interview. She’s ready.”";
+    : latest
+      ? latest.note
+        ? `“${latest.note}”`
+        : ""
+      : "“Talked through the ABC Painting interview. She’s ready.”";
+  const sessionCount = signedIn && sessionInfo ? sessionInfo.count : null;
 
   return (
     <div className="flex min-h-screen justify-center bg-[#E8EDF4]">
@@ -589,9 +599,17 @@ export default function MentorApp() {
                 <div className="mt-3 text-sm font-semibold text-ink-900">
                   {lastSession}
                 </div>
-                <div className="mt-1.5 text-[13px]/[1.6] font-normal text-ink-600">
-                  {lastSessionNote}
-                </div>
+                {lastSessionNote && (
+                  <div className="mt-1.5 text-[13px]/[1.6] font-normal text-ink-600">
+                    {lastSessionNote}
+                  </div>
+                )}
+                {sessionCount !== null && (
+                  <div className="mt-2 text-[11px] font-semibold text-ink-400">
+                    {sessionCount} session{sessionCount === 1 ? "" : "s"} logged
+                    with Danielle
+                  </div>
+                )}
               </div>
 
               {/* Deliberately quiet — a text link, not a button */}
@@ -806,10 +824,7 @@ export default function MentorApp() {
             duration={duration}
             onMode={setMode}
             onDuration={setDuration}
-            onSave={() => {
-              setLogOpen(false);
-              setSessionSaved(true);
-            }}
+            onSave={saveSession}
             onClose={() => setLogOpen(false)}
           />
         )}

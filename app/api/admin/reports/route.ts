@@ -29,8 +29,19 @@ function isActive(m: { streak?: number; points?: number }): boolean {
 
 export async function GET() {
   const d = db();
-  const now = Date.now();
   const members = d.users.filter((u) => u.role === "member");
+
+  // REPORTING ANCHOR — seeded demo data can be anchored earlier than the
+  // wall clock (it was generated relative to its own "now"). Anchor the
+  // 12-month giving window and the retention horizons to the latest
+  // recorded activity so the report stays meaningful across reseeds; with
+  // fresh data this is effectively Date.now().
+  const latestActivity = Math.max(
+    0,
+    ...d.donations.map((x) => x.createdAt),
+    ...members.map((m) => m.createdAt)
+  );
+  const now = Math.min(Date.now(), latestActivity || Date.now());
 
   // ── retention cohorts by signup quarter ──────────────────────────────
   const byQuarter = new Map<string, typeof members>();
