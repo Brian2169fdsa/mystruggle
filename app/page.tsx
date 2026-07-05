@@ -109,11 +109,11 @@ export default function Home() {
       <section className="bg-canvas">
         <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)] lg:grid-cols-[minmax(300px,460px)_1fr]">
-            <div className="photo-ph relative flex min-h-[260px] items-end p-4 lg:min-h-[420px]">
-              <span className="photo-cap">
-                photo: Danielle, warm daylight portrait
-              </span>
-            </div>
+            <div
+              className="relative min-h-[260px] bg-cover bg-center lg:min-h-[420px]"
+              style={{ backgroundImage: "url('/danielle.png')" }}
+            />
+
             <div className="flex flex-col gap-[18px] px-6 py-8 lg:px-16 lg:py-14">
               <div className="text-[12px] font-bold tracking-[.12em] text-blue-primary lg:text-[13px]">
                 MEMBER STORY
@@ -582,6 +582,7 @@ function SocialWall() {
       when: "2 days ago",
       href: "https://www.instagram.com",
       cap: "GED celebration",
+      img: "/ged-celebration.png",
       video: false,
       body: (
         <>
@@ -596,6 +597,7 @@ function SocialWall() {
       when: "4 days ago",
       href: "https://www.facebook.com",
       cap: "Pantry restock day",
+      img: "/pantry-restock.png",
       video: false,
       body: "The pantry shelves are stocked — thank you to everyone who donated items this month.",
     },
@@ -605,6 +607,7 @@ function SocialWall() {
       when: "1 week ago",
       href: "https://www.tiktok.com",
       cap: "video: a day at Laveen Center",
+      img: null,
       video: "dark",
       body: '"How can I help you?" — what one question sounds like in real life.',
     },
@@ -614,6 +617,7 @@ function SocialWall() {
       when: "2 weeks ago",
       href: "https://www.youtube.com",
       cap: "video: Joe McDonald on PON",
+      img: null,
       video: "blue",
       body: "Position of Neutrality: the founder story, in Joe's own words.",
     },
@@ -652,7 +656,13 @@ function SocialWall() {
                   <div className="text-[11px] text-ink-400">{c.when}</div>
                 </div>
               </div>
-              <div className="photo-ph relative flex aspect-square items-end p-2.5">
+              <div
+                className={
+                  "relative flex aspect-square items-end bg-cover bg-center p-2.5 " +
+                  (c.img ? "" : "photo-ph")
+                }
+                style={c.img ? { backgroundImage: `url('${c.img}')` } : undefined}
+              >
                 {c.video && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
@@ -667,9 +677,11 @@ function SocialWall() {
                     </div>
                   </div>
                 )}
-                <span className="photo-cap relative text-[10px]">
-                  {c.video ? c.cap : `photo: ${c.cap}`}
-                </span>
+                {!c.img && (
+                  <span className="photo-cap relative text-[10px]">
+                    {c.video ? c.cap : `photo: ${c.cap}`}
+                  </span>
+                )}
               </div>
               <div className="p-4 text-[13px]/[1.5] font-medium text-ink-900">
                 {c.body}
