@@ -165,6 +165,74 @@ const PILLARS = [
   },
 ];
 
+/* ---------------------------------------------------------------- */
+/* Continuum of care — phases + blind spots                          */
+/* ---------------------------------------------------------------- */
+
+const PHASES = [
+  { label: "Pre-care", color: "#DFEAF9" },
+  { label: "Intake", color: "#A7C9EF" },
+  { label: "In-program", color: "#2E7CD6" },
+  { label: "Transition", color: "#3D6DBB" },
+  { label: "Continuing", color: "#4E5B9B", live: true },
+];
+
+const BLIND_SPOTS = [
+  {
+    tag: "Before",
+    copy: "No one sees the runway into treatment — we measure recovery capital before day one.",
+  },
+  {
+    tag: "After",
+    copy: "Outcomes tracking dies at discharge — our community keeps the record alive for years.",
+  },
+  {
+    tag: "Engagement = efficacy",
+    copy: "Live engagement signals are the earliest relapse warning that exists.",
+  },
+];
+
+/** Horizontal before/during/after ribbon — five connected phase segments. */
+function ContinuumRibbon() {
+  return (
+    <div className="w-full">
+      <div
+        className="flex w-full overflow-hidden rounded-full"
+        role="img"
+        aria-label="The continuum of care: Pre-care, Intake, In-program, Transition, and Continuing — one connected timeline"
+      >
+        {PHASES.map((p) => (
+          <div
+            key={p.label}
+            className="relative h-3 flex-1 lg:h-3.5"
+            style={{ backgroundColor: p.color }}
+          >
+            {p.live && (
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <span className="absolute inline-flex h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full bg-white/70 lg:h-5 lg:w-5" />
+                <span className="absolute inline-flex h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,.9)]" />
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-2.5 flex w-full">
+        {PHASES.map((p) => (
+          <div
+            key={p.label}
+            className={
+              "flex-1 text-center text-[10px] font-bold tracking-[.04em] sm:text-[12px] lg:tracking-[.08em] " +
+              (p.live ? "text-white" : "text-white/65")
+            }
+          >
+            {p.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const ONBOARDING = [
   {
     n: "01",

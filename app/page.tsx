@@ -44,12 +44,17 @@ export default function Home() {
               <Link
                 href="/donate"
                 className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
+                style={{ color: "#fff" }}
               >
                 Donate today <Heart size={14} fill="currentColor" />
               </Link>
               <Link
                 href="/mentor"
                 className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 bg-[rgba(11,37,69,.35)] px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
+                style={{
+                  color: "#fff",
+                  borderColor: "rgba(255,255,255,.85)",
+                }}
               >
                 Become a mentor
               </Link>
@@ -309,6 +314,9 @@ export default function Home() {
       {/* COMMUNITY TEASER */}
       <CommunityTeaser />
 
+      {/* EMPLOYER BAND */}
+      <EmployerBand />
+
       {/* FAQ */}
       <section className="bg-canvas">
         <div className="mx-auto max-w-[900px] px-5 py-16 lg:px-6 lg:py-[110px]">
@@ -400,6 +408,43 @@ const FAQ = [
     ),
   },
 ];
+
+function EmployerBand() {
+  return (
+    <section className="bg-navy-deep">
+      <div className="mx-auto max-w-[1000px] px-5 py-16 text-center lg:px-6 lg:py-[90px]">
+        <div className="text-[12px] font-bold uppercase tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
+          For employers
+        </div>
+        <h2 className="mx-auto mt-4 max-w-[720px] text-[30px]/[1.15] font-extrabold tracking-[-0.02em] text-white lg:text-[40px]/[1.1]">
+          Hire people who show{" "}
+          <span className="script text-[38px] text-[#A9B4E8] lg:text-[50px]">up</span>.
+        </h2>
+        <p className="mx-auto mt-4 max-w-[560px] text-[16px]/[1.7] text-white/80 lg:text-[17px]">
+          Post jobs and opportunities directly to our recovery community.
+          Fair-chance employers change lives here — reach members building
+          their next chapter, ready to work.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <a
+            href="mailto:info@themystruggles.com?subject=Posting%20jobs%20to%20the%20community"
+            className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
+            style={{ color: "#fff" }}
+          >
+            Contact us to post jobs
+          </a>
+          <span
+            title="Employer accounts are on our roadmap"
+            className="inline-flex h-[52px] w-full cursor-default items-center justify-center rounded-full border-[1.5px] border-white/70 px-[34px] text-base font-bold text-white/90 sm:w-auto"
+            style={{ color: "rgba(255,255,255,.9)", borderColor: "rgba(255,255,255,.7)" }}
+          >
+            Employer dashboard — coming soon
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function CommunityTeaser() {
   return (

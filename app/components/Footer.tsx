@@ -45,7 +45,10 @@ export default function Footer() {
             alt="My Struggle"
             className="h-[52px] w-auto self-start"
           />
-          <div className="max-w-[280px] text-[14px]/[1.7] text-white/80">
+          <div
+            className="max-w-[280px] text-[14px]/[1.7] text-white/80"
+            style={{ color: "rgba(255,255,255,.8)" }}
+          >
             End the Struggle, Build the Future Together.
           </div>
           <div className="flex gap-3">
@@ -56,7 +59,11 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener"
                 aria-label={s.label}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#8FBCF0]/40 text-[11px] font-bold text-[#EAF2FC] hover:border-[#8FBCF0] hover:bg-white/10"
+                className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-white/40 text-[11px] font-bold text-white hover:border-white/70 hover:bg-white/10"
+                style={{
+                  color: "#fff",
+                  borderColor: "rgba(255,255,255,.4)",
+                }}
               >
                 {s.tag}
               </a>
@@ -65,7 +72,10 @@ export default function Footer() {
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
+          <div
+            className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]"
+            style={{ color: "#8FBCF0" }}
+          >
             Explore
           </div>
           <div className="mt-[18px] flex flex-col gap-3 text-[15px] font-medium">
@@ -81,7 +91,8 @@ export default function Footer() {
               <Link
                 key={l.label}
                 href={l.href}
-                className="text-[#EAF2FC] underline-offset-4 hover:text-white hover:underline"
+                className="text-white/90 underline-offset-4 hover:text-white hover:underline"
+                style={{ color: "rgba(255,255,255,.92)" }}
               >
                 {l.label}
               </Link>
@@ -90,32 +101,42 @@ export default function Footer() {
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
+          <div
+            className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]"
+            style={{ color: "#8FBCF0" }}
+          >
             Contact
           </div>
-          <div className="mt-[18px] flex flex-col gap-3 text-[15px]/[1.5] font-medium text-white/85">
-            <span>
-              6614 W Harwell Rd
-              <br />
-              Laveen, AZ 85339
-            </span>
-            <span>602-402-7197</span>
+          <div
+            className="mt-[18px] flex flex-col gap-3 text-[15px]/[1.5] font-medium text-white/80"
+            style={{ color: "rgba(255,255,255,.85)" }}
+          >
+            <span>602-402-5121</span>
             <span>info@themystruggles.com</span>
           </div>
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
+          <div
+            className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]"
+            style={{ color: "#8FBCF0" }}
+          >
             Stay close
           </div>
-          <div className="mt-[18px] text-[14px]/[1.6] text-white/75">
+          <div
+            className="mt-[18px] text-[14px]/[1.6] text-white/75"
+            style={{ color: "rgba(255,255,255,.75)" }}
+          >
             Member milestones and center news, once a month.
           </div>
           <NewsletterForm />
         </div>
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-[1200px] flex-col items-center gap-2 border-t border-white/[.12] px-5 py-6 text-center text-[13px] text-white/65 lg:mt-16 lg:flex-row lg:justify-between lg:px-6 lg:text-left">
+      <div
+        className="mx-auto mt-12 flex max-w-[1200px] flex-col items-center gap-2 border-t border-white/[.12] px-5 py-6 text-center text-[13px] text-white/65 lg:mt-16 lg:flex-row lg:justify-between lg:px-6 lg:text-left"
+        style={{ color: "rgba(255,255,255,.65)" }}
+      >
         <span>© 2026 My Struggle · EST. 2021 · Laveen, Arizona</span>
         <span className="flex items-center gap-2">
           <Link href="/privacy" className="hover:text-white">

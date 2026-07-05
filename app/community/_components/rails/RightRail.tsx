@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Briefcase } from "lucide-react";
 
 const CARD =
   "rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]";
@@ -195,6 +196,40 @@ function BoardCard({ board }: { board: BoardRow[] | null }) {
   );
 }
 
+/* ── Hiring? ──────────────────────────────────────────────────────── */
+
+function HiringCard() {
+  return (
+    <div className={CARD}>
+      <h2 className={HEADING}>Hiring?</h2>
+      <div className="mt-2.5 flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-tint text-indigo-brand">
+          <Briefcase className="h-[18px] w-[18px]" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-ink-900">
+            Post jobs to this community
+          </p>
+          <p className="mt-1 text-[13px]/[1.6] font-medium text-ink-600">
+            Fair-chance employers: reach 500+ members building their next
+            chapter. Email us, or manage postings from your dashboard (coming
+            soon).
+          </p>
+        </div>
+      </div>
+      <a
+        href="mailto:info@themystruggles.com"
+        className="mt-3 inline-flex h-9 items-center justify-center rounded-full bg-sky-tint px-4 text-[13px] font-extrabold text-blue-primary hover:bg-sky-tint-2"
+      >
+        Contact us →
+      </a>
+      <p className="mt-2.5 text-[11px] font-medium text-ink-400">
+        Employer dashboards are on our roadmap.
+      </p>
+    </div>
+  );
+}
+
 /* ── How giving works ─────────────────────────────────────────────── */
 
 function GivingCard() {
@@ -255,6 +290,7 @@ export default function RightRail() {
     <div className="sticky top-[92px] flex flex-col gap-4 self-start">
       <StatsCard stats={stats} />
       <BoardCard board={board} />
+      <HiringCard />
       <GivingCard />
     </div>
   );
