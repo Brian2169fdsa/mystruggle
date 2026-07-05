@@ -1,4 +1,45 @@
-# Gap Report — run 2026-07-05-6 (fixes + continuum of care)
+# Gap Report — run 2026-07-05-7 (centers page + community ad product)
+
+## Run 7 summary
+Shipped the "For Recovery Centers" marketing expansion + the Community Ad
+Product, all trust rules enforced IN CODE and negative-tested live:
+- /centers expanded: animated relapse-risk curve, cited stat spine (6 stats
+  w/ footnotes), three blind spots, deliver-programming, stay-connected
+  cadence, reach-the-community ad section, prove-outcomes, Danielle 5-phase
+  scroll, placeholder pricing tiers, trust/privacy, demo-lead capture form.
+- Ad product data layer (seed v8): sponsored_placements + placement_events
+  + demo_leads; 3 approved/running + 1 pending + 1 rejected("alcohol") + 6
+  leads seeded. screenPlacement() content policy. Kill switch.
+- Feed serving: labeled "Sponsored by [Center]" cards, frequency cap
+  (everyN 5), dismiss/report/reduce controls.
+- Dashboard: Ad Manager (create/lifecycle/aggregate metrics), Ad Review
+  console (approve/reject/kill switch), Demo Leads queue.
+- VERIFIED live: crisis member served 0 ads (Tyrell: 1→post crisis→0);
+  gambling/alcohol rejected 400; advertiser reads expose 0 memberId;
+  no health/diagnosis targeting field exists (structurally impossible);
+  frequency cap live; zero "facebook" in new code. Build passes.
+- Homepage: 3 real photos wired (Danielle spotlight, GED + pantry cards).
+- AI Guide chat widget replaced the floating PROTOTYPE bar.
+
+## GAP REGISTER — run 7 deferrals
+1. **Footer "facebook" grep hit** (DECISION NEEDED): footer links to the
+   org's real facebook.com page — the module's zero-facebook grep rule hits
+   it. Keep the real social link or remove the FB icon? Awaiting user.
+2. Ads: real Claude-review gate (keyword screen is the stopgap); a distinct
+   ms_admin role (staff currently acts as ms_admin); Resend email notify on
+   new leads; scheduling window enforcement (status is source of truth).
+3. Continuum requirements/11 still open (intake consent handshake, care
+   channels, LOC targeting/kiosk, transition/discharge, alumni dashboard +
+   relapse early-warning, licensed outcomes data product + de-id k≥11,
+   program cockpit) + the continuum-event hooks on live routes.
+4. Carried: AI Companion (plan-aware Guide), dashboard My Plan/résumé/BARC
+   panes, milestone→journey_task mirror, report/block, real PDF export,
+   employer accounts + posting flow, Supabase schema for all new tables,
+   requirements/10+11+12 checkbox audits with per-item evidence.
+5. Standing DECISIONS-NEEDED: Stripe keys, Supabase keys, verbatim copy,
+   GitHub-app push connection, real prices for /centers pricing tiers.
+
+# Prior run — 2026-07-05-6 (fixes + continuum of care)
 
 ## Run 6 summary
 Quick fixes shipped + pushed: footer text readability (inline color

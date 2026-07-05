@@ -9,6 +9,9 @@ import {
   Flag,
   BarChart3,
   ClipboardList,
+  Megaphone,
+  ShieldCheck,
+  Inbox,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -18,6 +21,9 @@ import GivingDesk from "./_components/GivingDesk";
 import Moderation from "./_components/Moderation";
 import Reports from "./_components/Reports";
 import Applications from "./_components/Applications";
+import AdManager from "./_components/AdManager";
+import AdApproval from "./_components/AdApproval";
+import LeadQueue from "./_components/LeadQueue";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -32,8 +38,14 @@ const WORDMARK_WHITE =
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
 
-/** Local section union — adds Applications without widening the shared type. */
-type PageSection = Section | "applications";
+/** Local section union — adds Applications + the ad/lead consoles without
+ *  widening the shared type (mirrors how Applications was added). */
+type PageSection =
+  | Section
+  | "applications"
+  | "ads"
+  | "adReview"
+  | "leads";
 
 const NAV = [
   { key: "overview", label: "Overview", Icon: LayoutGrid },
@@ -41,6 +53,9 @@ const NAV = [
   { key: "applications", label: "Applications", Icon: ClipboardList },
   { key: "giving", label: "Giving desk", Icon: Heart },
   { key: "moderation", label: "Moderation", Icon: Flag },
+  { key: "ads", label: "Ad Manager", Icon: Megaphone },
+  { key: "adReview", label: "Ad Review", Icon: ShieldCheck },
+  { key: "leads", label: "Demo Leads", Icon: Inbox },
   { key: "reports", label: "Reports", Icon: BarChart3 },
 ] as const;
 
@@ -131,6 +146,7 @@ export default function DashboardPage() {
   const [riskOnly, setRiskOnly] = useState(false);
   const [givingStep, setGivingStep] = useState<GivingStep>("amount");
   const [redeemAmount, setRedeemAmount] = useState(20);
+  const [adReviewCount, setAdReviewCount] = useState(0);
 
   // ── LIVE data ────────────────────────────────────────────────────────
   const [overview, setOverview] = useState<OverviewData | null>(null);
@@ -183,6 +199,48 @@ export default function DashboardPage() {
       .then((d) => d && setMembers(d.members as AdminMember[]))
       .catch(() => {});
   }, [isStaff, loadOverview, loadPosts, onUnauthorized]);
+
+  // Live badge for Ad Review — poll the ms_admin queue length. Quiet on 404
+  // (the ad APIs may still be coming online).
+  useEffect(() => {
+    if (!isStaff) return;
+    let stop = false;
+    const poll = () => {
+      fetch("/api/admin/placements")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (stop || !d) return;
+          // Contract uses `queue`; the live API returns all `placements`. Count
+          // only those still needing review (pending, or member-reported).
+          const all = (d.queue ?? d.placements ?? []) as Array<{
+            status?: string;
+            reported?: boolean;
+            reportCount?: number;
+            stats?: { report?: number; reports?: number } | null;
+            metrics?: { report?: number; reports?: number } | null;
+          }>;
+          const n = all.filter((p) => {
+            const s = (p.status ?? "").toLowerCase();
+            const m = p.stats ?? p.metrics ?? {};
+            const reports = p.reportCount ?? m.reports ?? m.report ?? 0;
+            return (
+              s.includes("pend") ||
+              s.includes("review") ||
+              p.reported ||
+              reports > 0
+            );
+          }).length;
+          setAdReviewCount(n);
+        })
+        .catch(() => {});
+    };
+    poll();
+    const t = setInterval(poll, 15_000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [isStaff]);
 
   const moderate = useCallback(
     async (postId: string, action: ModerateAction) => {
@@ -252,6 +310,11 @@ export default function DashboardPage() {
                   {pendingCount}
                 </span>
               )}
+              {key === "adReview" && adReviewCount > 0 && (
+                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                  {adReviewCount}
+                </span>
+              )}
             </button>
           );
         })}
@@ -305,6 +368,11 @@ export default function DashboardPage() {
             />
           ))}
         {section === "applications" && <Applications />}
+        {section === "ads" && <AdManager />}
+        {section === "adReview" && (
+          <AdApproval onQueueLength={setAdReviewCount} />
+        )}
+        {section === "leads" && <LeadQueue />}
         {section === "giving" && (
           <GivingDesk
             overview={overview}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import PrototypeMap from "../components/PrototypeMap";
+import LeadForm from "./_components/LeadForm";
 
 export const metadata = {
   title: "For Recovery Centers — My Struggle",
@@ -251,9 +252,419 @@ const ONBOARDING = [
   },
 ];
 
+/* ---------------------------------------------------------------- */
+/* Keyframes for the engagement-curve draw + reveal (pure CSS)       */
+/* ---------------------------------------------------------------- */
+
+function CentersStyles() {
+  return (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: `
+@keyframes ms-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes ms-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ms-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ms-curve-line { stroke-dasharray: 100; stroke-dashoffset: 100; animation: ms-draw 2.6s ease-out .2s forwards; }
+.ms-curve-dot { opacity: 0; animation: ms-rise .5s ease-out forwards; }
+.ms-curve-area { opacity: 0; animation: ms-rise 1.4s ease-out 1.2s forwards; }
+.ms-bar-fill { transform-origin: left; animation: ms-grow 1.1s ease-out .2s both; }
+@media (prefers-reduced-motion: reduce) {
+  .ms-curve-line, .ms-curve-dot, .ms-curve-area, .ms-bar-fill {
+    animation: none; stroke-dashoffset: 0; opacity: 1; transform: none;
+  }
+}
+`,
+      }}
+    />
+  );
+}
+
+/* Reusable section eyebrow. */
+function Eyebrow({
+  children,
+  light = false,
+}: {
+  children: React.ReactNode;
+  light?: boolean;
+}) {
+  return (
+    <div
+      className={
+        "text-[12px] font-bold uppercase tracking-[.12em] lg:text-[13px] " +
+        (light ? "text-[#8FBCF0]" : "text-blue-primary")
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/* 1 — The engagement curve (the money section)                      */
+/* ---------------------------------------------------------------- */
+
+/** Relapse-risk-over-time descending curve, drawn in pure SVG. */
+function EngagementCurve() {
+  // year 1..5 → risk %, mapped into the SVG plot area (see below).
+  const pts = [
+    { x: 70, y: 83, yr: "Yr 1", r: "~50%" },
+    { x: 200, y: 135, yr: "Yr 2", r: "38%" },
+    { x: 330, y: 187, yr: "Yr 3", r: "26%" },
+    { x: 460, y: 222, yr: "Yr 4", r: "18%" },
+    { x: 590, y: 248, yr: "Yr 5", r: "<15%" },
+  ];
+  const line =
+    "M70,83 C135,83 135,135 200,135 C265,135 265,187 330,187 " +
+    "C395,187 395,222 460,222 C525,222 525,248 590,248";
+  const area = line + " L590,300 L70,300 Z";
+  const gridY = [40, 105, 170, 235, 300]; // 60% → 0%
+
+  return (
+    <div className="w-full overflow-hidden rounded-2xl border border-sky-tint bg-white p-4 shadow-[0_2px_10px_rgba(11,37,69,.08)] lg:p-6">
+      <svg
+        viewBox="0 0 640 340"
+        className="h-auto w-full"
+        role="img"
+        aria-label="Relapse risk falls from about 50% in year one toward under 15% by year five of continuous engagement."
+      >
+        <defs>
+          <linearGradient id="ms-curve-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2E7CD6" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#2E7CD6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* gridlines + y labels */}
+        {gridY.map((gy, i) => (
+          <g key={gy}>
+            <line
+              x1="70"
+              y1={gy}
+              x2="600"
+              y2={gy}
+              stroke="#EAF2FC"
+              strokeWidth="1.5"
+            />
+            <text
+              x="58"
+              y={gy + 4}
+              textAnchor="end"
+              className="fill-ink-400"
+              style={{ font: "600 11px var(--font-montserrat)" }}
+            >
+              {[60, 45, 30, 15, 0][i]}%
+            </text>
+          </g>
+        ))}
+
+        {/* filled area under the curve */}
+        <path d={area} fill="url(#ms-curve-fill)" className="ms-curve-area" />
+
+        {/* the drawn line */}
+        <path
+          d={line}
+          fill="none"
+          stroke="#2E7CD6"
+          strokeWidth="4"
+          strokeLinecap="round"
+          pathLength={100}
+          className="ms-curve-line"
+        />
+
+        {/* points + year/risk labels */}
+        {pts.map((p, i) => (
+          <g
+            key={p.yr}
+            className="ms-curve-dot"
+            style={{ animationDelay: `${0.6 + i * 0.35}s` }}
+          >
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r="6"
+              fill="#fff"
+              stroke="#2E7CD6"
+              strokeWidth="3"
+            />
+            <text
+              x={p.x}
+              y={p.y - 16}
+              textAnchor="middle"
+              className="fill-ink-900"
+              style={{ font: "800 14px var(--font-montserrat)" }}
+            >
+              {p.r}
+            </text>
+            <text
+              x={p.x}
+              y="326"
+              textAnchor="middle"
+              className="fill-ink-600"
+              style={{ font: "700 12px var(--font-montserrat)" }}
+            >
+              {p.yr}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/* 2 — Cited stat spine                                              */
+/* ---------------------------------------------------------------- */
+
+const STATS: {
+  big: React.ReactNode;
+  label: string;
+  note: number;
+  tip: string;
+}[] = [
+  {
+    big: (
+      <>
+        40–60% <span className="text-ink-400">→</span>{" "}
+        <span className="text-success">&lt;15%</span>
+      </>
+    ),
+    label:
+      "First-year relapse runs 40–60%. After five years of continuous recovery, risk drops below 15% — some studies as low as 7%.",
+    note: 1,
+    tip: "NIDA; Betty Ford Institute Consensus Panel — five-year sustained recovery approaches the general-population baseline.",
+  },
+  {
+    big: <>Years 1–2</>,
+    label:
+      "Relapse risk is highest in the first one to two years — exactly the window most centers lose visibility after discharge.",
+    note: 2,
+    tip: "Longitudinal relapse-risk reviews — risk concentrated in years 1–2, declining through years 3–5.",
+  },
+  {
+    big: (
+      <>
+        12<span className="text-ink-400">+</span> mo
+      </>
+    ),
+    label:
+      "Continuing care lasting 12 months or longer, with active efforts to keep people engaged, produces more consistently positive outcomes.",
+    note: 3,
+    tip: "McKay et al., continuing-care review — longer, actively engaged care outperforms shorter or passive follow-up.",
+  },
+  {
+    big: (
+      <>
+        &gt;80<span className="text-ink-400">%</span>
+      </>
+    ),
+    label:
+      "Over 80% of long-term relapses are preceded by a gradual drop in recovery-activity engagement — an early, measurable warning.",
+    note: 4,
+    tip: "Kelly et al., 2026 — engagement decline precedes the large majority of long-term relapses.",
+  },
+  {
+    big: <>Recovery capital</>,
+    label:
+      "Growth in recovery capital — employment, social support, recovery-group involvement — predicts retention and better outcomes.",
+    note: 5,
+    tip: "REC-CAP / BARC-10 longitudinal studies — the platform is built to grow exactly these.",
+  },
+  {
+    big: <>Goals + milestones</>,
+    label:
+      "People who set structured goals are meaningfully more likely to maintain sobriety at one year; celebrated milestones lower relapse.",
+    note: 6,
+    tip: "Multiple studies — structured goal-setting and milestone celebration are associated with better one-year outcomes.",
+  },
+];
+
+const FOOTNOTES = [
+  "NIDA; Betty Ford Institute Consensus Panel — first-year relapse 40–60%; five-year sustained recovery approaches the general-population baseline.",
+  "Longitudinal relapse-risk reviews — risk concentrated in years 1–2, declining through years 3–5.",
+  "McKay et al., continuing-care review — care lasting ≥12 months with active engagement efforts yields more consistently positive outcomes.",
+  "Kelly et al., 2026 — over 80% of long-term relapses are preceded by a gradual decline in recovery-activity engagement.",
+  "REC-CAP / BARC-10 longitudinal studies — recovery-capital growth predicts retention and outcomes.",
+  "Multiple studies — structured goal-setting and celebrated milestones associated with higher one-year sobriety.",
+];
+
+function StatSpine() {
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {STATS.map((s) => (
+          <div
+            key={s.note}
+            className="flex flex-col rounded-2xl border border-sky-tint bg-white p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+          >
+            <div className="text-[28px]/[1.1] font-extrabold tracking-[-0.02em] text-blue-primary lg:text-[32px]">
+              {s.big}
+              <sup
+                title={s.tip}
+                className="ml-0.5 cursor-help align-super text-[13px] font-bold text-indigo-brand"
+              >
+                {s.note}
+              </sup>
+            </div>
+            <p className="mt-3 text-[14px]/[1.6] text-ink-600">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <ol className="mt-8 space-y-1.5 border-t border-sky-tint-2 pt-6 text-[12px]/[1.6] text-ink-400">
+        {FOOTNOTES.map((f, i) => (
+          <li key={i}>
+            <span className="font-bold text-ink-600">{i + 1}.</span> {f}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/* 4 — Deliver your programming: LMS vignettes                       */
+/* ---------------------------------------------------------------- */
+
+function ProgrammingVignettes() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* Course ring */}
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-sky-tint bg-white p-6 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+        <div
+          className="flex h-[84px] w-[84px] items-center justify-center rounded-full"
+          style={{ background: "conic-gradient(#2E7CD6 0 72%, #DFEAF9 72% 100%)" }}
+        >
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-white text-[16px] font-extrabold text-blue-primary">
+            72%
+          </div>
+        </div>
+        <div className="text-[14px] font-bold text-ink-900">
+          ISE · Course progress
+        </div>
+        <div className="text-[12px] font-medium text-ink-600">
+          Lesson 6 of 8 · journal + quiz
+        </div>
+      </div>
+
+      {/* Streak chip */}
+      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-sky-tint bg-white p-6 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+        <span className="inline-flex h-11 items-center gap-2 rounded-full bg-sky-tint px-4 text-[16px] font-extrabold text-blue-primary">
+          <span className="text-[18px]">🔥</span> 14-day streak
+        </span>
+        <div className="text-[14px] font-bold text-ink-900">
+          Momentum you can see
+        </div>
+        <div className="text-[12px] font-medium text-ink-600">
+          Daily check-ins that keep people coming back tomorrow
+        </div>
+      </div>
+
+      {/* Badge */}
+      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-sky-tint bg-white p-6 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+        <div className="flex h-[70px] w-[70px] items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)] text-[30px] shadow-[0_6px_16px_rgba(46,124,214,.3)]">
+          🏅
+        </div>
+        <div className="text-[14px] font-bold text-ink-900">
+          Milestone unlocked
+        </div>
+        <div className="text-[12px] font-medium text-ink-600">
+          90 days · celebrated in front of the community
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/* 5 — Follow-up cadence timeline                                    */
+/* ---------------------------------------------------------------- */
+
+const CADENCE = ["30", "60", "90", "180", "365"];
+
+/* ---------------------------------------------------------------- */
+/* 8 — How it all connects: Danielle's five phases                   */
+/* ---------------------------------------------------------------- */
+
+const DANIELLE_PHASES = [
+  {
+    phase: "Pre-care",
+    line: "A mentor meets Danielle before intake and logs her starting recovery capital.",
+    systems: ["Community", "Goals"],
+  },
+  {
+    phase: "Intake",
+    line: "She's enrolled in the ISE and PON tracks and paired with a peer mentor.",
+    systems: ["LMS", "Community"],
+  },
+  {
+    phase: "In-program",
+    line: "Daily check-ins, course streaks, and her first QR giving page fund a bus pass.",
+    systems: ["LMS", "Giving", "Goals"],
+  },
+  {
+    phase: "Transition",
+    line: "GED earned, first job started — milestones celebrated in the community feed.",
+    systems: ["Goals", "Community"],
+  },
+  {
+    phase: "Continuing",
+    line: "A year past discharge, still engaged — her engagement trend is the center's outcome data.",
+    systems: ["Community", "Goals", "LMS"],
+  },
+];
+
+/* ---------------------------------------------------------------- */
+/* 9 — Pricing tiers                                                 */
+/* ---------------------------------------------------------------- */
+
+const TIERS = [
+  {
+    name: "Platform",
+    price: "Custom, based on your census",
+    tagline: "Deliver your programming and run your center.",
+    features: [
+      "LMS + level-of-care curricula (ISE/PON, IOP, vocational)",
+      "In-facility + remote delivery",
+      "Gamified engagement — streaks, badges, goals",
+      "Member ↔ mentor messaging with mood check-ins",
+      "Center dashboard, roster & moderation",
+    ],
+    featured: false,
+  },
+  {
+    name: "Platform + Continuum",
+    price: "Custom",
+    tagline: "Stay connected before, during, and long after care.",
+    features: [
+      "Everything in Platform",
+      "Program group channels + 1:1 client messaging",
+      "Follow-up cadence (30 / 60 / 90 / 180 / 365 days)",
+      "Relapse early-warning from engagement signals",
+      "Continuum score + retention curves",
+    ],
+    featured: true,
+  },
+  {
+    name: "Enterprise + Outcomes Licensing",
+    price: "Let's talk",
+    tagline: "Prove what works to funders and partners.",
+    features: [
+      "Everything in Platform + Continuum",
+      "Recovery-capital deltas + grant-ready reports",
+      "Multi-site rollups & administration",
+      "De-identified outcomes data licensing",
+      "Dedicated onboarding & support",
+    ],
+    featured: false,
+  },
+];
+
+/* ---------------------------------------------------------------- */
+
 export default function Centers() {
   return (
     <>
+      <CentersStyles />
       <Nav />
 
       {/* HERO */}
@@ -289,6 +700,97 @@ export default function Centers() {
                 Talk to us
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ENGAGEMENT CURVE — the money section */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[720px] text-center">
+            <Eyebrow>The engagement argument</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
+              Every month of engagement moves someone down this{" "}
+              <span className="script text-[44px] lg:text-[60px]">curve</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              What research shows: relapse risk is highest right after
+              treatment and falls the longer someone stays engaged in recovery.
+              The single strongest lever a center has on outcomes is keeping a
+              person engaged for the year-plus that changes the odds.
+            </p>
+          </div>
+
+          <div className="mt-10 lg:mt-[52px]">
+            <EngagementCurve />
+            <p className="mx-auto mt-6 max-w-[680px] text-center text-[17px]/[1.6] font-semibold text-ink-900 lg:text-[19px]">
+              &ldquo;Every month of engagement moves someone down this curve. We
+              keep them on it.&rdquo;
+            </p>
+            <p className="mx-auto mt-3 max-w-[620px] text-center text-[13px]/[1.6] text-ink-400">
+              Population-level findings; individual outcomes vary and recovery
+              isn&apos;t linear. Sources on the stat cards below.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CITED STAT SPINE */}
+      <section className="bg-canvas">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[680px] text-center">
+            <Eyebrow>What the research shows</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              The numbers behind the{" "}
+              <span className="script text-[42px] lg:text-[56px]">approach</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Every claim is cited and framed honestly — hover a footnote marker
+              for the source. These are population-level findings, not
+              guarantees.
+            </p>
+          </div>
+          <div className="mt-10 lg:mt-[56px]">
+            <StatSpine />
+          </div>
+        </div>
+      </section>
+
+      {/* THREE BLIND SPOTS + continuum ribbon */}
+      <section className="relative overflow-hidden bg-navy-deep">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[720px] text-center">
+            <Eyebrow light>The three blind spots</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-white lg:text-[44px]/[1.1]">
+              Treatment ends. The continuum{" "}
+              <span className="script text-[42px] text-[#A9B4E8] lg:text-[56px]">
+                doesn&apos;t
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-white/75 lg:text-[17px]">
+              Centers are blind in three places the outcome data actually lives.
+              The platform fills each one.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-[860px] lg:mt-[52px]">
+            <ContinuumRibbon />
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3 lg:gap-6">
+            {BLIND_SPOTS.map((b) => (
+              <div
+                key={b.tag}
+                className="rounded-2xl border border-white/10 bg-white/[.06] p-6"
+              >
+                <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-[#8FBCF0]">
+                  {b.tag}
+                </div>
+                <p className="mt-2.5 text-[15px]/[1.65] text-white/85">
+                  {b.copy}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -338,6 +840,119 @@ export default function Centers() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DELIVER YOUR PROGRAMMING */}
+      <section className="bg-canvas">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow>Deliver your programming</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Your curriculum, built to keep them coming{" "}
+              <span className="script text-[42px] lg:text-[56px]">back</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              A learning management system organized by level of care. Assign the
+              ISE / PON, IOP, and vocational tracks; deliver in-facility and
+              remote; and let streaks, badges, and milestones do the work of
+              engagement — the mechanic the research says moves outcomes.
+            </p>
+          </div>
+          <div className="mt-10 lg:mt-[52px]">
+            <ProgrammingVignettes />
+          </div>
+        </div>
+      </section>
+
+      {/* STAY CONNECTED ACROSS THE CONTINUUM */}
+      <section className="bg-white">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-5 py-16 lg:grid-cols-[1fr_minmax(320px,460px)] lg:gap-[64px] lg:px-6 lg:py-[110px]">
+          <div className="flex flex-col gap-5">
+            <Eyebrow>Stay connected across the continuum</Eyebrow>
+            <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              The relationship doesn&apos;t end at{" "}
+              <span className="script text-[42px] lg:text-[56px]">discharge</span>
+            </h2>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Program group channels keep cohorts together. Secure 1:1 client
+              messaging keeps a mentor a text away. And a structured follow-up
+              cadence brings alumni back at the moments that matter most.
+            </p>
+
+            {/* Follow-up cadence timeline */}
+            <div className="mt-1.5">
+              <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                Alumni follow-up cadence
+              </div>
+              <div className="mt-4 flex items-center">
+                {CADENCE.map((d, i) => (
+                  <div key={d} className="flex flex-1 items-center">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-sky-tint text-[13px] font-extrabold text-blue-primary">
+                        {d}
+                      </span>
+                      <span className="text-[10px] font-bold tracking-[.04em] text-ink-400">
+                        DAYS
+                      </span>
+                    </div>
+                    {i < CADENCE.length - 1 && (
+                      <div className="mb-4 h-[3px] flex-1 rounded-full bg-sky-tint-2" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Relapse early-warning card */}
+          <div className="rounded-2xl border border-sky-tint bg-canvas p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-[22px] items-center rounded-full bg-amber-bg px-2.5 text-[10px] font-extrabold tracking-[.06em] text-amber-ink">
+                EARLY WARNING
+              </span>
+              <span className="ml-auto text-[11px] font-semibold text-ink-400">
+                Continuing phase
+              </span>
+            </div>
+            <div className="mt-4 text-[15px] font-bold text-ink-900">
+              Engagement is trending down
+            </div>
+            <p className="mt-1.5 text-[13px]/[1.6] text-ink-600">
+              Check-ins, course activity, and community presence have softened
+              over three weeks — the earliest measurable relapse signal there is.
+            </p>
+
+            {/* declining engagement bars */}
+            <div className="mt-5 flex h-24 items-end gap-2">
+              {[80, 74, 66, 55, 47, 40, 34].map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 overflow-hidden rounded-t-md bg-sky-tint-2"
+                  style={{ height: `${h}%` }}
+                >
+                  <div
+                    className="ms-bar-fill h-full w-full rounded-t-md"
+                    style={{
+                      background:
+                        i > 3
+                          ? "linear-gradient(180deg,#F5B54B,#E89A2B)"
+                          : "linear-gradient(180deg,#4E5B9B,#2E7CD6)",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="inline-flex min-h-[44px] items-center rounded-full bg-blue-primary px-4 text-[13px] font-bold text-white">
+                Assign a mentor check-in
+              </span>
+            </div>
+            <p className="mt-3 text-[11px]/[1.5] text-ink-400">
+              A prompt to reach out — never an automated clinical decision.
+              Recovery isn&apos;t linear.
+            </p>
           </div>
         </div>
       </section>
@@ -454,6 +1069,181 @@ export default function Centers() {
         </div>
       </section>
 
+      {/* REACH THE COMMUNITY — the ad product */}
+      <section className="bg-canvas">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1fr_minmax(320px,440px)] lg:gap-[64px] lg:px-6 lg:py-[110px]">
+          <div className="flex flex-col gap-5">
+            <Eyebrow>Reach the community</Eyebrow>
+            <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Your next client is already in the{" "}
+              <span className="script text-[42px] lg:text-[56px]">community</span>
+            </h2>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Promote your services, alumni events, and openings with sponsored
+              placements in the community feed — member-safe by design, because
+              trust is the whole product.
+            </p>
+            <ul className="flex flex-col gap-3">
+              {[
+                "Recovery-relevant only — services, alumni events, fair-chance jobs, programs.",
+                "Clearly labeled as sponsored — never disguised as a peer post.",
+                "Frequency-capped and spaced, so the feed stays a recovery space first.",
+                "Coarse, non-clinical targeting only — metro, care phase, interests. Never diagnosis or health status.",
+                "Member controls — dismiss, report, and reduce sponsored content anytime.",
+                "Aggregate analytics only — impressions, clicks, CTR. Never per-member profiles.",
+              ].map((t) => (
+                <li key={t} className="flex gap-2.5 text-[15px]/[1.6] text-ink-600">
+                  <span className="mt-[7px] h-1.5 w-1.5 flex-none rounded-full bg-blue-primary" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <p className="text-[13px]/[1.6] text-ink-400">
+              Members in a flagged or at-risk state are never served sponsored
+              content — they see support resources instead.
+            </p>
+          </div>
+
+          {/* Sponsored placement preview */}
+          <div className="mx-auto w-full max-w-[380px]">
+            <div className="text-center text-[11px] font-bold uppercase tracking-[.1em] text-ink-400">
+              In-feed preview
+            </div>
+            <div className="mt-3 rounded-2xl border-[1.5px] border-blue-primary/40 bg-sky-tint p-5 shadow-[0_2px_10px_rgba(46,124,214,.14)]">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white text-[13px] font-extrabold text-indigo-brand shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+                  YC
+                </span>
+                <div className="min-w-0">
+                  <div className="truncate text-[13px] font-bold text-ink-900">
+                    Sponsored by [Your Center]
+                  </div>
+                  <div className="text-[11px] font-semibold text-blue-primary">
+                    Alumni event
+                  </div>
+                </div>
+                <span className="ml-auto inline-flex h-[20px] items-center rounded-full bg-blue-primary px-2.5 text-[9px] font-extrabold tracking-[.08em] text-white">
+                  SPONSORED
+                </span>
+              </div>
+              <div className="mt-3 text-[14px]/[1.6] font-medium text-ink-900">
+                One year, one room, one thousand comebacks. Join our alumni
+                dinner — dinner&apos;s on us, and so is the ride.
+              </div>
+              <div className="mt-3 aspect-[16/9] rounded-xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)]" />
+              <div className="mt-3 flex items-center gap-2">
+                <span className="inline-flex min-h-[36px] items-center rounded-full bg-blue-primary px-4 text-[12px] font-bold text-white">
+                  RSVP
+                </span>
+                <span className="ml-auto text-[11px] font-semibold text-ink-400">
+                  Hide · Report
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROVE YOUR OUTCOMES */}
+      <section className="relative overflow-hidden bg-navy-deep">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow light>Prove your outcomes</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-white lg:text-[44px]/[1.1]">
+              Show funders what{" "}
+              <span className="script text-[42px] text-[#A9B4E8] lg:text-[56px]">
+                works
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-white/75 lg:text-[17px]">
+              The engagement your members live becomes the evidence your board
+              and your grants need — measured over the year-plus that counts.
+            </p>
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4 lg:gap-6">
+            {[
+              {
+                t: "Continuum score",
+                d: "A single measure of how engaged each cohort stays across every phase.",
+              },
+              {
+                t: "Retention curves",
+                d: "See how many alumni are still engaged at 90, 180, and 365 days.",
+              },
+              {
+                t: "Recovery-capital deltas",
+                d: "Track growth in employment, housing, and social support over time.",
+              },
+              {
+                t: "Grant-ready reports",
+                d: "Export de-identified, funder-ready summaries in a click.",
+              },
+            ].map((c) => (
+              <div
+                key={c.t}
+                className="rounded-2xl border border-white/10 bg-white/[.06] p-6"
+              >
+                <div className="text-[16px] font-bold text-white">{c.t}</div>
+                <p className="mt-2 text-[13px]/[1.6] text-white/70">{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT ALL CONNECTS — Danielle across five phases */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-[860px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow>How it all connects</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              One member, five phases, one{" "}
+              <span className="script text-[42px] lg:text-[56px]">record</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[580px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Danielle&apos;s community life, goals, giving, and learning all
+              become your center&apos;s outcome data — automatically.
+            </p>
+          </div>
+
+          <ol className="mt-10 flex flex-col gap-4 lg:mt-[52px]">
+            {DANIELLE_PHASES.map((p, i) => (
+              <li
+                key={p.phase}
+                className="flex gap-4 rounded-2xl border border-sky-tint bg-canvas p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:p-6"
+              >
+                <div className="flex flex-none flex-col items-center">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-primary text-[13px] font-extrabold text-white">
+                    {i + 1}
+                  </span>
+                  {i < DANIELLE_PHASES.length - 1 && (
+                    <span className="mt-1.5 w-[2px] flex-1 rounded-full bg-sky-tint-2" />
+                  )}
+                </div>
+                <div className="min-w-0 pb-1">
+                  <div className="text-[15px] font-extrabold uppercase tracking-[.06em] text-indigo-brand">
+                    {p.phase}
+                  </div>
+                  <p className="mt-1.5 text-[15px]/[1.6] text-ink-900">
+                    {p.line}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {p.systems.map((s) => (
+                      <span
+                        key={s}
+                        className="inline-flex h-6 items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-extrabold tracking-[.04em] text-blue-primary"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* HOW ONBOARDING WORKS */}
       <section className="bg-canvas">
         <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
@@ -483,6 +1273,176 @@ export default function Centers() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING TIERS */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[680px] text-center">
+            <Eyebrow>Pricing</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              One subscription, priced to your{" "}
+              <span className="script text-[42px] lg:text-[56px]">census</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[560px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Every center is different, so pricing is custom. Tell us your size
+              and your programs and we&apos;ll build a plan that fits.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 lg:mt-[56px] lg:grid-cols-3 lg:gap-7">
+            {TIERS.map((t) => (
+              <div
+                key={t.name}
+                className={
+                  "flex flex-col rounded-2xl p-7 lg:p-8 " +
+                  (t.featured
+                    ? "bg-navy-deep shadow-[0_10px_30px_rgba(11,37,69,.2)]"
+                    : "border border-sky-tint bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]")
+                }
+              >
+                {t.featured && (
+                  <span className="mb-3 inline-flex h-6 w-fit items-center rounded-full bg-blue-primary px-3 text-[10px] font-extrabold tracking-[.08em] text-white">
+                    MOST POPULAR
+                  </span>
+                )}
+                <div
+                  className={
+                    "text-[20px] font-extrabold tracking-[-0.01em] " +
+                    (t.featured ? "text-white" : "text-ink-900")
+                  }
+                >
+                  {t.name}
+                </div>
+                <div
+                  className={
+                    "mt-2 text-[15px]/[1.5] font-semibold " +
+                    (t.featured ? "text-[#A9B4E8]" : "text-blue-primary")
+                  }
+                >
+                  {t.price}
+                </div>
+                <p
+                  className={
+                    "mt-2 text-[14px]/[1.6] " +
+                    (t.featured ? "text-white/70" : "text-ink-600")
+                  }
+                >
+                  {t.tagline}
+                </p>
+                <ul className="mt-5 flex flex-1 flex-col gap-2.5">
+                  {t.features.map((f) => (
+                    <li
+                      key={f}
+                      className={
+                        "flex gap-2.5 text-[13px]/[1.55] " +
+                        (t.featured ? "text-white/85" : "text-ink-600")
+                      }
+                    >
+                      <span
+                        className={
+                          "mt-[3px] flex-none text-[12px] font-extrabold " +
+                          (t.featured ? "text-[#8FBCF0]" : "text-blue-primary")
+                        }
+                      >
+                        ✓
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="#request-demo"
+                  className={
+                    "mt-7 inline-flex h-[52px] items-center justify-center rounded-full px-6 text-[15px] font-bold " +
+                    (t.featured
+                      ? "bg-blue-primary text-white hover:bg-blue-hover"
+                      : "border-[1.5px] border-blue-primary text-blue-primary hover:bg-sky-tint")
+                  }
+                >
+                  Talk to us
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="mx-auto mt-8 max-w-[760px] rounded-2xl border border-sky-tint bg-canvas p-6 text-center">
+            <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+              Add-ons
+            </div>
+            <p className="mt-2 text-[15px]/[1.7] text-ink-600">
+              <span className="font-bold text-ink-900">
+                Community ad product
+              </span>{" "}
+              (sponsored placements) and{" "}
+              <span className="font-bold text-ink-900">
+                outcomes-data licensing
+              </span>{" "}
+              are available as add-ons to any tier. Pricing is custom — ask us.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* TRUST & PRIVACY */}
+      <section className="bg-canvas">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow>Trust &amp; privacy</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Built so a clinical buyer can say{" "}
+              <span className="script text-[42px] lg:text-[56px]">yes</span>
+            </h2>
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-[52px] lg:gap-6">
+            {[
+              {
+                t: "Consent-first",
+                d: "Members opt in to what they share. Nothing is published without their say — and staff approve what goes public.",
+              },
+              {
+                t: "De-identified outcomes",
+                d: "Analytics and licensed data are aggregate and de-identified. No individual health profile is ever exposed.",
+              },
+              {
+                t: "Not an EHR",
+                d: "This is an engagement and community platform, not a system of record for clinical documentation.",
+              },
+              {
+                t: "HIPAA-adjacency posture",
+                d: "Built to sit alongside your clinical systems with careful data handling, access controls, and audit logging.",
+              },
+            ].map((c) => (
+              <div
+                key={c.t}
+                className="rounded-2xl border border-sky-tint bg-white p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+              >
+                <div className="text-[17px] font-bold text-ink-900">{c.t}</div>
+                <p className="mt-2 text-[14px]/[1.65] text-ink-600">{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DEMO REQUEST LEAD CAPTURE */}
+      <section id="request-demo" className="scroll-mt-20 bg-white">
+        <div className="mx-auto max-w-[820px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[640px] text-center">
+            <Eyebrow>Request a demo</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              See it with your programs in{" "}
+              <span className="script text-[42px] lg:text-[56px]">mind</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[540px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Tell us about your center and we&apos;ll set up a walkthrough. No
+              pressure, no obligation — just a look at what the platform can do.
+            </p>
+          </div>
+          <div className="mt-10 rounded-2xl border border-sky-tint bg-canvas p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:mt-[52px] lg:p-9">
+            <LeadForm />
           </div>
         </div>
       </section>

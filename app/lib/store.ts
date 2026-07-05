@@ -37,6 +37,9 @@ import type {
   CarePhase,
   LevelOfCare,
   ContinuumSource,
+  SponsoredPlacement,
+  PlacementEvent,
+  DemoLead,
 } from "./types";
 
 interface DB {
@@ -66,11 +69,15 @@ interface DB {
   careEpisodes: CareEpisode[];
   phaseTransitions: PhaseTransition[];
   continuumEvents: ContinuumEvent[];
+  // community ad product (seed v8 — docs/15 §B / requirements/12 §B/E)
+  sponsoredPlacements: SponsoredPlacement[];
+  placementEvents: PlacementEvent[];
+  demoLeads: DemoLead[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 7;
+const SEED_VERSION = 8;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -80,6 +87,22 @@ const DATA_FILE = path.join(DATA_DIR, "db.json");
 declare global {
   // eslint-disable-next-line no-var
   var __msdb: DB | undefined;
+  // Platform-wide sponsored-ad kill switch (docs/15 §B). Module-level flag,
+  // globalThis-backed so /api/admin/placements and /api/placements/serve share
+  // one value across route modules and dev hot-reloads. Default OFF.
+  // eslint-disable-next-line no-var
+  var __msAdKill: boolean | undefined;
+}
+
+/** True when the platform-wide ad kill switch is engaged — /serve returns []
+ *  for everyone while on. Not persisted to db.json (an operational toggle). */
+export function isAdKillSwitchOn(): boolean {
+  return globalThis.__msAdKill === true;
+}
+
+/** ms_admin flips the platform-wide ad kill switch. */
+export function setAdKillSwitch(on: boolean): void {
+  globalThis.__msAdKill = on;
 }
 
 export function hashPassword(password: string, salt: string): string {
@@ -1664,6 +1687,200 @@ function seed(): DB {
     }
   }
 
+  // ── Community Ad Product (added in seed v8 — keep AFTER all v7 sections
+  //    so earlier PRNG draws and seed-* ids stay byte-identical) ──────────
+  // Sponsored placements sold to the two seed centers, running in the
+  // community feed. Every timestamp hangs off EPOCH (never Date.now()).
+  // Trust rules are enforced at serve time (app/api/placements/serve); the
+  // seed just makes the ad manager + review queue + analytics look alive.
+
+  const sponsoredPlacements: SponsoredPlacement[] = [];
+  const placementEvents: PlacementEvent[] = [];
+
+  /** Populate ~30–120 aggregate events for a running placement:
+   *  impressions >> clicks > dismiss, plus a couple of reports. memberId is
+   *  recorded server-side ONLY (cap/dedup) and never exposed to advertisers. */
+  const seedEvents = (placementId: string, impressions: number): void => {
+    const clicks = Math.max(3, Math.round(impressions * 0.08));
+    const dismiss = Math.max(1, Math.round(impressions * 0.03));
+    const reports = int(1, 2);
+    const push = (kind: PlacementEvent["kind"], n: number): void => {
+      for (let i = 0; i < n; i++) {
+        placementEvents.push({
+          id: did(),
+          placementId,
+          kind,
+          memberId: pick(members).id, // internal cap/dedup only — never surfaced
+          occurredAt: now - int(0, 14) * DAY - int(0, 23) * 3600e3,
+        });
+      }
+    };
+    push("impression", impressions);
+    push("click", clicks);
+    push("dismiss", dismiss);
+    push("report", reports);
+  };
+
+  // (1) APPROVED + running — Laveen alumni event, targeted to alumni (continuing).
+  const bbq: SponsoredPlacement = {
+    id: did(),
+    orgId: laveen.id,
+    orgName: laveen.name,
+    title: "Laveen Alumni BBQ — Saturday",
+    body: "Alumni, families, and mentors — join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
+    ctaLabel: "RSVP",
+    ctaUrl: "https://example.org/laveen/alumni-bbq",
+    kind: "alumni_event",
+    audienceScope: "circle",
+    targeting: { circleId: "circle-laveen-alumni", phase: "continuing" },
+    status: "running",
+    startsAt: now - 6 * DAY,
+    endsAt: now + 8 * DAY,
+    budgetCents: 15000,
+    approvedBy: sarah.id,
+    createdAt: now - 10 * DAY,
+  };
+  // (2) APPROVED + running — fair-chance job opening, coarse employment interest.
+  const job: SponsoredPlacement = {
+    id: did(),
+    orgId: southPhoenix.id,
+    orgName: southPhoenix.name,
+    title: "Warehouse Associates — Desert Logistics, fair-chance employer",
+    body: "Desert Logistics is hiring warehouse associates and welcomes applicants in recovery — a fair-chance employer that hires on who you are today. Steady hours, weekly pay.",
+    ctaLabel: "Apply",
+    ctaUrl: "https://example.org/desert-logistics/warehouse",
+    kind: "job_opening",
+    audienceScope: "phase",
+    targeting: { phase: "continuing", interestTags: ["employment"], metro: "Phoenix, AZ" },
+    status: "running",
+    startsAt: now - 12 * DAY,
+    endsAt: now + 18 * DAY,
+    budgetCents: 25000,
+    approvedBy: sarah.id,
+    createdAt: now - 15 * DAY,
+  };
+  // (3) APPROVED + running — IOP program starting, community-wide by metro.
+  const iop: SponsoredPlacement = {
+    id: did(),
+    orgId: laveen.id,
+    orgName: laveen.name,
+    title: "New IOP cohort starts Monday",
+    body: "Our next Intensive Outpatient cohort begins Monday. Daytime and evening tracks, transportation help available. Talk to us about whether it's the right next step.",
+    ctaLabel: "Learn more",
+    ctaUrl: "https://example.org/laveen/iop-cohort",
+    kind: "program",
+    audienceScope: "geo",
+    targeting: { metro: "Phoenix, AZ", interestTags: ["recovery"] },
+    status: "running",
+    startsAt: now - 4 * DAY,
+    endsAt: now + 10 * DAY,
+    budgetCents: 20000,
+    approvedBy: sarah.id,
+    createdAt: now - 7 * DAY,
+  };
+  // (4) PENDING_REVIEW — waiting in the ms_admin queue (recovery-relevant, clean).
+  const pending: SponsoredPlacement = {
+    id: did(),
+    orgId: southPhoenix.id,
+    orgName: southPhoenix.name,
+    title: "Free resume workshop for members",
+    body: "Bring your work history — our navigators will help you build a fair-chance-ready resume in one sitting. Coffee provided.",
+    ctaLabel: "Save my seat",
+    ctaUrl: "https://example.org/south-phoenix/resume-workshop",
+    kind: "service",
+    audienceScope: "community",
+    targeting: { interestTags: ["employment"] },
+    status: "pending_review",
+    budgetCents: 10000,
+    createdAt: now - 1 * DAY,
+  };
+  // (5) REJECTED — kept as the ms_admin console's rejected example.
+  const rejected: SponsoredPlacement = {
+    id: did(),
+    orgId: southPhoenix.id,
+    orgName: southPhoenix.name,
+    title: "Recovery social — happy hour mocktails and more",
+    body: "Join us after work for drinks and connection. Wine and beer available for guests.",
+    ctaLabel: "RSVP",
+    ctaUrl: "https://example.org/south-phoenix/social",
+    kind: "announcement",
+    audienceScope: "community",
+    targeting: {},
+    status: "rejected",
+    rejectionReason: "Off-policy: references alcohol.",
+    createdAt: now - 3 * DAY,
+  };
+  sponsoredPlacements.push(bbq, job, iop, pending, rejected);
+  seedEvents(bbq.id, int(70, 110));
+  seedEvents(job.id, int(80, 120));
+  seedEvents(iop.id, int(50, 90));
+
+  // ── demo leads (marketing-page contact-sales queue, varied status) ─────
+  const demoLeads: DemoLead[] = [
+    {
+      id: did(),
+      orgName: "Sonoran Ridge Recovery",
+      contactName: "Patricia Nguyen",
+      email: "pnguyen@sonoranridge.example.org",
+      phone: "(602) 555-0142",
+      message: "We run three IOP tracks and want to keep alumni engaged after discharge. Interested in the continuum + ad product.",
+      source: "centers-page",
+      status: "new",
+      createdAt: now - 2 * DAY - 3 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Grand Canyon Wellness Collective",
+      contactName: "Marcus Bell",
+      email: "mbell@gcwellness.example.org",
+      phone: "(480) 555-0199",
+      message: "Grant-ready outcomes reporting is our big need. Can we see the retention curves?",
+      source: "centers-page",
+      status: "contacted",
+      createdAt: now - 9 * DAY - 5 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Copper State Recovery Homes",
+      contactName: "Dana Whitfield",
+      email: "dana@copperstatehomes.example.org",
+      source: "centers-page",
+      status: "new",
+      createdAt: now - 1 * DAY - 6 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Rio Salado Behavioral Health",
+      contactName: "Eli Ramirez",
+      email: "eramirez@riosalado.example.org",
+      phone: "(623) 555-0176",
+      message: "Do sponsored placements ever target by diagnosis? Our compliance team needs to confirm they do not.",
+      source: "centers-page",
+      status: "contacted",
+      createdAt: now - 18 * DAY - 2 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Desert Bloom Treatment Center",
+      contactName: "Yolanda Price",
+      email: "yprice@desertbloomtc.example.org",
+      message: "Closed the loop — signed for the platform tier. Following up on ad-product add-on next quarter.",
+      source: "centers-page",
+      status: "closed",
+      createdAt: now - 40 * DAY - 4 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Superstition Springs Recovery",
+      contactName: "Andre Coleman",
+      email: "acoleman@superstitionsprings.example.org",
+      phone: "(480) 555-0123",
+      source: "centers-page",
+      status: "new",
+      createdAt: now - 4 * DAY - 8 * 3600e3,
+    },
+  ];
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members],
@@ -1689,6 +1906,9 @@ function seed(): DB {
     careEpisodes,
     phaseTransitions,
     continuumEvents,
+    sponsoredPlacements,
+    placementEvents,
+    demoLeads,
   };
 }
 
