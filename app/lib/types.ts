@@ -176,6 +176,128 @@ export interface Thread {
   createdAt: number;
 }
 
+// ── Community expansion (docs/13-MODULE-COMMUNITY-EXPANSION) ──────────
+// EXPANSION: additive only — nothing above this line changes.
+
+export interface ProfileDetails {
+  userId: string;
+  journeySince?: string; // ISO date, optional "in recovery since"
+  tagline?: string;
+  interests: string[];
+  recoveryCapitalPublic: boolean; // rings visible on public profile
+  showMilestones: boolean;
+}
+
+/** BARC-10 self-check — warm self-reflection, never clinical, never public. */
+export interface BarcSelfCheck {
+  id: string;
+  memberId: string;
+  takenAt: number;
+  scores: Record<string, number>; // 10 domains, 0–5 each
+  total: number; // 0–50
+}
+
+export type CircleKind = "topic" | "cohort" | "alumni";
+
+export interface Circle {
+  id: string;
+  name: string;
+  kind: CircleKind;
+  description: string;
+  staffModerated: boolean; // false = peer-led
+  centerId?: string; // alumni circles belong to a center
+}
+
+export interface CircleMembership {
+  id: string;
+  circleId: string;
+  memberId: string;
+  joinedAt: number;
+}
+
+export const RECOVERY_DOMAINS = [
+  "housing",
+  "employment",
+  "education",
+  "health",
+  "relationships",
+  "legal",
+  "financial",
+  "transportation",
+  "other",
+] as const;
+export type RecoveryDomain = (typeof RECOVERY_DOMAINS)[number];
+
+export type GoalStatus = "active" | "achieved" | "paused" | "archived";
+export type GoalVisibility = "private" | "mentor" | "circle" | "public";
+
+/** Recovery Goal — the member-owned middle layer connecting tracker tasks
+ *  (to-dos) and support requests (funding). Merges neither. */
+export interface RecoveryGoal {
+  id: string;
+  memberId: string;
+  title: string;
+  domain: RecoveryDomain;
+  why?: string; // member-authored motivation
+  status: GoalStatus;
+  targetDate?: string;
+  achievedAt?: number;
+  visibility: GoalVisibility;
+  linkedRequestId?: string; // → SupportRequest (existing QR funding goal)
+  createdAt: number;
+}
+
+export interface GoalMilestone {
+  id: string;
+  goalId: string;
+  title: string;
+  done: boolean;
+  sort: number;
+  dueDate?: string;
+}
+
+export type JobAppStatus = "applied" | "interview" | "offer" | "closed";
+
+export interface JobApplication {
+  id: string;
+  memberId: string;
+  company: string;
+  role: string;
+  status: JobAppStatus;
+  notes?: string;
+  nextActionDate?: string;
+  createdAt: number;
+}
+
+export type ResumeSectionKind =
+  | "experience"
+  | "education"
+  | "skills"
+  | "certifications"
+  | "volunteer"
+  | "references"
+  | "projects";
+
+export interface Resume {
+  id: string;
+  memberId: string;
+  fullName: string;
+  headline?: string;
+  summary?: string;
+  contact?: { phone?: string; email?: string; city?: string };
+  template: string; // "clean_blue"
+  isPrimary: boolean;
+  updatedAt: number;
+}
+
+export interface ResumeSection {
+  id: string;
+  resumeId: string;
+  kind: ResumeSectionKind;
+  content: Record<string, unknown>; // shape varies by kind
+  sort: number;
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 
