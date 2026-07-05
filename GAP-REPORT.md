@@ -1,4 +1,20 @@
-# Gap Report — run 2026-07-05-1
+# Gap Report — run 2026-07-05-2
+
+## Run 2 summary
+Closed P0 #1 and P1 #5–7. Admin surface is now staff-gated end-to-end
+(verified role matrix: anonymous 401 on all admin routes/moderation/
+redemption; staff full access; mentors sessions-only; members neither;
+dashboard shows a staff sign-in gate — demo login sarah@themystruggles.com).
+Consent revocation propagates live (dashboard toggle → /p/[slug] generic
+state, verified round-trip). Mentor applications: real public intake with
+validation + anti-spam, staff queue with new→contacted→approved. Concern
+escalation: quiet mentor sheet → staff needs-attention queue with resolve
+(one live demo concern seeded: Marcus → Tyrell). Remaining P0s (Stripe,
+Supabase/RLS, session hardening) still wait on DECISIONS-NEEDED credentials;
+next run: journal persistence + quiz grading, dashboard error/tablet states,
+Privacy/Terms pages, rate limiting on auth endpoints.
+
+# Prior run — 2026-07-05-1
 
 ## Summary
 Bootstrap run: authored `/docs` + `/requirements` (281 items) and audited the
