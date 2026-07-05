@@ -1,4 +1,61 @@
-# Gap Report — run 2026-07-05-3
+# Gap Report — run 2026-07-05-4/5 (website expansion + community expansion)
+
+## Run 4 summary (website)
+Footer redesigned for contrast (hairline, #8FBCF0 headings, sky-tint links);
+nav gained Giving + For Centers; new /giving (canonical 50/50: half now —
+unhoused or currently incarcerated — half held as Reentry Fund, released on
+re-entry) and /centers (platform pitch: client messaging, programming, LMS,
+dashboard); ALL "The Store / Store Credits" language replaced site-wide.
+
+## Run 5 summary (community expansion — docs/13, additive-only honored)
+All six agents landed, verified, zero regressions (existing feed/giving/
+gamification/mentorship E2E checks re-passed by each agent):
+- Circles: 6 seeded, join/leave, circle-scoped posts (main feed excludes),
+  alumni center-privacy (negative-tested), Proud/Same-here reactions
+  (heart contract byte-compatible), daily reflection ritual, crisis +
+  moderation inheritance verified.
+- Recovery Goals + My Plan: goals API w/ linked funding (create-or-link),
+  milestones w/ tracker-style toggles, achieve → +25 pts (idempotent),
+  visibility tiers (mentor/staff negative-tested), job-application tracker
+  w/ forward-only ladder + stale detection; My Plan card on Home.
+- Résumé builder: /resume 6-step fair-chance builder (autosave, lived-
+  experience strength inserts, no-legal-advice guardrail), clean_blue
+  template, /resume/print browser-PDF.
+- Profiles + BARC: consent-gated /community/u/[slug] w/ activity-derived
+  recovery-capital rings (never clinical), profile settings, warm BARC-10
+  check-in w/ member+assigned-staff-only trend; post authors now link to
+  profiles.
+- Analytics (systems pass): mentors see ONLY their own mentees (zero
+  cross-mentor leakage, negative-tested); staff per-center rollups incl.
+  recovery-capital averages + goals-achieved trend on Reports.
+- Seed v6: deterministic (byte-identical reseeds, 65ms) — Danielle flagship
+  storyline exact; 191 circle memberships, 42 goals, 22 job apps, 11
+  résumés, 28 BARC checks.
+
+## GAP REGISTER — not reached this run (per user instruction)
+1. AI Companion (docs/13 Part E): plan-aware Guide extension (goal
+   coaching, résumé coach mode, interview practice, daily check-in,
+   scoped tools w/ member confirmation, memory wipe). Guide remains the
+   existing canned quick-chip assistant.
+2. Dashboard participant detail: My Plan pane, résumé view, BARC trend,
+   Companion transcript (docs/13 dashboard additions — Reports/Overview
+   done, detail pane not).
+3. Milestones → journey_tasks bidirectional mirror (creates_journey_task).
+4. Peer nomination / staff-rotated spotlight; gratitude/win-of-week
+   threads beyond the daily prompt; milestone auto-celebration for goal
+   achievements + shared BARC upticks (grace opt-out).
+5. Report/block controls on posts; member-level block.
+6. Real PDF library for résumé export (browser print today); resume
+   shareable link; version history / multiple résumés.
+7. BARC domain vocabulary alignment (seed uses sobriety/self-care…, UI
+   uses housing…finances — API accepts both shapes).
+8. requirements/10 checkbox audit with per-item evidence (next AUTOPILOT
+   audit run) + merge of *-UPSTREAM.md requirement bundles.
+9. Supabase schema/policies extension for the 9 new expansion tables.
+10. Prior DECISIONS-NEEDED still open: Stripe links/keys, Supabase project
+    keys, real photography, verbatim copy confirmations.
+
+# Prior run — 2026-07-05-3
 
 ## Run 3 summary
 Shipped the desktop Facebook-style recovery community at /community: 3-column

@@ -192,14 +192,29 @@ export default function PostCard({
           : "rounded-2xl bg-white px-6 py-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
       }
     >
-      {/* header */}
+      {/* header — author links to their public profile when they have one */}
       <div className="flex items-start gap-3">
-        <AvatarTile name={post.authorName} color={post.avatarColor} size={46} />
+        {post.authorSlug ? (
+          <Link href={`/community/u/${post.authorSlug}`} className="flex-none">
+            <AvatarTile name={post.authorName} color={post.avatarColor} size={46} />
+          </Link>
+        ) : (
+          <AvatarTile name={post.authorName} color={post.avatarColor} size={46} />
+        )}
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[15px] font-bold text-ink-900">
-              {post.authorName}
-            </span>
+            {post.authorSlug ? (
+              <Link
+                href={`/community/u/${post.authorSlug}`}
+                className="text-[15px] font-bold text-ink-900 hover:text-blue-primary"
+              >
+                {post.authorName}
+              </Link>
+            ) : (
+              <span className="text-[15px] font-bold text-ink-900">
+                {post.authorName}
+              </span>
+            )}
             {post.authorRole === "mentor" && <MentorChip />}
             <KindChip kind={post.kind} />
             <TopicTag topic={post.topic ?? "general"} />
