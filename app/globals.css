@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/* ── My Struggle design tokens ─────────────────────────────────────────
+   Binding source: MY-STRUGGLE-DESIGN-GUIDE.md §2 + handoff token table.
+   Site = 90% white/canvas · 8% blue family · 2% everything else. */
+@theme {
+  --color-indigo-brand: #4e5b9b;
+  --color-blue-primary: #2e7cd6;
+  --color-blue-hover: #2668b8;
+  --color-navy-deep: #0b2545;
+  --color-sky-tint: #eaf2fc;
+  --color-sky-tint-2: #dfeaf9;
+  --color-canvas: #f7fafe;
+  --color-ink-900: #111827;
+  --color-ink-600: #4b5563;
+  --color-ink-400: #9ca3af;
+  --color-success: #12b76a;
+  --color-gold-badge: #eab308;
+  --color-gold-ink: #a16207;
+  --color-gold-bg: #fef6dc;
+  --color-gold-border: #f5e6b3;
+  --color-heart-red: #e5484d;
+  --color-heart-bg: #fdf0f0;
+  --color-amber-ink: #a16207;
+  --color-amber-bg: #fff9ec;
+
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+  --font-script: var(--font-allura), cursive;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  font-family: var(--font-sans);
+  color: var(--color-ink-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Script accent word — always indigo, weight 400 (guide §3). */
+.script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  color: var(--color-indigo-brand);
+  line-height: 1;
+}
+
+/* 3px header/section hairline (guide §2). */
+.hairline {
+  height: 3px;
+  background: linear-gradient(90deg, #4e5b9b, #2e7cd6);
+}
+
+/* Striped photo placeholder + monospace caption (handoff §Fidelity). */
+.photo-ph {
+  background: repeating-linear-gradient(
+    45deg,
+    #eaf2fc 0 12px,
+    #dfeaf9 12px 24px
+  );
+}
+.photo-cap {
+  font: 500 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #4e5b9b;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* Tabular figures for KPI / money numbers. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Native details/summary FAQ marker swap. */
+details summary {
+  list-style: none;
+  cursor: pointer;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+details[open] .faq-plus {
+  display: none;
+}
+details:not([open]) .faq-minus {
+  display: none;
+}
