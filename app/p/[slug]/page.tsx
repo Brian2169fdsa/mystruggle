@@ -315,11 +315,11 @@ function ThankYou({
           <>
             <strong className="text-ink-900">{cash}</strong> as cash{" "}
             {gave.name ? "at their center" : "at our centers"},{" "}
-            <strong className="text-ink-900">{credits}</strong> as Store
-            Credits.
+            <strong className="text-ink-900">{credits}</strong> held for their
+            reentry.
           </>
         ) : (
-          <>half as cash, half as Store Credits.</>
+          <>half as cash, half held for their reentry.</>
         )}
       </div>
       <div className="max-w-[300px] rounded-2xl bg-white px-[22px] py-[18px] text-[13px]/[1.7] font-medium text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
@@ -387,18 +387,18 @@ function SplitExplainer({ name }: { name: string | null }) {
               50%
             </div>
             <div className="mt-1 text-[14px] font-bold text-ink-900">
-              Store Credits
+              Reentry Fund
             </div>
             <div className="mt-1.5 text-[12.5px]/[1.6] text-ink-600">
-              Spent on necessary items at The Store — clothing, food, hygiene,
-              essentials
+              Held safely and released directly to {name ? name : "the member"}{" "}
+              when they re-enter society
             </div>
           </div>
         </div>
         <div className="bg-sky-tint px-5 py-3 text-center text-[12px]/[1.5] font-semibold text-indigo-brand">
           {name
-            ? `${name} can save either balance for reentry into society.`
-            : "Members can save either balance for their reentry into society."}
+            ? `${name} can also set aside extra into personal savings for the road ahead.`
+            : "Members can also set aside extra into personal savings for the road ahead."}
         </div>
       </div>
     </div>

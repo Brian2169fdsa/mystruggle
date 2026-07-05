@@ -68,7 +68,7 @@ export default function NewsletterForm() {
             setEmail(e.target.value);
             setError(null);
           }}
-          className="h-12 min-w-0 flex-1 rounded-full border border-white/30 bg-transparent px-5 text-[14px] text-white placeholder:text-white/50 focus:border-white/60 focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-full border border-[#8FBCF0]/40 bg-transparent px-5 text-[14px] text-white placeholder:text-white/60 focus:border-[#8FBCF0] focus:outline-none"
         />
         <button
           type="submit"

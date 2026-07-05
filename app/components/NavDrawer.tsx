@@ -10,7 +10,7 @@ const WORDMARK_WHITE =
 const PROGRAM_LINKS = [
   { href: "/about", label: "Position of Neutrality" },
   { href: "/mentor", label: "Peer Mentorship" },
-  { href: "/give", label: "QR Code Giving" },
+  { href: "/giving", label: "QR Code Giving" },
 ];
 
 const CENTER_LINKS = [
@@ -140,6 +140,9 @@ export default function NavDrawer() {
           <Link href="/community" onClick={close} className={rowClass}>
             Community
           </Link>
+          <Link href="/giving" onClick={close} className={rowClass}>
+            Giving
+          </Link>
 
           <button
             type="button"
@@ -185,6 +188,9 @@ export default function NavDrawer() {
           )}
           <Link href="/mentor" onClick={close} className={rowClass}>
             Become a Mentor
+          </Link>
+          <Link href="/centers" onClick={close} className={rowClass}>
+            For centers
           </Link>
           <Link href="/login" onClick={close} className={rowClass}>
             Sign in

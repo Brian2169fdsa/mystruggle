@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, save, uid, findMemberBySlug } from "@/app/lib/store";
 
-/** Record a donation to a member: splits 50/50 cash / Store Credits and
+/** Record a donation to a member: splits 50/50 cash / Reentry Fund and
  *  advances the targeted support request's weekly progress. */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);

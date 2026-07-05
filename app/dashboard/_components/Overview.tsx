@@ -85,7 +85,7 @@ function liveKpis(o: OverviewData) {
     { label: "Members", value: String(o.members), green: false },
     { label: "Total given", value: fmtMoney(o.totalGiven), green: false },
     { label: "Cash held", value: fmtMoney(o.cashHeld), green: false },
-    { label: "Store credits held", value: fmtMoney(o.creditsHeld), green: false },
+    { label: "Reentry funds held", value: fmtMoney(o.creditsHeld), green: false },
     { label: "Reentry savings held", value: fmtMoney(o.savingsHeld), green: true },
     { label: "Weekly recurring gifts", value: String(o.weeklyRecurring), green: false },
     { label: "Avg streak", value: o.avgStreak.toLocaleString("en-US", { maximumFractionDigits: 1 }), suffix: "days", green: false },

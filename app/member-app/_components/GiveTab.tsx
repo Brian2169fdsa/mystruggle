@@ -199,13 +199,13 @@ function SignedInGive({
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="text-[12px] font-bold text-ink-600">
-            Store Credits
+            Reentry Fund
           </div>
           <div className="tnum mt-1 text-[34px] font-extrabold tracking-[-0.02em] text-indigo-brand">
             {money(balances.credits)}
           </div>
           <div className="mt-0.5 text-[11px] text-ink-400">
-            spend at The Store
+            released at your reentry
           </div>
         </div>
       </div>
@@ -389,13 +389,13 @@ function DemoGive() {
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="text-[12px] font-bold text-ink-600">
-            Store Credits
+            Reentry Fund
           </div>
           <div className="tnum mt-1 text-[34px] font-extrabold tracking-[-0.02em] text-indigo-brand">
             $58
           </div>
           <div className="mt-0.5 text-[11px] text-ink-400">
-            spend at The Store
+            released at your reentry
           </div>
         </div>
       </div>
@@ -433,7 +433,7 @@ function DemoGive() {
               Gift received · $25
             </div>
             <div className="text-[12px] text-ink-600">
-              $12.50 cash · $12.50 credits · today
+              $12.50 cash · $12.50 reentry fund · today
             </div>
           </div>
         </div>

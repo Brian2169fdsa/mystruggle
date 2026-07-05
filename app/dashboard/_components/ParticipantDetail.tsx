@@ -349,7 +349,7 @@ export default function ParticipantDetail({
                     {fmtMoney(member.balances.credits)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
-                    credits
+                    reentry fund
                   </div>
                 </div>
                 <div>
@@ -357,7 +357,7 @@ export default function ParticipantDetail({
                     {fmtMoney(member.balances.savings)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
-                    reentry
+                    savings
                   </div>
                 </div>
               </div>

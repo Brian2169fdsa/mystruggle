@@ -23,7 +23,7 @@ export default function Nav() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-[34px] text-[15px] font-semibold lg:flex">
+        <nav className="hidden items-center gap-[26px] text-[15px] font-semibold lg:flex">
           <Link href="/about" className="text-ink-900 hover:text-blue-primary">
             About us
           </Link>
@@ -64,9 +64,9 @@ export default function Nav() {
                         desc: "One-on-one guidance from someone who's walked your road.",
                       },
                       {
-                        href: "/give",
+                        href: "/giving",
                         title: "QR Code Giving",
-                        desc: "Direct, accountable giving — 50% cash, 50% Store Credits.",
+                        desc: "Direct, accountable giving — half now, half held for reentry.",
                       },
                     ].map((it) => (
                       <Link
@@ -91,6 +91,12 @@ export default function Nav() {
                   <span className="text-[12px] font-bold tracking-[.12em] text-indigo-brand">
                     FOR CENTERS
                   </span>
+                  <Link
+                    href="/centers"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
+                  >
+                    Platform overview →
+                  </Link>
                   <Link
                     href="/dashboard"
                     className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
@@ -119,6 +125,10 @@ export default function Nav() {
             className="text-ink-900 hover:text-blue-primary"
           >
             Community
+          </Link>
+
+          <Link href="/giving" className="text-ink-900 hover:text-blue-primary">
+            Giving
           </Link>
 
           {/* Donate — mega-menu on hover; top-level link still navigates */}
@@ -157,12 +167,17 @@ export default function Nav() {
                       {
                         href: "/give",
                         title: "Give to a member",
-                        desc: "Scan a QR code or visit their page — 50/50 split",
+                        desc: "Scan a QR code or visit their page — half now, half for reentry",
                       },
                       {
                         href: "/mentor",
                         title: "Donate items or time",
-                        desc: "Stock The Store or mentor at a center",
+                        desc: "Give supplies or mentor at a center",
+                      },
+                      {
+                        href: "/giving",
+                        title: "How giving works",
+                        desc: "The 50/50 promise, explained",
                       },
                     ].map((it) => (
                       <Link

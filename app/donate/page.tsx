@@ -278,7 +278,8 @@ export default function Donate() {
               </div>
               <div className="max-w-[560px] text-[15px]/[1.7] text-white/80">
                 $175 a week keeps her hallway house on track. Give straight to
-                her journey — 50% cash at our centers, 50% Store Credits.
+                her journey — 50% cash at our centers, 50% held for her
+                reentry.
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-5">
                 <Link

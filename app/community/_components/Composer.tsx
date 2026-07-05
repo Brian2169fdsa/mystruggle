@@ -251,8 +251,9 @@ export default function Composer({
             </div>
           </div>
           <div className="mt-2 text-[12px] font-medium text-ink-600">
-            Gifts split 50/50 — half cash, half credits — and go through your
-            center. Your ask appears on your public giving page too.
+            Gifts split 50/50 — half cash now, half held for your reentry —
+            and go through your center. Your ask appears on your public giving
+            page too.
           </div>
         </div>
       )}

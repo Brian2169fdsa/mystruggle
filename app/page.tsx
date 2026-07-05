@@ -84,7 +84,8 @@ export default function Home() {
             <p className="m-0">
               Through QR Code Giving, anyone can give directly to a
               member&apos;s journey — half in cash they redeem at our centers,
-              half in credits for essentials at The Store. Every gift is
+              half held safely for their reentry — theirs the day they step
+              back into society. Every gift is
               accountable, dignified, and personal.
             </p>
             <p className="m-0">
@@ -169,7 +170,7 @@ export default function Home() {
                 n: "01",
                 href: "/donate",
                 title: "Donate items",
-                desc: "Clothing, hygiene kits, and household essentials stock The Store and go straight to members at our outreach centers.",
+                desc: "Clothing, hygiene kits, and household essentials go straight to members at our outreach centers.",
               },
               {
                 n: "02",
@@ -354,9 +355,10 @@ const FAQ = [
     a: (
       <>
         When you give to a member, your gift splits 50/50: half becomes cash
-        they redeem in person at our outreach centers with their member ID card,
-        and half becomes Store Credits for essentials at The Store. Members can
-        save either balance for their reentry into society.
+        they collect at our outreach centers with their member ID card —
+        whether they&apos;re unhoused or currently incarcerated — and half is
+        held as their Reentry Fund, released directly to them when they
+        re-enter society.
       </>
     ),
   },
@@ -367,7 +369,7 @@ const FAQ = [
         Every member carries a personal QR code. Scan it with your phone camera
         and you land on their giving page — their story, their goals, and a
         secure checkout. Your gift reaches them in under a minute, split 50/50
-        between center cash and Store Credits.{" "}
+        — half now, half held for their reentry.{" "}
         <Link href="/give" className="font-bold text-blue-primary">
           See Danielle&apos;s page →
         </Link>
@@ -548,9 +550,9 @@ function SocialWall() {
       handle: "My Struggle",
       when: "4 days ago",
       href: "https://www.facebook.com",
-      cap: "The Store restock day",
+      cap: "Pantry restock day",
       video: false,
-      body: "The Store is stocked — thank you to everyone who donated items this month.",
+      body: "The pantry shelves are stocked — thank you to everyone who donated items this month.",
     },
     {
       tag: "TT",

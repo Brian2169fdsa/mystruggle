@@ -204,7 +204,8 @@ function GivingCard() {
         How giving works
       </h2>
       <p className="mt-2 text-[13px] font-medium leading-relaxed text-white/90">
-        Every gift splits 50/50 — half cash at the center, half Store Credits.
+        Every gift splits 50/50 — half reaches them today, half is held for
+        their reentry.
       </p>
       <Link
         href="/give"

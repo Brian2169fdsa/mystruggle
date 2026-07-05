@@ -257,7 +257,7 @@ export default function GivingDesk({
           swatch: "bg-blue-primary",
         },
         {
-          label: "Store credits held",
+          label: "Reentry fund held",
           amount: overview.creditsHeld,
           pct: pctOf(overview.creditsHeld),
           swatch: "bg-indigo-brand",

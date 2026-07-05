@@ -36,6 +36,7 @@ const WORDMARK_WHITE =
 export default function Footer() {
   return (
     <footer className="bg-navy-deep">
+      <div className="hairline" />
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 pt-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] lg:gap-12 lg:px-6 lg:pt-20">
         <div className="flex flex-col gap-[18px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -44,7 +45,7 @@ export default function Footer() {
             alt="My Struggle"
             className="h-[52px] w-auto self-start"
           />
-          <div className="max-w-[280px] text-[14px]/[1.7] text-white/65">
+          <div className="max-w-[280px] text-[14px]/[1.7] text-white/80">
             End the Struggle, Build the Future Together.
           </div>
           <div className="flex gap-3">
@@ -55,7 +56,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener"
                 aria-label={s.label}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-white/30 text-[11px] font-bold text-white"
+                className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#8FBCF0]/40 text-[11px] font-bold text-[#EAF2FC] hover:border-[#8FBCF0] hover:bg-white/10"
               >
                 {s.tag}
               </a>
@@ -64,13 +65,15 @@ export default function Footer() {
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#A9B4E8]">
+          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
             Explore
           </div>
           <div className="mt-[18px] flex flex-col gap-3 text-[15px] font-medium">
             {[
               { href: "/about", label: "About us" },
               { href: "/community", label: "Community" },
+              { href: "/giving", label: "How giving works" },
+              { href: "/centers", label: "For centers" },
               { href: "/donate", label: "Donate today" },
               { href: "/mentor", label: "Become a Mentor" },
               { href: "/give", label: "QR Code Giving" },
@@ -78,7 +81,7 @@ export default function Footer() {
               <Link
                 key={l.label}
                 href={l.href}
-                className="text-white/85 hover:text-white"
+                className="text-[#EAF2FC] underline-offset-4 hover:text-white hover:underline"
               >
                 {l.label}
               </Link>
@@ -87,7 +90,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#A9B4E8]">
+          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
             Contact
           </div>
           <div className="mt-[18px] flex flex-col gap-3 text-[15px]/[1.5] font-medium text-white/85">
@@ -102,19 +105,29 @@ export default function Footer() {
         </div>
 
         <div>
-          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#A9B4E8]">
+          <div className="text-[13px] font-bold uppercase tracking-[.12em] text-[#8FBCF0]">
             Stay close
           </div>
-          <div className="mt-[18px] text-[14px]/[1.6] text-white/65">
+          <div className="mt-[18px] text-[14px]/[1.6] text-white/75">
             Member milestones and center news, once a month.
           </div>
           <NewsletterForm />
         </div>
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-[1200px] flex-col items-center gap-2 border-t border-white/[.12] px-5 py-6 text-center text-[13px] text-white/50 lg:mt-16 lg:flex-row lg:justify-between lg:px-6 lg:text-left">
+      <div className="mx-auto mt-12 flex max-w-[1200px] flex-col items-center gap-2 border-t border-white/[.12] px-5 py-6 text-center text-[13px] text-white/65 lg:mt-16 lg:flex-row lg:justify-between lg:px-6 lg:text-left">
         <span>© 2026 My Struggle · EST. 2021 · Laveen, Arizona</span>
-        <span>Privacy · Terms · 501(c)(3)</span>
+        <span className="flex items-center gap-2">
+          <Link href="/privacy" className="hover:text-white">
+            Privacy
+          </Link>
+          <span aria-hidden>·</span>
+          <Link href="/terms" className="hover:text-white">
+            Terms
+          </Link>
+          <span aria-hidden>·</span>
+          <span>501(c)(3)</span>
+        </span>
       </div>
     </footer>
   );
