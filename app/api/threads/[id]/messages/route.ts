@@ -43,7 +43,11 @@ export async function POST(
     ? body.kind
     : "text";
   const text = String(body?.body ?? "").trim();
-  const mood = kind === "mood" ? Math.min(5, Math.max(1, Number(body?.mood ?? 0))) : undefined;
+  const rawMood = Number(body?.mood ?? 0);
+  const mood =
+    kind === "mood" && Number.isInteger(rawMood) && rawMood >= 1 && rawMood <= 5
+      ? rawMood
+      : undefined;
 
   if (kind === "text" && (!text || text.length > 2000)) {
     return NextResponse.json({ error: "Write something first (max 2,000 chars)." }, { status: 400 });

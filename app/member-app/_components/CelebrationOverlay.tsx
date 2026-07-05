@@ -26,9 +26,14 @@ const CONFETTI: {
 export default function CelebrationOverlay({
   shareWin,
   keepPrivate,
+  courseTitle = "ISE Course 3 — Decision",
+  streakDay = 12,
 }: {
   shareWin: () => void;
   keepPrivate: () => void;
+  /** Real course/streak when signed in; defaults = the styled demo. */
+  courseTitle?: string;
+  streakDay?: number;
 }) {
   return (
     <div className="absolute inset-0 z-40 overflow-hidden bg-[rgba(11,37,69,.78)]">
@@ -57,14 +62,14 @@ export default function CelebrationOverlay({
           Lesson complete!
         </div>
         <div className="mt-2 text-[15px]/[1.6] font-medium text-ink-600">
-          ISE Course 3 — Decision
+          {courseTitle}
           <br />
           <span className="text-[15px] font-extrabold text-blue-primary">
             +10 points
           </span>{" "}
           · streak kept:{" "}
           <span className="text-[15px] font-extrabold text-gold-ink">
-            day 12
+            day {streakDay}
           </span>
         </div>
         <div className="mt-[22px] text-[15px] font-bold text-ink-900">

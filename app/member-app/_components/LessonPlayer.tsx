@@ -11,11 +11,18 @@ export default function LessonPlayer({
   quiz,
   setQuiz,
   completeLesson,
+  courseTitle = "ISE Course 3 — Decision",
+  lessonNumber = 2,
+  lessonCount = 6,
 }: {
   closeLesson: () => void;
   quiz: number;
   setQuiz: (i: number) => void;
   completeLesson: () => void;
+  /** Real course/lesson when signed in; defaults = the styled demo. */
+  courseTitle?: string;
+  lessonNumber?: number;
+  lessonCount?: number;
 }) {
   return (
     <div className="flex flex-1 flex-col">
@@ -30,10 +37,10 @@ export default function LessonPlayer({
         </button>
         <div className="text-center">
           <div className="text-[14px] font-bold text-white">
-            ISE Course 3 — Decision
+            {courseTitle}
           </div>
           <div className="text-[11px] font-medium text-[#8FBCF0]">
-            Lesson 2 of 6
+            Lesson {lessonNumber} of {lessonCount}
           </div>
         </div>
         <span className="min-w-[44px]" />
@@ -122,7 +129,9 @@ export default function LessonPlayer({
           Complete lesson · +10 points
         </button>
         <div className="pb-3 text-center text-[12px] font-medium text-ink-400">
-          Lesson 3 unlocks when this one&apos;s done
+          {lessonNumber < lessonCount
+            ? `Lesson ${lessonNumber + 1} unlocks when this one's done`
+            : "Last lesson — the course completes when this one's done"}
         </div>
       </div>
     </div>

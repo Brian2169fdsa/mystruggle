@@ -65,9 +65,10 @@ export default function MeTab({
   user?: SafeUser | null;
   requests?: SupportRequest[] | null;
 }) {
-  // Signed in → real profile; signed out → the styled Danielle demo.
+  // Signed in → real profile (MemberApp keeps user.points current after
+  // lesson completions); signed out → the styled Danielle demo.
   const displayName = user?.name ?? "Danielle";
-  const displayPoints = user ? (user.points ?? 0) + (lessonDone ? 10 : 0) : points;
+  const displayPoints = user ? (user.points ?? 0) : points;
   const level = user ? (user.level ?? "Bronze") : "Silver";
   const progress = levelProgress(level, displayPoints);
   const memberNumber = user ? user.memberNumber : "039521464";

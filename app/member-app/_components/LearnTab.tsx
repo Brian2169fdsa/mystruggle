@@ -112,16 +112,43 @@ export default function LearnTab({
   openLesson,
   vidCat,
   setVidCat,
+  learn = null,
+  openCourse,
 }: {
   lessonDone: boolean;
   openLesson: () => void;
   vidCat: string;
   setVidCat: (c: string) => void;
+  /** Real data when signed in; null = signed out → styled demo. */
+  learn?: { courses: Course[]; enrollments: Enrollment[] } | null;
+  openCourse?: (id: string) => void;
 }) {
   const coursePct = lessonDone ? 60 : 45;
   const videos = VIDEOS.filter(
     (v) => !CAT_MAP[vidCat] || v.cat === CAT_MAP[vidCat],
   );
+
+  // Signed in → real course cards: in-progress first, completed last.
+  // A member with no enrollments sees every course, ready to start at 0%.
+  let realCards: { course: Course; enrollment: Enrollment | undefined }[] = [];
+  if (learn) {
+    const enrolled = learn.enrollments
+      .map((e) => ({
+        course: learn.courses.find((c) => c.id === e.courseId),
+        enrollment: e as Enrollment | undefined,
+      }))
+      .filter((x): x is { course: Course; enrollment: Enrollment } =>
+        Boolean(x.course),
+      )
+      .sort((a, b) => {
+        const aDone = nextLesson(a.course, a.enrollment) === null ? 1 : 0;
+        const bDone = nextLesson(b.course, b.enrollment) === null ? 1 : 0;
+        return aDone - bDone;
+      });
+    realCards = enrolled.length
+      ? enrolled
+      : learn.courses.map((course) => ({ course, enrollment: undefined }));
+  }
 
   return (
     <div className="flex flex-1 flex-col">
@@ -137,6 +164,17 @@ export default function LearnTab({
           MY COURSES
         </div>
 
+        {learn ? (
+          realCards.map(({ course, enrollment }) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              enrollment={enrollment}
+              openCourse={openCourse ?? (() => {})}
+            />
+          ))
+        ) : (
+          <>
         {/* ISE Course 3 — opens lesson player */}
         <button
           type="button"
@@ -218,6 +256,8 @@ export default function LearnTab({
             </div>
           </div>
         </div>
+          </>
+        )}
 
         {/* Video library */}
         <div className="mt-2 text-[12px] font-bold tracking-[.12em] text-blue-primary">
