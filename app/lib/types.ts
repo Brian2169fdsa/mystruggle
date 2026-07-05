@@ -1,6 +1,29 @@
 // Shared platform types — the contract between the API and every surface.
 
-export type Role = "member" | "mentor";
+export type Role = "member" | "mentor" | "staff";
+
+/** A mentor's discreet escalation about a mentee. */
+export interface Concern {
+  id: string;
+  mentorId: string;
+  memberId: string;
+  note?: string;
+  status: "open" | "resolved";
+  createdAt: number;
+}
+
+/** A website mentor application awaiting staff review. */
+export interface MentorApplication {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  areas: string[]; // lived-experience chips
+  availability: string; // Weekly | Every other week | Flexible
+  story?: string;
+  status: "new" | "contacted" | "approved";
+  createdAt: number;
+}
 
 export interface User {
   id: string;

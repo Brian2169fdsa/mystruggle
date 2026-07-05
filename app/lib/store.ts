@@ -19,6 +19,8 @@ import type {
   Session,
   Course,
   Enrollment,
+  Concern,
+  MentorApplication,
 } from "./types";
 
 interface DB {
@@ -32,11 +34,13 @@ interface DB {
   sessions: Session[];
   courses: Course[];
   enrollments: Enrollment[];
+  concerns: Concern[];
+  applications: MentorApplication[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -229,6 +233,11 @@ function seed(): DB {
     city: "Phoenix, AZ",
   };
   const centers = [laveen, southPhoenix];
+
+  // ── staff (dashboard identity) ───────────────────────────────────────
+  const sarah = mk("staff", "Sarah", "sarah@themystruggles.com", "#0B2545", {
+    centerId: laveen.id,
+  });
 
   // ── mentors (8, Marcus first) ────────────────────────────────────────
   const marcus = mk("mentor", "Marcus", "marcus@themystruggles.com", "#4E5B9B", {
@@ -640,7 +649,7 @@ function seed(): DB {
 
   return {
     seedVersion: SEED_VERSION,
-    users: [...mentors, ...members],
+    users: [sarah, ...mentors, ...members],
     posts,
     threads: [dmThread, tyThread],
     donations,
@@ -649,6 +658,8 @@ function seed(): DB {
     sessions,
     courses,
     enrollments,
+    concerns: [],
+    applications: [],
   };
 }
 

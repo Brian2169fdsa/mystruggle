@@ -37,6 +37,17 @@ export function verifyToken(token: string | undefined): string | null {
   return null;
 }
 
+/** Signed-in user if they hold one of the given roles, else null.
+ *  Staff passes every check (staff supervise all surfaces). */
+export async function getRoleUser(
+  ...roles: Array<User["role"]>
+): Promise<User | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+  if (user.role === "staff" || roles.includes(user.role)) return user;
+  return null;
+}
+
 /** Current signed-in user from the request cookie, or null. */
 export async function getSessionUser(): Promise<User | null> {
   const jar = await cookies();
