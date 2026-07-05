@@ -37,7 +37,13 @@ export default function LoginPage() {
         return;
       }
       const user = data.user as SafeUser;
-      router.push(user.role === "mentor" ? "/mentor-app" : "/member-app");
+      router.push(
+        user.role === "staff"
+          ? "/dashboard"
+          : user.role === "mentor"
+            ? "/mentor-app"
+            : "/member-app"
+      );
     } catch {
       setError("Couldn't reach the server. Please try again.");
       setBusy(false);
@@ -130,6 +136,10 @@ export default function LoginPage() {
             <div>
               <span className="font-bold text-ink-900">Mentor</span> ·
               marcus@themystruggles.com / mystruggle
+            </div>
+            <div>
+              <span className="font-bold text-ink-900">Staff</span> ·
+              sarah@themystruggles.com / mystruggle
             </div>
           </div>
         </div>

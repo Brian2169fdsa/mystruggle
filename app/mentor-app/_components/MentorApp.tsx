@@ -16,6 +16,7 @@ import LogSheet, {
   MODE_LABEL,
   durationLabel,
 } from "./LogSheet";
+import ConcernSheet from "./ConcernSheet";
 import ChatThread, {
   previewText,
   timeAgo,
@@ -82,6 +83,15 @@ export default function MentorApp() {
   const [sessionSaved, setSessionSaved] = useState(false);
   const [cheerSent, setCheerSent] = useState(false);
   const [mood, setMood] = useState<number | null>(null);
+
+  // "I'm concerned" — quiet escalation to the care team.
+  const [concernOpen, setConcernOpen] = useState(false);
+  const [concernNote, setConcernNote] = useState("");
+  const [concernSending, setConcernSending] = useState(false);
+  const [concernNeedSignIn, setConcernNeedSignIn] = useState(false);
+  const [concernResult, setConcernResult] = useState<
+    "sent" | "duplicate" | null
+  >(null);
 
   // Live chat state — real threads when signed in as a mentor.
   const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
@@ -200,6 +210,54 @@ export default function MentorApp() {
     setView("detail");
     setSessionSaved(false);
     setCheerSent(false);
+    setConcernOpen(false);
+    setConcernNeedSignIn(false);
+    setConcernResult(null);
+  };
+
+  /** Open the quiet concern sheet from the mentee-detail text link. */
+  const openConcern = () => {
+    setConcernNeedSignIn(false);
+    setConcernOpen(true);
+  };
+
+  /** Send the concern to the care team — mentor session required; signed-out
+   *  viewers get a gentle sign-in prompt inside the sheet, never an error. */
+  const sendConcern = async () => {
+    if (!signedIn || (meRole !== "mentor" && meRole !== "staff")) {
+      setConcernNeedSignIn(true);
+      return;
+    }
+    setConcernSending(true);
+    try {
+      const memberId = await resolveDanielleId();
+      if (!memberId) {
+        setConcernNeedSignIn(true);
+        return;
+      }
+      const res = await fetch("/api/concerns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId,
+          ...(concernNote.trim() ? { note: concernNote.trim() } : {}),
+        }),
+      });
+      if (res.ok) {
+        setConcernResult("sent");
+        setConcernNote("");
+        setConcernOpen(false);
+      } else if (res.status === 409) {
+        setConcernResult("duplicate");
+        setConcernOpen(false);
+      } else if (res.status === 401) {
+        setConcernNeedSignIn(true);
+      }
+    } catch {
+      /* quiet by design — the sheet simply stays open */
+    } finally {
+      setConcernSending(false);
+    }
   };
 
   /** Save from the log sheet — optimistic banner always; real POST when
@@ -614,9 +672,23 @@ export default function MentorApp() {
 
               {/* Deliberately quiet — a text link, not a button */}
               <div className="mt-auto pb-2 text-center">
-                <span className="cursor-pointer border-b border-[#E2E8F0] pb-0.5 text-[13px] font-semibold text-ink-400">
-                  I&apos;m concerned about Danielle
-                </span>
+                {concernResult === "sent" ? (
+                  <span className="text-[13px] font-semibold text-ink-600">
+                    ✓ The care team has been notified. Thank you for looking
+                    out.
+                  </span>
+                ) : concernResult === "duplicate" ? (
+                  <span className="text-[13px] font-semibold text-ink-600">
+                    You already raised this — the care team is on it.
+                  </span>
+                ) : (
+                  <span
+                    onClick={openConcern}
+                    className="cursor-pointer border-b border-[#E2E8F0] pb-0.5 text-[13px] font-semibold text-ink-400"
+                  >
+                    I&apos;m concerned about Danielle
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -814,6 +886,19 @@ export default function MentorApp() {
             onMentees={backToRoster}
             onChat={openChatTab}
             onCommunity={() => setView("community")}
+          />
+        )}
+
+        {/* ============ CONCERN SHEET — quiet escalation ============ */}
+        {concernOpen && (
+          <ConcernSheet
+            name="Danielle"
+            note={concernNote}
+            onNote={setConcernNote}
+            onSend={sendConcern}
+            onClose={() => setConcernOpen(false)}
+            sending={concernSending}
+            needSignIn={concernNeedSignIn}
           />
         )}
 

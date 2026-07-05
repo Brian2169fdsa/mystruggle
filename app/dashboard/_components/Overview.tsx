@@ -1,7 +1,19 @@
 "use client";
 
-import { CARD, SKELETON, fmtMoney } from "./types";
+import { useEffect, useState } from "react";
+import { CARD, SKELETON, fmtMoney, relTime } from "./types";
 import type { OverviewData } from "./types";
+
+/** One row of GET /api/concerns (staff-only). */
+type ConcernRow = {
+  id: string;
+  note?: string;
+  status: "open" | "resolved";
+  createdAt: number;
+  mentorName: string | null;
+  memberName: string | null;
+  memberNumber: string | null;
+};
 
 const KPIS = [
   { chip: "PON", indigo: false, n: "128" },
@@ -91,17 +103,61 @@ export default function Overview({
   goParticipants: () => void;
   goModeration: () => void;
 }) {
+  // Real open concerns (staff session) — "loading" → skeleton,
+  // "denied" (signed out / not staff) → static demo rows stay.
+  const [concerns, setConcerns] = useState<ConcernRow[] | "loading" | "denied">(
+    "loading"
+  );
+  // Locally resolved rows: green ✓ + fade instead of vanishing.
+  const [resolved, setResolved] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/concerns");
+        const data = await res.json().catch(() => null);
+        if (!alive) return;
+        if (res.ok && Array.isArray(data?.concerns)) {
+          setConcerns(
+            (data.concerns as ConcernRow[]).filter((c) => c.status === "open")
+          );
+        } else {
+          setConcerns("denied");
+        }
+      } catch {
+        if (alive) setConcerns("denied");
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const markResolved = async (id: string) => {
+    try {
+      const res = await fetch("/api/concerns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "resolved" }),
+      });
+      if (res.ok) setResolved((r) => ({ ...r, [id]: true }));
+    } catch {
+      /* row simply stays actionable */
+    }
+  };
+
   const attention = [
     {
       dot: "bg-gold-badge",
-      title: "Tyrell — inactive 6 days",
+      title: "Tyrell — inactive 6 days (demo)",
       sub: "Mentor Marcus nudged today",
       action: "Open",
       go: goParticipants,
     },
     {
-      dot: "bg-heart-red",
-      title: "Maria — mood 1/5 two days running",
+      dot: "bg-gold-badge",
+      title: "Maria — mood 1/5 two days running (demo)",
       sub: "Mentor raised a concern · follow up today",
       action: "Open",
       go: goParticipants,
@@ -308,32 +364,103 @@ export default function Overview({
       <div className="grid grid-cols-2 gap-[18px]">
         <div className={CARD + " px-[30px] py-[26px]"}>
           <div className="text-base font-bold text-ink-900">Needs attention</div>
-          <div className="mt-3.5 flex flex-col">
-            {attention.map((a, i) => (
-              <div
-                key={a.title}
-                className={
-                  "flex items-center gap-3.5 py-3.5 " +
-                  (i < attention.length - 1 ? "border-b border-canvas" : "")
-                }
-              >
-                <span
-                  className={"h-2.5 w-2.5 flex-none rounded-full " + a.dot}
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-bold text-ink-900">{a.title}</div>
-                  <div className="text-xs text-ink-600">{a.sub}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={a.go}
-                  className="cursor-pointer text-[13px] font-bold text-blue-primary"
+
+          {/* Loading — quiet skeleton rows */}
+          {concerns === "loading" && (
+            <div className="mt-3.5 flex flex-col gap-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className={SKELETON + " h-[52px]"} />
+              ))}
+            </div>
+          )}
+
+          {/* Signed out / not staff — the static demo preview stays */}
+          {concerns === "denied" && (
+            <div className="mt-3.5 flex flex-col">
+              {attention.map((a, i) => (
+                <div
+                  key={a.title}
+                  className={
+                    "flex items-center gap-3.5 py-3.5 " +
+                    (i < attention.length - 1 ? "border-b border-canvas" : "")
+                  }
                 >
-                  {a.action}
-                </button>
-              </div>
-            ))}
-          </div>
+                  <span
+                    className={"h-2.5 w-2.5 flex-none rounded-full " + a.dot}
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-ink-900">
+                      {a.title}
+                    </div>
+                    <div className="text-xs text-ink-600">{a.sub}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={a.go}
+                    className="cursor-pointer text-[13px] font-bold text-blue-primary"
+                  >
+                    {a.action}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Staff — real open concerns from mentors */}
+          {Array.isArray(concerns) && concerns.length === 0 && (
+            <div className="py-8 text-center text-[13px] font-medium text-ink-400">
+              Nothing needs attention right now.
+            </div>
+          )}
+          {Array.isArray(concerns) && concerns.length > 0 && (
+            <div className="mt-3.5 flex flex-col">
+              {concerns.map((c, i) => {
+                const done = resolved[c.id];
+                return (
+                  <div
+                    key={c.id}
+                    className={
+                      "flex items-center gap-3.5 py-3.5 transition-opacity duration-700 " +
+                      (done ? "opacity-40 " : "") +
+                      (i < concerns.length - 1 ? "border-b border-canvas" : "")
+                    }
+                  >
+                    {done ? (
+                      <span className="w-2.5 flex-none text-center text-[13px] font-extrabold leading-none text-success">
+                        ✓
+                      </span>
+                    ) : (
+                      <span className="h-2.5 w-2.5 flex-none rounded-full bg-gold-badge" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-bold text-ink-900">
+                        {c.memberName ?? "Member"}
+                        {c.memberNumber ? ` · #${c.memberNumber}` : ""}
+                      </div>
+                      <div className="text-xs text-ink-600">
+                        Raised by {c.mentorName ?? "a mentor"} ·{" "}
+                        {relTime(c.createdAt)}
+                      </div>
+                      {c.note && (
+                        <div className="mt-0.5 truncate text-xs text-ink-400">
+                          &ldquo;{c.note}&rdquo;
+                        </div>
+                      )}
+                    </div>
+                    {!done && (
+                      <button
+                        type="button"
+                        onClick={() => markResolved(c.id)}
+                        className="flex-none cursor-pointer text-[13px] font-bold text-blue-primary"
+                      >
+                        Mark resolved
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className={CARD + " px-[30px] py-[26px]"}>
