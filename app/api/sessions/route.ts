@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, findUserById, save, uid } from "@/app/lib/store";
-import { getSessionUser } from "@/app/lib/auth";
+import { getRoleUser } from "@/app/lib/auth";
 import type { Session, SessionMode } from "@/app/lib/types";
 
 const MODES: SessionMode[] = ["in-person", "phone", "video"];
@@ -15,9 +15,16 @@ function sessionStore(): Session[] {
 }
 
 /** Sessions for one member, newest first (capped at 20), with the mentor's
- *  first name resolved for display. Demo-open like the other admin reads;
- *  lock behind staff auth before production. */
+ *  first name resolved for display. Mentor- or staff-only (was demo-open;
+ *  P0 gap closed). */
 export async function GET(req: Request) {
+  const me = await getRoleUser("mentor");
+  if (!me) {
+    return NextResponse.json(
+      { error: "Staff sign-in required." },
+      { status: 401 }
+    );
+  }
   const memberId = new URL(req.url).searchParams.get("memberId");
   if (!memberId) {
     return NextResponse.json(
@@ -38,17 +45,11 @@ export async function GET(req: Request) {
   return NextResponse.json({ sessions, count: all.length });
 }
 
-/** Log a session — signed-in mentors only. */
+/** Log a session — signed-in mentors (staff passes every role check). */
 export async function POST(req: Request) {
-  const me = await getSessionUser();
+  const me = await getRoleUser("mentor");
   if (!me) {
     return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  }
-  if (me.role !== "mentor") {
-    return NextResponse.json(
-      { error: "Only mentors can log sessions." },
-      { status: 403 }
-    );
   }
 
   const body = await req.json().catch(() => null);

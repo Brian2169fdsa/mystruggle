@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/store";
+import { getRoleUser } from "@/app/lib/auth";
 
 /** Center-dashboard Reports data computed from live store data. Read-only.
- *  Demo-open like the other admin routes (no staff role in the data model
- *  yet); lock behind staff auth before production.
+ *  Staff-only (was demo-open; P0 gap closed — gated like the other admin
+ *  routes behind the staff session role).
  *
  *  RETENTION PROXY — there is no real activity/attendance log yet, so
  *  "retained at N months" is a documented stand-in:
@@ -28,6 +29,13 @@ function isActive(m: { streak?: number; points?: number }): boolean {
 }
 
 export async function GET() {
+  const staff = await getRoleUser();
+  if (!staff) {
+    return NextResponse.json(
+      { error: "Staff sign-in required." },
+      { status: 401 }
+    );
+  }
   const d = db();
   const members = d.users.filter((u) => u.role === "member");
 

@@ -93,10 +93,45 @@ export default function ParticipantDetail({
   goGiving: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("Journey");
-  // Consent toggles are LOCAL ONLY — no consent API exists yet. The public-
-  // page toggle starts from the member's real consentPublic flag.
+  // "Public giving page" is LIVE — POST /api/admin/consent, optimistic flip
+  // with revert on failure. Photo + milestone toggles stay local-only: there
+  // is no data model for them yet (they still need the signed consent form).
   const [pagePublic, setPagePublic] = useState(member.consentPublic);
+  const [consentSaving, setConsentSaving] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
   const [photoPublic, setPhotoPublic] = useState(false);
+
+  // Re-sync when the detail view is reused for a different member.
+  useEffect(() => {
+    setPagePublic(member.consentPublic);
+    setConsentSaving(false);
+    setConsentError(null);
+  }, [member.id, member.consentPublic]);
+
+  async function togglePagePublic() {
+    if (consentSaving) return;
+    const next = !pagePublic;
+    setPagePublic(next); // optimistic
+    setConsentSaving(true);
+    setConsentError(null);
+    try {
+      const r = await fetch("/api/admin/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: member.id, consentPublic: next }),
+      });
+      const d = await r.json().catch(() => null);
+      if (!r.ok || !d?.ok) throw new Error("save failed");
+      setPagePublic(Boolean(d.consentPublic));
+    } catch {
+      setPagePublic(!next); // revert — the page is unchanged
+      setConsentError(
+        "We couldn't save that just now, so nothing changed on the public page. Please try again in a moment."
+      );
+    } finally {
+      setConsentSaving(false);
+    }
+  }
 
   // Recent mentor sessions — LIVE. null = loading.
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
@@ -375,17 +410,32 @@ export default function ParticipantDetail({
               )}
             </div>
 
-            {/* Consent — public-page toggle starts from real consentPublic */}
+            {/* Consent — public-page toggle is LIVE (POST /api/admin/consent);
+                photo + milestone toggles are local-only, no data model yet. */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">Consent</div>
               <div className="mt-3 flex flex-col gap-2.5 text-[13px] font-semibold text-ink-900">
-                <div className="flex items-center justify-between">
-                  Public giving page
-                  <Toggle
-                    on={pagePublic}
-                    onToggle={() => setPagePublic((v) => !v)}
-                  />
+                <div
+                  className={
+                    "flex items-center justify-between transition-opacity duration-200" +
+                    (consentSaving ? " opacity-60" : "")
+                  }
+                >
+                  <span>
+                    Public giving page
+                    {consentSaving && (
+                      <span className="ml-2 text-[11px] font-semibold text-ink-400">
+                        Saving…
+                      </span>
+                    )}
+                  </span>
+                  <Toggle on={pagePublic} onToggle={togglePagePublic} />
                 </div>
+                {consentError && (
+                  <div className="rounded-xl bg-[#FFF7EA] px-3 py-2 text-[11px]/[1.5] font-semibold text-[#B54708]">
+                    {consentError}
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   Story approved
                   <span className="text-xs font-bold text-success">
@@ -406,10 +456,11 @@ export default function ParticipantDetail({
               </div>
               <div className="mt-3 text-[11px]/[1.5] text-ink-400">
                 {pagePublic
-                  ? `Public page is ON — give.my-struggle.org/p/${member.slug}. Revoking flips it to a generic org-giving state within minutes.`
-                  : `Public page is OFF — give.my-struggle.org/p/${member.slug} shows the generic org-giving state.`}
+                  ? `Public page is ON — give.my-struggle.org/p/${member.slug}. Revoking flips it to the generic org-giving state immediately.`
+                  : `Public page is OFF — give.my-struggle.org/p/${member.slug} now shows the generic org-giving state.`}
                 <br />
-                Changes require the member&apos;s signed consent form.
+                Photo and milestone changes require the member&apos;s signed
+                consent form.
               </div>
             </div>
           </div>

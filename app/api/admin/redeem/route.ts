@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { db, save } from "@/app/lib/store";
+import { getRoleUser } from "@/app/lib/auth";
 
 /** Cash redemption desk — staff records a card-present cash payout.
  *  Dual record per docs/04: member card scan (the desk looked the member up
- *  by card #) + staff PIN entered here. Demo-open like the other admin APIs;
- *  lock behind real staff auth before production. */
+ *  by card #) + staff PIN entered here. Staff-only (was demo-open; P0 gap
+ *  closed — a staff session is now required on top of the desk PIN). */
 
 // Demo constant — real staff PINs live in the auth system (P0 gap, tracked).
 const STAFF_PIN = "1234";
@@ -26,6 +27,13 @@ function bad(status: number, error: string) {
 }
 
 export async function POST(req: Request) {
+  const staff = await getRoleUser();
+  if (!staff) {
+    return NextResponse.json(
+      { error: "Staff sign-in required." },
+      { status: 401 }
+    );
+  }
   let body: { memberId?: unknown; amount?: unknown; pin?: unknown };
   try {
     body = await req.json();

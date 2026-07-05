@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/store";
+import { getRoleUser } from "@/app/lib/auth";
 
-/** Center-dashboard KPIs computed from live data. Demo-open (no staff role
- *  in the data model yet); lock behind staff auth before production. */
+/** Center-dashboard KPIs computed from live data. Staff-only (was demo-open;
+ *  P0 gap closed — gated behind the staff session role). */
 export async function GET() {
+  const staff = await getRoleUser();
+  if (!staff) {
+    return NextResponse.json(
+      { error: "Staff sign-in required." },
+      { status: 401 }
+    );
+  }
   const d = db();
   const members = d.users.filter((u) => u.role === "member");
   const donations = d.donations;
