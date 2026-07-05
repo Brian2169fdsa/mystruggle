@@ -46,7 +46,10 @@ None found.
 - Reports live — ✔ cohorts from 500 members, giving-by-month sums $82,330, CSV export
 - Cash redemption — ✔ happy path/wrong PIN/cap/insufficient all verified (400/404/422)
 - Sessions API + logging — ✔ mentor POST → member history (see agent evidence)
-- LMS — ✔ courses/enrollments seeded, +10 points idempotent completion
+- LMS — ✔ 6 courses + 438 enrollments seeded (SEED_VERSION 3); Danielle
+  lesson-3 completion E2E: points 640→650, streak 12→13, level recompute,
+  idempotent re-complete (alreadyDone, no re-award), persists across restart;
+  Learn tab renders real rings; celebration posts name the real course
 - Crisis path — ✔ crisis text held from feed, 988 resources returned, queue pins it
 - API bug: mood=0 now 400s instead of coercing to 1
 
