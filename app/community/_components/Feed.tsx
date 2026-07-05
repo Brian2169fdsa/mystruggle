@@ -235,7 +235,18 @@ export default function Feed({
 
       {/* ── composer / join card ── */}
       {viewer ? (
-        <Composer viewer={viewer} topic={topic} onPosted={(p) => setPosts((prev) => [p, ...(prev ?? [])])} />
+        <Composer
+          viewer={viewer}
+          topic={topic}
+          onPosted={(p) => {
+            // Only surface it here if it belongs in the current filter.
+            if (!topic || (p.topic ?? "general") === topic) {
+              setPosts((prev) => [p, ...(prev ?? [])]);
+            } else {
+              selectTopic(p.topic ?? "general");
+            }
+          }}
+        />
       ) : (
         <JoinCard />
       )}
