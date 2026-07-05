@@ -18,7 +18,7 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative flex min-h-[560px] items-center overflow-hidden bg-navy-deep bg-[url('/center-exterior.png')] bg-[center_60%] bg-cover bg-no-repeat lg:min-h-[86vh]">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.58)_48%,rgba(11,37,69,.12)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.97)_0%,rgba(11,37,69,.82)_42%,rgba(11,37,69,.35)_72%,rgba(11,37,69,.15)_100%)]" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={WORDMARK_WHITE}
@@ -49,7 +49,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/mentor"
-                className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 bg-[rgba(11,37,69,.35)] px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
               >
                 Become a mentor
               </Link>
