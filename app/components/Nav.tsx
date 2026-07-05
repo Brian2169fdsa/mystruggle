@@ -123,7 +123,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-[18px]">
           <Link
-            href="/member-app"
+            href="/login"
             className="text-[15px] font-semibold text-blue-primary"
           >
             Sign in
