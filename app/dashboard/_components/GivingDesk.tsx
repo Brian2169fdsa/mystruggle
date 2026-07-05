@@ -1,11 +1,12 @@
 "use client";
 
-import { CARD } from "./types";
-import type { GivingStep } from "./types";
+import { CARD, SKELETON, fmtMoney } from "./types";
+import type { GivingStep, OverviewData } from "./types";
 
 const QUICK = [10, 40, 64];
 
 export default function GivingDesk({
+  overview,
   step,
   redeemAmount,
   onSelectAmount,
@@ -14,6 +15,7 @@ export default function GivingDesk({
   onConfirm,
   onReset,
 }: {
+  overview: OverviewData | null;
   step: GivingStep;
   redeemAmount: number;
   onSelectAmount: (v: number) => void;
@@ -24,6 +26,35 @@ export default function GivingDesk({
 }) {
   const pin = step === "pin";
   const done = step === "done";
+
+  // LIVE split utilization — real held balances from /api/admin/overview.
+  const heldTotal = overview
+    ? overview.cashHeld + overview.creditsHeld + overview.savingsHeld
+    : 0;
+  const pctOf = (n: number) =>
+    heldTotal > 0 ? Math.round((n / heldTotal) * 100) : 0;
+  const split = overview
+    ? [
+        {
+          label: "Cash held",
+          amount: overview.cashHeld,
+          pct: pctOf(overview.cashHeld),
+          swatch: "bg-blue-primary",
+        },
+        {
+          label: "Store credits held",
+          amount: overview.creditsHeld,
+          pct: pctOf(overview.creditsHeld),
+          swatch: "bg-indigo-brand",
+        },
+        {
+          label: "Reentry savings held",
+          amount: overview.savingsHeld,
+          pct: pctOf(overview.savingsHeld),
+          swatch: "bg-success",
+        },
+      ]
+    : null;
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -222,36 +253,43 @@ export default function GivingDesk({
         <div className="flex flex-col gap-[18px]">
           <div className={CARD + " px-7 py-6"}>
             <div className="text-[15px] font-bold text-ink-900">
-              Split utilization · this quarter
+              Split utilization · held balances
             </div>
-            <div className="mt-4 flex h-4 overflow-hidden rounded-full">
-              <div className="w-[44%] bg-blue-primary" />
-              <div className="w-[38%] bg-indigo-brand" />
-              <div className="w-[18%] bg-success" />
-            </div>
-            <div className="mt-3.5 flex flex-col gap-2 text-[13px] font-semibold text-ink-900">
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-[3px] bg-blue-primary" />
-                  Cash redeemed
-                </span>
-                <span className="tnum">$9,180 · 44%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-[3px] bg-indigo-brand" />
-                  Store credits spent
-                </span>
-                <span className="tnum">$7,940 · 38%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-[3px] bg-success" />
-                  Saved for reentry
-                </span>
-                <span className="tnum">$3,760 · 18%</span>
-              </div>
-            </div>
+            {split ? (
+              <>
+                <div className="mt-4 flex h-4 overflow-hidden rounded-full bg-sky-tint">
+                  {split.map((s) => (
+                    <div
+                      key={s.label}
+                      className={s.swatch}
+                      style={{
+                        width:
+                          heldTotal > 0
+                            ? `${(s.amount / heldTotal) * 100}%`
+                            : "0%",
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3.5 flex flex-col gap-2 text-[13px] font-semibold text-ink-900">
+                  {split.map((s) => (
+                    <div key={s.label} className="flex justify-between">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={"h-2.5 w-2.5 rounded-[3px] " + s.swatch}
+                        />
+                        {s.label}
+                      </span>
+                      <span className="tnum">
+                        {fmtMoney(s.amount)} · {s.pct}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className={SKELETON + " mt-4 h-[110px]"} />
+            )}
           </div>
 
           <div className={CARD + " px-7 py-6"}>
@@ -264,26 +302,34 @@ export default function GivingDesk({
                   1,204
                 </div>
                 <div className="text-[11px] font-semibold text-ink-600">
-                  scans
+                  scans (demo)
                 </div>
               </div>
               <div>
                 <div className="tnum text-[26px] font-extrabold text-blue-primary">
-                  312
+                  {overview ? overview.donations.toLocaleString("en-US") : "—"}
                 </div>
                 <div className="text-[11px] font-semibold text-ink-600">
-                  gifts · 26%
+                  gifts
                 </div>
               </div>
               <div>
                 <div className="tnum text-[26px] font-extrabold text-success">
-                  84
+                  {overview
+                    ? overview.weeklyRecurring.toLocaleString("en-US")
+                    : "—"}
                 </div>
                 <div className="text-[11px] font-semibold text-ink-600">
                   weekly recurring
                 </div>
               </div>
             </div>
+            {overview && (
+              <div className="mt-3 text-center text-[11px] font-semibold text-ink-400">
+                {overview.donations} gift{overview.donations === 1 ? "" : "s"} ·{" "}
+                {overview.weeklyRecurring} weekly recurring
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CARD } from "./types";
+import { CARD, fmtMoney } from "./types";
+import type { AdminMember } from "./types";
 
 const TABS = ["Journey", "Courses", "Mentorship", "Balances", "Consent"] as const;
 type Tab = (typeof TABS)[number];
 
+// Journey timeline stays the styled demo — journey stages aren't in the
+// data model yet.
 const TIMELINE = [
   {
     title: "Outreach — met Laveen team",
@@ -14,7 +17,7 @@ const TIMELINE = [
     lineColor: "#12B76A",
   },
   {
-    title: "Stabilization — matched with Marcus, IOP intake",
+    title: "Stabilization — matched with mentor, IOP intake",
     date: <>Nov 3, 2025</>,
     done: true,
     lineColor: "#12B76A",
@@ -31,7 +34,7 @@ const TIMELINE = [
     lineColor: "#2E7CD6",
   },
   {
-    title: "Transitional — hallway house, $175/wk goal live",
+    title: "Transitional — hallway house, weekly goal live",
     date: <>May 4, 2026 · current stage</>,
     done: false,
     lineColor: null,
@@ -65,27 +68,24 @@ function Toggle({
 }
 
 export default function ParticipantDetail({
-  pagePublic,
-  photoPublic,
-  onTogglePage,
-  onTogglePhoto,
-  redeemed,
+  member,
   goParticipants,
   goGiving,
 }: {
-  pagePublic: boolean;
-  photoPublic: boolean;
-  onTogglePage: () => void;
-  onTogglePhoto: () => void;
-  /** Amount redeemed at the giving desk this session (0 until confirmed). */
-  redeemed: number;
+  member: AdminMember;
   goParticipants: () => void;
   goGiving: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("Journey");
+  // Consent toggles are LOCAL ONLY — no consent API exists yet. The public-
+  // page toggle starts from the member's real consentPublic flag.
+  const [pagePublic, setPagePublic] = useState(member.consentPublic);
+  const [photoPublic, setPhotoPublic] = useState(false);
 
-  const cash = 64 - redeemed;
-  const redeemedToday = 20 + redeemed;
+  const joined = new Date(member.joinedAt).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -97,28 +97,35 @@ export default function ParticipantDetail({
         >
           Participants
         </button>{" "}
-        / <span className="font-bold text-ink-900">Danielle</span>
+        / <span className="font-bold text-ink-900">{member.name}</span>
       </div>
 
       {/* Header card */}
       <div className={CARD + " flex flex-wrap items-center gap-[22px] px-[30px] py-[26px]"}>
-        <div className="flex h-[72px] w-[72px] flex-none items-center justify-center rounded-full bg-sky-tint text-[28px] font-extrabold text-indigo-brand">
-          D
+        <div
+          className="flex h-[72px] w-[72px] flex-none items-center justify-center rounded-full text-[28px] font-extrabold text-white"
+          style={{ background: member.avatarColor }}
+        >
+          {member.name[0]}
         </div>
         <div className="min-w-[260px] flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <div className="text-[26px] font-extrabold tracking-[-0.02em] text-ink-900">
-              Danielle
+              {member.name}
             </div>
             <span className="inline-flex h-[26px] items-center rounded-full bg-sky-tint px-3 text-[11px] font-bold text-blue-primary">
-              #039521464
+              #{member.memberNumber}
             </span>
             <span className="inline-flex h-[26px] items-center rounded-full bg-[#DDEBFB] px-3 text-[11px] font-bold text-blue-primary">
-              Transitional
+              {member.level}
             </span>
           </div>
           <div className="mt-1 text-[13px] font-medium text-ink-600">
-            Joined Oct 2025 · mentor Marcus T. · PON program
+            Joined {joined} ·{" "}
+            {member.mentorName
+              ? `mentor ${member.mentorName}`
+              : "no mentor yet"}{" "}
+            · {member.points.toLocaleString("en-US")} pts
           </div>
         </div>
         <button
@@ -165,53 +172,104 @@ export default function ParticipantDetail({
         </div>
       ) : (
         <div className="grid grid-cols-[1.4fr_1fr] gap-[18px]">
-          {/* Journey timeline */}
-          <div className={CARD + " px-[30px] py-[26px]"}>
-            <div className="text-[15px] font-bold text-ink-900">
-              Journey timeline
-            </div>
-            <div className="mt-4 flex flex-col">
-              {TIMELINE.map((t) => (
-                <div key={t.title} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    {t.done ? (
-                      <span className="inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-success text-[10px] font-bold text-white">
-                        ✓
-                      </span>
-                    ) : (
-                      <span className="h-5 w-5 flex-none rounded-full bg-blue-primary shadow-[0_0_0_4px_#EAF2FC]" />
-                    )}
-                    {t.lineColor && (
-                      <div
-                        className="w-0.5 flex-1"
-                        style={{ minHeight: 22, background: t.lineColor }}
-                      />
-                    )}
-                  </div>
-                  <div className={t.done ? "pb-3.5" : ""}>
-                    <div
-                      className={
-                        "text-[13px] font-bold " +
-                        (t.done ? "text-ink-900" : "text-blue-primary")
-                      }
-                    >
-                      {t.title}
+          {/* Left column — journey timeline (demo) + real support requests */}
+          <div className="flex flex-col gap-[18px]">
+            <div className={CARD + " px-[30px] py-[26px]"}>
+              <div className="text-[15px] font-bold text-ink-900">
+                Journey timeline
+              </div>
+              <div className="mt-4 flex flex-col">
+                {TIMELINE.map((t) => (
+                  <div key={t.title} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      {t.done ? (
+                        <span className="inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-success text-[10px] font-bold text-white">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="h-5 w-5 flex-none rounded-full bg-blue-primary shadow-[0_0_0_4px_#EAF2FC]" />
+                      )}
+                      {t.lineColor && (
+                        <div
+                          className="w-0.5 flex-1"
+                          style={{ minHeight: 22, background: t.lineColor }}
+                        />
+                      )}
                     </div>
-                    <div className="text-xs text-ink-600">{t.date}</div>
+                    <div className={t.done ? "pb-3.5" : ""}>
+                      <div
+                        className={
+                          "text-[13px] font-bold " +
+                          (t.done ? "text-ink-900" : "text-blue-primary")
+                        }
+                      >
+                        {t.title}
+                      </div>
+                      <div className="text-xs text-ink-600">{t.date}</div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Support requests — LIVE */}
+            <div className={CARD + " px-[30px] py-[26px]"}>
+              <div className="text-[15px] font-bold text-ink-900">
+                Support requests
+              </div>
+              {member.requests.length === 0 ? (
+                <div className="mt-3 text-[13px] text-ink-600">
+                  No support requests yet.
                 </div>
-              ))}
+              ) : (
+                <div className="mt-4 flex flex-col gap-4">
+                  {member.requests.map((r) => {
+                    const funded = r.status === "funded";
+                    const pct = Math.min(
+                      100,
+                      Math.round((r.raised / r.weeklyTarget) * 100)
+                    );
+                    return (
+                      <div key={r.id}>
+                        <div className="flex items-center justify-between text-[13px] font-semibold text-ink-900">
+                          <span className="flex items-center gap-2.5">
+                            {r.label}
+                            {funded && (
+                              <span className="inline-flex h-[22px] items-center rounded-full bg-[#E8F8F0] px-2.5 text-[11px] font-extrabold text-success">
+                                ✓ Funded
+                              </span>
+                            )}
+                          </span>
+                          <span className="tnum text-ink-600">
+                            {fmtMoney(r.raised)} of {fmtMoney(r.weeklyTarget)}
+                            /wk
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-3 rounded-full bg-sky-tint">
+                          <div
+                            className={
+                              "h-full rounded-full " +
+                              (funded ? "bg-success" : "bg-blue-primary")
+                            }
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-[18px]">
-            {/* Balances */}
+            {/* Balances — LIVE */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">Balances</div>
               <div className="mt-3.5 grid grid-cols-3 gap-2.5 text-center">
                 <div>
                   <div className="tnum text-[22px] font-extrabold text-blue-primary">
-                    ${cash}
+                    {fmtMoney(member.balances.cash)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
                     cash
@@ -219,7 +277,7 @@ export default function ParticipantDetail({
                 </div>
                 <div>
                   <div className="tnum text-[22px] font-extrabold text-indigo-brand">
-                    $58
+                    {fmtMoney(member.balances.credits)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
                     credits
@@ -227,7 +285,7 @@ export default function ParticipantDetail({
                 </div>
                 <div>
                   <div className="tnum text-[22px] font-extrabold text-success">
-                    $240
+                    {fmtMoney(member.balances.savings)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
                     reentry
@@ -235,17 +293,20 @@ export default function ParticipantDetail({
                 </div>
               </div>
               <div className="mt-3 text-center text-[11px] text-ink-400">
-                Daily cash cap $100 · ${redeemedToday} redeemed today
+                Daily cash cap $100 · redeem at the giving desk
               </div>
             </div>
 
-            {/* Consent */}
+            {/* Consent — public-page toggle starts from real consentPublic */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">Consent</div>
               <div className="mt-3 flex flex-col gap-2.5 text-[13px] font-semibold text-ink-900">
                 <div className="flex items-center justify-between">
                   Public giving page
-                  <Toggle on={pagePublic} onToggle={onTogglePage} />
+                  <Toggle
+                    on={pagePublic}
+                    onToggle={() => setPagePublic((v) => !v)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   Story approved
@@ -255,7 +316,10 @@ export default function ParticipantDetail({
                 </div>
                 <div className="flex items-center justify-between">
                   Photo on page
-                  <Toggle on={photoPublic} onToggle={onTogglePhoto} />
+                  <Toggle
+                    on={photoPublic}
+                    onToggle={() => setPhotoPublic((v) => !v)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   Milestone updates to donors
@@ -264,8 +328,10 @@ export default function ParticipantDetail({
               </div>
               <div className="mt-3 text-[11px]/[1.5] text-ink-400">
                 {pagePublic
-                  ? "Revoking flips the public page to a generic org-giving state within minutes."
-                  : "Public page is OFF — give.my-struggle.org/p/danielle now shows the generic org-giving state."}
+                  ? `Public page is ON — give.my-struggle.org/p/${member.slug}. Revoking flips it to a generic org-giving state within minutes.`
+                  : `Public page is OFF — give.my-struggle.org/p/${member.slug} shows the generic org-giving state.`}
+                <br />
+                Changes require the member&apos;s signed consent form.
               </div>
             </div>
           </div>

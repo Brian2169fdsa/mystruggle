@@ -1,6 +1,7 @@
 "use client";
 
-import { CARD } from "./types";
+import { CARD, SKELETON, fmtMoney } from "./types";
+import type { OverviewData } from "./types";
 
 const KPIS = [
   { chip: "PON", indigo: false, n: "128" },
@@ -66,11 +67,26 @@ const MILESTONES = [
   },
 ];
 
+/** LIVE PLATFORM strip — 7 KPIs fed from /api/admin/overview. */
+function liveKpis(o: OverviewData) {
+  return [
+    { label: "Members", value: String(o.members), green: false },
+    { label: "Total given", value: fmtMoney(o.totalGiven), green: false },
+    { label: "Cash held", value: fmtMoney(o.cashHeld), green: false },
+    { label: "Store credits held", value: fmtMoney(o.creditsHeld), green: false },
+    { label: "Reentry savings held", value: fmtMoney(o.savingsHeld), green: true },
+    { label: "Weekly recurring gifts", value: String(o.weeklyRecurring), green: false },
+    { label: "Avg streak", value: o.avgStreak.toLocaleString("en-US", { maximumFractionDigits: 1 }), suffix: "days", green: false },
+  ] as { label: string; value: string; suffix?: string; green: boolean }[];
+}
+
 export default function Overview({
+  overview,
   pendingCount,
   goParticipants,
   goModeration,
 }: {
+  overview: OverviewData | null;
   pendingCount: number;
   goParticipants: () => void;
   goModeration: () => void;
@@ -118,7 +134,50 @@ export default function Overview({
         </button>
       </div>
 
-      {/* Row 1 — program KPI cards */}
+      {/* Row 0 — LIVE PLATFORM KPI strip (fed from /api/admin/overview) */}
+      <div>
+        <div className="mb-2.5 flex items-center gap-2.5">
+          <span className="inline-flex h-6 items-center rounded-full bg-sky-tint px-3 text-[11px] font-extrabold tracking-[.06em] text-blue-primary">
+            LIVE PLATFORM
+          </span>
+          <span className="text-xs font-medium text-ink-400">
+            real balances &amp; giving · updates on load
+          </span>
+        </div>
+        {overview ? (
+          <div className="grid grid-cols-4 gap-[18px]">
+            {liveKpis(overview).map((k) => (
+              <div key={k.label} className={CARD + " px-[26px] py-5"}>
+                <div className="text-[13px] font-medium text-ink-600">
+                  {k.label}
+                </div>
+                <div
+                  className={
+                    "tnum mt-1 text-[34px] font-extrabold tracking-[-0.02em] " +
+                    (k.green ? "text-success" : "text-blue-primary")
+                  }
+                >
+                  {k.value}
+                  {k.suffix && (
+                    <span className="text-[13px] font-semibold text-ink-600">
+                      {" "}
+                      {k.suffix}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-[18px]">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className={SKELETON + " h-[114px]"} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Row 1 — program KPI cards (static program demo — programs aren't in the data model yet) */}
       <div className="grid grid-cols-4 gap-[18px]">
         {KPIS.map((k) => (
           <div key={k.chip} className={CARD + " px-[26px] py-6"}>
