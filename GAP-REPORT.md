@@ -1,4 +1,27 @@
-# Gap Report — run 2026-07-05-2
+# Gap Report — run 2026-07-05-3
+
+## Run 3 summary
+Shipped the desktop Facebook-style recovery community at /community: 3-column
+shell, 5 topic channels (jobs/housing/recovery/gratitude), composer with the
+ask-for-support flow (creates a real weekly goal + posts it with a live
+progress bar and Give button to the member's giving page — verified E2E as
+Danielle), hearts/comments, cursor pagination + polling, crisis-held 988 care
+card, signed-out read-only with join card, profile/channels rail, live
+stats + Support Board rail, full site-chrome integration + Home teaser.
+Backend: post topics, request-linked posts, GET /api/posts filters/cursor,
+public /api/community/stats + /api/requests/board (consent-gated).
+Supabase migration package complete and verified against a real Postgres 16:
+schema.sql (16 tables, 10 enums, integer cents), policies.sql (49 RLS
+policies, ALL negative tests passing live: anon sees no PII, members can't
+forge balances/authors, DMs participant-only, consent revocation removes
+public rows), seed.sql (flagship demo), docs/13-SUPABASE-MIGRATION.md
+(route→table→role map covering all 28 API routes, 8-phase cutover),
+requirements/08-COMMUNITY.md. Remaining to go live on Supabase: a project +
+keys (DECISIONS-NEEDED #2). Next run: AUTOPILOT audit pass on the community
+checklist, journal persistence, dashboard error/tablet states, Privacy/Terms,
+auth rate limiting.
+
+# Prior run — 2026-07-05-2
 
 ## Run 2 summary
 Closed P0 #1 and P1 #5–7. Admin surface is now staff-gated end-to-end

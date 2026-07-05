@@ -1,0 +1,6 @@
+# The root .gitignore ignores loose schema.sql / policies.sql / seed.sql
+# (scratch-file hygiene) by basename, which would silently exclude this
+# migration package. These three ARE source — re-include them here.
+!schema.sql
+!policies.sql
+!seed.sql
