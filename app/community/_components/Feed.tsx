@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Sparkles, Users } from "lucide-react";
 import { TOPICS, type SafeUser, type Topic } from "@/app/lib/types";
 import Composer, { type ComposerPrefill } from "./Composer";
+import JourneyRail from "./JourneyRail";
 import PostCard from "./PostCard";
 import SponsoredCard, { type Placement } from "./SponsoredCard";
 import SponsoredControls, { readReducePref } from "./SponsoredControls";
@@ -564,6 +565,9 @@ export default function Feed({
           }
         />
       )}
+
+      {/* ── journey moments rail (main feed only — circles keep their ritual) ── */}
+      {!circle && <JourneyRail />}
 
       {/* ── composer / join card ── */}
       {inPrivateCircle ? null : viewer ? (

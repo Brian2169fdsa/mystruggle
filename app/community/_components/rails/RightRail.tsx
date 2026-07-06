@@ -1,7 +1,8 @@
 "use client";
 
-// Right rail of /community — community stats, the support board, and the
-// 50/50 giving explainer. Self-fetching; refreshes stats + board every 30s.
+// Right rail of /community — community stats, the support board, recovery
+// anniversaries, member suggestions, recovery-friendly jobs, and the 50/50
+// giving explainer. Self-fetching; refreshes every 30s.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -30,6 +31,27 @@ interface BoardRow {
   slug: string;
   avatarColor: string;
   createdAt: number;
+}
+
+interface AnniversaryRow {
+  slug: string;
+  name: string;
+  avatarColor: string;
+  years: number;
+  months: number;
+}
+
+interface SuggestionRow {
+  slug: string;
+  name: string;
+  avatarColor: string;
+  tagline?: string;
+  interests: string[];
+}
+
+interface Highlights {
+  anniversaries: AnniversaryRow[];
+  suggestions: SuggestionRow[];
 }
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -196,6 +218,113 @@ function BoardCard({ board }: { board: BoardRow[] | null }) {
   );
 }
 
+/* ── Recovery anniversaries ───────────────────────────────────────── */
+
+function journeyLabel(row: AnniversaryRow): string {
+  if (row.years >= 1) {
+    return row.years === 1
+      ? "1 year on the journey"
+      : `${row.years} years on the journey`;
+  }
+  return row.months === 1
+    ? "1 month on the journey"
+    : `${row.months} months on the journey`;
+}
+
+function AnniversariesCard({ rows }: { rows: AnniversaryRow[] }) {
+  if (rows.length === 0) return null;
+
+  return (
+    <div className={CARD}>
+      <h2 className={HEADING}>🎉 Recovery anniversaries</h2>
+      <p className="mt-1 text-[12px] font-semibold text-ink-600">
+        Celebrating this month
+      </p>
+      <ul className="mt-1 divide-y divide-sky-tint">
+        {rows.map((row) => (
+          <li key={row.slug}>
+            <Link
+              href={`/community/u/${row.slug}`}
+              className="group flex items-center gap-3 py-2.5"
+            >
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold text-white"
+                style={{ backgroundColor: row.avatarColor }}
+                aria-hidden
+              >
+                {row.name.charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-bold text-ink-900 group-hover:text-blue-primary">
+                  {row.name}
+                </span>
+                <span className="block text-[12px] font-semibold text-ink-600">
+                  {journeyLabel(row)}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 border-t border-sky-tint pt-2.5 text-[12px] font-medium text-ink-400">
+        Cheer them on — every year is earned.
+      </p>
+    </div>
+  );
+}
+
+/* ── Members you may know ─────────────────────────────────────────── */
+
+function SuggestionsCard({ rows }: { rows: SuggestionRow[] }) {
+  if (rows.length === 0) return null;
+
+  return (
+    <div className={CARD}>
+      <h2 className={HEADING}>Members you may know</h2>
+      <ul className="mt-1 divide-y divide-sky-tint">
+        {rows.map((row) => (
+          <li key={row.slug} className="flex items-center gap-3 py-2.5">
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold text-white"
+              style={{ backgroundColor: row.avatarColor }}
+              aria-hidden
+            >
+              {row.name.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-bold text-ink-900">
+                {row.name}
+              </p>
+              {row.tagline ? (
+                <p className="truncate text-[12px] font-medium text-ink-600">
+                  {row.tagline}
+                </p>
+              ) : row.interests.length > 0 ? (
+                <p className="mt-0.5 flex flex-wrap gap-1">
+                  {row.interests.slice(0, 2).map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center rounded-full bg-sky-tint px-2 py-0.5 text-[11px] font-bold text-indigo-brand"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
+            </div>
+            <Link
+              href={`/community/u/${row.slug}`}
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-blue-primary px-3.5 text-[12px] font-extrabold text-blue-primary hover:bg-sky-tint"
+            >
+              Say hi 👋
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /* ── Open jobs ────────────────────────────────────────────────────── */
 
 interface JobRow {
@@ -295,16 +424,18 @@ export default function RightRail() {
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [board, setBoard] = useState<BoardRow[] | null>(null);
   const [jobs, setJobs] = useState<JobRow[] | null>(null);
+  const [highlights, setHighlights] = useState<Highlights | null>(null);
 
   useEffect(() => {
     let alive = true;
 
     async function load() {
       try {
-        const [sRes, bRes, jRes] = await Promise.all([
+        const [sRes, bRes, jRes, hRes] = await Promise.all([
           fetch("/api/community/stats", { cache: "no-store" }),
           fetch("/api/requests/board", { cache: "no-store" }),
           fetch("/api/jobs", { cache: "no-store" }),
+          fetch("/api/community/highlights", { cache: "no-store" }),
         ]);
         if (!alive) return;
         if (sRes.ok) setStats(await sRes.json());
@@ -315,6 +446,18 @@ export default function RightRail() {
         if (jRes.ok) {
           const data = await jRes.json();
           if (alive) setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+        }
+        if (hRes.ok) {
+          const data = await hRes.json();
+          if (alive)
+            setHighlights({
+              anniversaries: Array.isArray(data.anniversaries)
+                ? data.anniversaries
+                : [],
+              suggestions: Array.isArray(data.suggestions)
+                ? data.suggestions
+                : [],
+            });
         }
       } catch {
         // keep the last good data (or skeletons) on network hiccups
@@ -333,6 +476,8 @@ export default function RightRail() {
     <div className="sticky top-[92px] flex flex-col gap-4 self-start">
       <StatsCard stats={stats} />
       <BoardCard board={board} />
+      <AnniversariesCard rows={highlights?.anniversaries ?? []} />
+      <SuggestionsCard rows={highlights?.suggestions ?? []} />
       <HiringCard jobs={jobs} />
       <GivingCard />
     </div>

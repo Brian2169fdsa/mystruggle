@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import PrototypeMap from "../components/PrototypeMap";
 import { getSessionUser } from "../lib/auth";
 import { toSafeUser } from "../lib/types";
+import CommunityTabBar from "./_components/CommunityTabBar";
 import Feed from "./_components/Feed";
 import LeftRail from "./_components/rails/LeftRail";
 import RightRail from "./_components/rails/RightRail";
@@ -42,7 +43,8 @@ function FeedFallback() {
 /**
  * /community — the desktop social recovery community.
  * Three columns on lg+: channel rail · feed · community rail. Below lg the
- * rails collapse and the feed's horizontal topic chip row takes over.
+ * rails collapse, the feed's horizontal topic chip row takes over, and a
+ * fixed bottom tab bar (CommunityTabBar) provides app-like navigation.
  */
 export default async function CommunityPage() {
   const sessionUser = await getSessionUser();
@@ -51,7 +53,7 @@ export default async function CommunityPage() {
     <div className="min-h-screen bg-canvas">
       <Nav />
 
-      <main className="mx-auto grid max-w-[1240px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_1fr_300px] lg:px-6">
+      <main className="mx-auto grid max-w-[1240px] grid-cols-1 gap-6 px-3 py-6 pb-20 lg:grid-cols-[260px_1fr_300px] lg:px-6 lg:pb-6">
         <aside className="hidden lg:block">
           <Suspense fallback={null}>
             <LeftRail />
@@ -69,6 +71,7 @@ export default async function CommunityPage() {
         </aside>
       </main>
 
+      <CommunityTabBar />
       <Footer />
       <PrototypeMap />
     </div>

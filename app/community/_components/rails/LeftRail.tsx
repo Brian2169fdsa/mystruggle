@@ -6,7 +6,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CalendarDays, Compass } from "lucide-react";
+import { CalendarDays, Compass, Users } from "lucide-react";
 import type { SafeUser, Topic } from "@/app/lib/types";
 import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "../ui";
 
@@ -131,6 +131,7 @@ function ProfileCard({ user }: { user: SafeUser }) {
 
 const EXPLORE: { href: string; label: string; Icon: typeof Compass }[] = [
   { href: "/community/discover", label: "Discover people", Icon: Compass },
+  { href: "/community/circles", label: "Circles", Icon: Users },
   { href: "/community/events", label: "Events", Icon: CalendarDays },
 ];
 

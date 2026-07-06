@@ -1,3 +1,44 @@
+# Gap Report — run 2026-07-06-13 (Community 2.0 — big-social UX, ours, mobile-first)
+
+## Run 13 summary
+Rebuilt the community into a robust big-social experience translated to
+recovery meaning — tsc clean, build green (78 pages), all surfaces smoke-
+tested live (post-a-win + comment end-to-end verified):
+- **Mobile app shell:** fixed bottom tab bar (Feed · Circles · Events · Alerts
+  w/ live unread badge · Menu), safe-area padded; /community/menu shortcuts
+  surface (profile card, 2-col shortcut grid, sign-in state).
+- **Journey moments rail** (the stories pattern): win/milestone posts + most-
+  hearted recents + upcoming events as snap-scroll moment cards; "Share a
+  moment" card opens the composer via a custom event. Blocked/hidden filtered.
+- **Composer 2.0:** collapsed avatar+pill row ("What's on your mind, {name}?")
+  with 🎉 Share a win / 💙 Ask for support / 🏁 Milestone shortcuts — zero
+  regression to support-request, circle, crisis flows.
+- **Post card 2.0 + inline comments:** big short-status text, social-proof
+  summary row, equal-width Heart/Proud/Same-here/Comment actions, CommentThread
+  (latest 2 + expand, optimistic composer "Write something kind…"), post-{id}
+  anchors for rail deep-links. Report/block/crisis all preserved.
+- **Circles browser** (the groups surface): For you / Your circles / Discover
+  tabs, search, kind-gradient tiles, join/leave optimistic + LeftRail sync,
+  locked alumni circles, rows deep-link to the feed's existing ?circle= lens.
+- **Right rail:** 🎉 Recovery anniversaries ("N years on the journey this
+  month" — the birthdays pattern) + "Members you may know" (consent-gated
+  suggestions, viewer's blocks excluded) via new /api/community/highlights
+  (PII-free: slug/name/color/tagline/interests only — verified live).
+- **Profile 2.0:** gradient cover band + overlapping avatar + identity block,
+  Give-to-journey action row (BlockButton preserved), sticky Journey/About/Wins
+  anchor tabs w/ scroll-spy, milestone highlight cards + capital rings.
+  Consent gate byte-identical.
+- The word "Facebook" appears NOWHERE (verified repo-wide).
+
+## Run 13 residual
+- Circle rows: "N new posts" activity indicators (needs per-circle last-seen
+  tracking — new data; deferred).
+- Journey rail deep-link scroll works only for posts on the current page of
+  the feed (no single-post permalink page yet).
+- Comment hearts: no API exists — omitted rather than shipped dead.
+- SUPABASE CUTOVER still blocked on network egress from the session (DB is
+  provisioned; routes not yet wired; DATA_BACKEND=memory). See run 11 blocker.
+
 # Gap Report — run 2026-07-06-12 (app-side gap closure: safety chain, emitters, consent gate)
 
 ## Run 12 summary
