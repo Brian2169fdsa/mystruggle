@@ -12,38 +12,9 @@ import {
   CareThread,
   type CareChannelSummary,
 } from "./ProgramSurface";
+import GuideCompanion from "./GuideCompanion";
 
-const GUIDE_CHIPS = [
-  "I’m looking for a halfway house",
-  "I need my driver's license back",
-  "Help me find a job",
-];
-
-const GUIDE_ANSWERS: Record<string, string> = {
-  "I need my driver's license back":
-    "In Arizona that usually means clearing reinstatement fees at MVD. Three steps:\n1. Check your status on azdot.gov\n2. Ask staff about the fee-assistance fund\n3. Book the MVD visit.\nWant me to add “MVD reinstatement visit” as a task?",
-  "I’m looking for a halfway house":
-    "There are 3 partner halfway houses near Laveen with openings this month. Your center coordinator, Sarah, handles placements — I can flag your interest and add “Ask Sarah about halfway house openings” to your tracker. Sound good?",
-  "Help me find a job":
-    "Your VOC program has 2 employer partners hiring now — ABC Painting and Desert Logistics. You already have an interview at ABC Painting! Want me to add “Prep 3 interview answers” as a task for today?",
-};
-
-/** The Guide avatar — script "M" on indigo→blue gradient tile. */
-function GuideAvatar() {
-  return (
-    <div className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)] font-script text-[20px] text-white">
-      M
-    </div>
-  );
-}
-
-export default function ChatTab({
-  guideState,
-  askedLabel,
-  askGuide,
-  addGuideTask,
-  resetGuide,
-}: {
+export default function ChatTab(_props: {
   guideState: GuideState;
   askedLabel: string;
   askGuide: (label: string) => void;
@@ -129,7 +100,7 @@ export default function ChatTab({
       </div>
       <div className="hairline" />
 
-      <div className="flex flex-1 flex-col gap-4 p-5">
+      <div className="flex flex-col gap-4 p-5">
         {/* Pinned mentor thread — real when signed in, demo otherwise */}
         {realThreads ? (
           threads.map((t) => (
@@ -211,91 +182,11 @@ export default function ChatTab({
         <ProgramCard
           onOpen={(channel, vId) => setOpenCare({ channel, viewerId: vId })}
         />
-
-        {/* Divider */}
-        <div className="mt-1 flex items-center gap-2.5">
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
-          <span className="text-[11px] font-bold tracking-[.12em] text-indigo-brand">
-            THE GUIDE
-          </span>
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
-        </div>
-
-        {/* Intro bubble */}
-        <div className="flex items-start gap-2.5">
-          <GuideAvatar />
-          <div className="max-w-[280px] rounded-2xl rounded-tl-md bg-white px-[18px] py-3.5 text-[14px]/[1.6] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-            Hi Danielle — I&apos;m The Guide. I can help with housing,
-            documents, jobs, and anything on your journey. What do you need
-            today?
-          </div>
-        </div>
-
-        {guideState === "idle" && (
-          <div className="flex flex-col gap-2 pl-[46px]">
-            {GUIDE_CHIPS.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => askGuide(label)}
-                className="inline-flex min-h-[44px] cursor-pointer items-center self-start rounded-full border-[1.5px] border-blue-primary px-[18px] py-2.5 text-left text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {guideState === "asked" && (
-          <div className="flex flex-col gap-3.5">
-            <div className="flex justify-end">
-              <div className="max-w-[280px] rounded-2xl rounded-tr-md bg-blue-primary px-[18px] py-3.5 text-[14px]/[1.6] font-medium text-white">
-                {askedLabel}
-              </div>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <GuideAvatar />
-              <div className="max-w-[290px] whitespace-pre-line rounded-2xl rounded-tl-md bg-white px-[18px] py-3.5 text-[14px]/[1.6] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-                {GUIDE_ANSWERS[askedLabel] ?? ""}
-              </div>
-            </div>
-            <div className="flex gap-2 pl-[46px]">
-              <button
-                type="button"
-                onClick={addGuideTask}
-                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full bg-blue-primary px-5 text-[13px] font-bold text-white hover:bg-blue-hover"
-              >
-                Yes, add it to my tracker
-              </button>
-              <button
-                type="button"
-                onClick={resetGuide}
-                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border-[1.5px] border-[#E2E8F0] px-5 text-[13px] font-bold text-ink-600"
-              >
-                Not now
-              </button>
-            </div>
-          </div>
-        )}
-
-        {guideState === "added" && (
-          <div className="flex justify-center">
-            <span className="inline-flex h-10 items-center gap-2 rounded-full bg-[#E8F8F0] px-5 text-[13px] font-bold text-success">
-              ✓ Added to My Tracker — check your Home tab
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Composer */}
-      <div className="flex items-center gap-2.5 border-t border-sky-tint bg-white px-4 py-3">
-        <div className="flex h-12 flex-1 items-center rounded-full border-[1.5px] border-sky-tint bg-canvas px-5 text-[14px] text-ink-400">
-          Message The Guide…
-        </div>
-        <span className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-full bg-blue-primary text-[18px] font-bold text-white">
-          ↑
-        </span>
-      </div>
+      {/* The Guide — plan-aware AI companion. Owns its own context card,
+          conversation scroll, and composer (see GuideCompanion). */}
+      <GuideCompanion />
     </div>
   );
 }

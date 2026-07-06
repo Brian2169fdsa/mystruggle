@@ -196,36 +196,73 @@ function BoardCard({ board }: { board: BoardRow[] | null }) {
   );
 }
 
-/* ── Hiring? ──────────────────────────────────────────────────────── */
+/* ── Open jobs ────────────────────────────────────────────────────── */
 
-function HiringCard() {
+interface JobRow {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  payRange?: string;
+}
+
+const TYPE_LABEL: Record<string, string> = {
+  "full-time": "Full-time",
+  "part-time": "Part-time",
+  temporary: "Temporary",
+  contract: "Contract",
+  seasonal: "Seasonal",
+};
+
+function HiringCard({ jobs }: { jobs: JobRow[] | null }) {
+  const visible = jobs ? jobs.slice(0, 3) : null;
+
   return (
     <div className={CARD}>
-      <h2 className={HEADING}>Hiring?</h2>
-      <div className="mt-2.5 flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-tint text-indigo-brand">
-          <Briefcase className="h-[18px] w-[18px]" aria-hidden />
+      <div className="flex items-center justify-between">
+        <h2 className={HEADING}>Recovery-friendly jobs</h2>
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-tint text-indigo-brand">
+          <Briefcase className="h-[16px] w-[16px]" aria-hidden />
         </span>
-        <div className="min-w-0">
-          <p className="text-[13px] font-bold text-ink-900">
-            Post jobs to this community
-          </p>
-          <p className="mt-1 text-[13px]/[1.6] font-medium text-ink-600">
-            Fair-chance employers: reach 500+ members building their next
-            chapter. Email us, or manage postings from your dashboard (coming
-            soon).
-          </p>
-        </div>
       </div>
-      <a
-        href="mailto:info@themystruggles.com"
-        className="mt-3 inline-flex h-9 items-center justify-center rounded-full bg-sky-tint px-4 text-[13px] font-extrabold text-blue-primary hover:bg-sky-tint-2"
-      >
-        Contact us →
-      </a>
-      <p className="mt-2.5 text-[11px] font-medium text-ink-400">
-        Employer dashboards are on our roadmap.
-      </p>
+
+      {visible && visible.length > 0 ? (
+        <ul className="mt-2.5 divide-y divide-sky-tint">
+          {visible.map((job) => (
+            <li key={job.id} className="py-2.5">
+              <p className="text-[13px] font-bold text-ink-900">{job.title}</p>
+              <p className="mt-0.5 text-[12px] font-semibold text-ink-600">
+                {job.company} · {job.location}
+              </p>
+              <p className="mt-0.5 text-[11.5px] font-medium text-ink-400">
+                {TYPE_LABEL[job.type] ?? job.type}
+                {job.payRange ? ` · ${job.payRange}` : ""}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2.5 text-[13px]/[1.6] font-medium text-ink-600">
+          Fair-chance employers post steady work here. New roles land often —
+          check back soon.
+        </p>
+      )}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Link
+          href="/jobs"
+          className="inline-flex h-9 items-center justify-center rounded-full bg-blue-primary px-4 text-[13px] font-extrabold text-white hover:bg-blue-hover"
+        >
+          Browse all jobs →
+        </Link>
+        <Link
+          href="/employer"
+          className="inline-flex h-9 items-center justify-center rounded-full bg-sky-tint px-4 text-[13px] font-extrabold text-blue-primary hover:bg-sky-tint-2"
+        >
+          Post a job
+        </Link>
+      </div>
     </div>
   );
 }
@@ -257,21 +294,27 @@ function GivingCard() {
 export default function RightRail() {
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [board, setBoard] = useState<BoardRow[] | null>(null);
+  const [jobs, setJobs] = useState<JobRow[] | null>(null);
 
   useEffect(() => {
     let alive = true;
 
     async function load() {
       try {
-        const [sRes, bRes] = await Promise.all([
+        const [sRes, bRes, jRes] = await Promise.all([
           fetch("/api/community/stats", { cache: "no-store" }),
           fetch("/api/requests/board", { cache: "no-store" }),
+          fetch("/api/jobs", { cache: "no-store" }),
         ]);
         if (!alive) return;
         if (sRes.ok) setStats(await sRes.json());
         if (bRes.ok) {
           const data = await bRes.json();
           if (alive) setBoard(Array.isArray(data.board) ? data.board : []);
+        }
+        if (jRes.ok) {
+          const data = await jRes.json();
+          if (alive) setJobs(Array.isArray(data.jobs) ? data.jobs : []);
         }
       } catch {
         // keep the last good data (or skeletons) on network hiccups
@@ -290,7 +333,7 @@ export default function RightRail() {
     <div className="sticky top-[92px] flex flex-col gap-4 self-start">
       <StatsCard stats={stats} />
       <BoardCard board={board} />
-      <HiringCard />
+      <HiringCard jobs={jobs} />
       <GivingCard />
     </div>
   );

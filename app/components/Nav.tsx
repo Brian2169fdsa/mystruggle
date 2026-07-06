@@ -345,8 +345,8 @@ export default function Nav() {
                     <span className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
                       For employers
                     </span>
-                    <a
-                      href="mailto:info@themystruggles.com"
+                    <Link
+                      href="/employer"
                       className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
                     >
                       <span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-blue-primary shadow-[0_1px_3px_rgba(11,37,69,.10)]">
@@ -357,7 +357,17 @@ export default function Nav() {
                         size={13}
                         className="transition-transform group-hover/link:translate-x-0.5"
                       />
-                    </a>
+                    </Link>
+                    <Link
+                      href="/jobs"
+                      className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
+                    >
+                      Browse recovery-friendly jobs
+                      <ArrowRight
+                        size={13}
+                        className="transition-transform group-hover/link:translate-x-0.5"
+                      />
+                    </Link>
                   </div>
                 </div>
               </div>

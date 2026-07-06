@@ -1,6 +1,6 @@
 // Shared platform types — the contract between the API and every surface.
 
-export type Role = "member" | "mentor" | "staff";
+export type Role = "member" | "mentor" | "staff" | "employer";
 
 /** A mentor's discreet escalation about a mentee. */
 export interface Concern {
@@ -46,6 +46,47 @@ export interface User {
   mentorId?: string;
   centerId?: string; // outreach center this person belongs to
   lastActivityAt?: number; // last streak-qualifying activity (lesson complete)
+  // employer fields (role === "employer") — a recovery-friendly hiring account.
+  // `name` is the contact's first name; `company` is the business they hire for.
+  company?: string;
+}
+
+// ── Employer accounts + job posts (recovery-friendly hiring) ──────────
+// An employer is a User with role "employer" — reuses the HMAC session cookie,
+// findUserById, and getRoleUser gates with no new auth path. The company they
+// hire for lives on `User.company`; every job they post is a JobPost below.
+
+/** How the role is scheduled. Warm, plain-language options members recognize. */
+export type JobType =
+  | "full-time"
+  | "part-time"
+  | "temporary"
+  | "contract"
+  | "seasonal";
+
+export const JOB_TYPES: JobType[] = [
+  "full-time",
+  "part-time",
+  "temporary",
+  "contract",
+  "seasonal",
+];
+
+/** A recovery-friendly job opening posted by an employer account. Every post
+ *  is recoveryFriendly by definition — this board only carries fair-chance,
+ *  second-chance-welcome roles. status open↔closed; owner controls both. */
+export interface JobPost {
+  id: string;
+  employerId: string; // === User.id of the posting employer
+  title: string;
+  company: string; // denormalized from the employer for public display
+  location: string;
+  type: JobType;
+  payRange?: string; // e.g. "$17–$19/hr" — optional, employer's words
+  description: string;
+  recoveryFriendly: true; // always true on this board (fair-chance by design)
+  status: "open" | "closed";
+  createdAt: number;
 }
 
 // ── LMS ────────────────────────────────────────────────────────────────

@@ -44,6 +44,7 @@ import type {
   CareMessage,
   ConsentGrant,
   FollowUpCheckin,
+  JobPost,
 } from "./types";
 
 interface DB {
@@ -82,11 +83,15 @@ interface DB {
   careMessages: CareMessage[];
   consentGrants: ConsentGrant[];
   followUps: FollowUpCheckin[];
+  // employer accounts + job posts (seed v10 — recovery-friendly hiring).
+  // Employers are stored in `users` (role "employer"); jobPosts are their
+  // openings, wired into the community Hiring rail + public /jobs board.
+  jobPosts: JobPost[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 9;
+const SEED_VERSION = 10;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -2201,9 +2206,143 @@ function seed(): DB {
     }
   }
 
+  // ── Employer accounts + job posts (added in seed v10 — keep AFTER all v9
+  //    sections so earlier PRNG draws and seed-* ids stay byte-identical) ───
+  // Four recovery-friendly employers (fair-chance businesses + a peer-support
+  // provider) each posting real openings members can see on the community
+  // Hiring rail and the public /jobs board. Employers are Users with role
+  // "employer"; every account signs in with the shared demo password
+  // ("mystruggle"). Every timestamp hangs off EPOCH (never Date.now()).
+  const mkEmployer = (
+    contact: string,
+    company: string,
+    email: string,
+    ageDays: number
+  ): User =>
+    mk("employer", contact, email, pick(AVATAR_PALETTE), {
+      company,
+      createdAt: now - ageDays * DAY,
+    });
+
+  const empSunValley = mkEmployer(
+    "Rosa",
+    "Sun Valley Warehouse",
+    "hiring@sunvalleywarehouse.example.org",
+    120
+  );
+  const empRoosevelt = mkEmployer(
+    "Marcus",
+    "Roosevelt Row Kitchen",
+    "jobs@rooseveltrow.example.org",
+    90
+  );
+  const empDesertBloom = mkEmployer(
+    "Grace",
+    "Desert Bloom Foods",
+    "careers@desertbloomfoods.example.org",
+    150
+  );
+  const empPeerWorks = mkEmployer(
+    "Elena",
+    "PeerWorks Recovery Services",
+    "team@peerworks.example.org",
+    60
+  );
+  const employers = [empSunValley, empRoosevelt, empDesertBloom, empPeerWorks];
+
+  const mkJob = (
+    employer: User,
+    title: string,
+    location: string,
+    type: JobPost["type"],
+    payRange: string,
+    description: string,
+    ageDays: number,
+    status: JobPost["status"] = "open"
+  ): JobPost => ({
+    id: did(),
+    employerId: employer.id,
+    title,
+    company: employer.company!,
+    location,
+    type,
+    payRange,
+    description,
+    recoveryFriendly: true,
+    status,
+    createdAt: now - ageDays * DAY - int(0, 23) * 3600e3,
+  });
+
+  const jobPosts: JobPost[] = [
+    mkJob(
+      empSunValley,
+      "Warehouse Associate",
+      "Laveen, AZ",
+      "full-time",
+      "$17–$19/hr",
+      "Pick, pack, and keep our floor moving. We hire on who you are today — no experience needed, we train. Steady daytime hours, weekly pay, and a team that has your back. Bus route stops at our door.",
+      3
+    ),
+    mkJob(
+      empSunValley,
+      "Forklift Operator",
+      "Laveen, AZ",
+      "full-time",
+      "$19–$22/hr",
+      "Certified or in training — we'll help you finish your cert. Move product safely across the warehouse floor. Fair-chance employer; we welcome applicants rebuilding their story.",
+      9
+    ),
+    mkJob(
+      empRoosevelt,
+      "Line Cook",
+      "Phoenix, AZ",
+      "full-time",
+      "$16–$18/hr + tips",
+      "Join a warm, busy kitchen that runs on teamwork. We care about showing up and giving your best, not about your past. Free shift meals, flexible scheduling around recovery commitments.",
+      5
+    ),
+    mkJob(
+      empRoosevelt,
+      "Dishwasher / Prep",
+      "Phoenix, AZ",
+      "part-time",
+      "$15–$16/hr",
+      "A great first step back to steady work. Learn the kitchen from the ground up with a crew that celebrates progress. Part-time shifts that fit around class or meetings.",
+      12
+    ),
+    mkJob(
+      empDesertBloom,
+      "Food Production Team Member",
+      "Tolleson, AZ",
+      "full-time",
+      "$18/hr",
+      "Help us pack fresh meals for the Valley. Reliable people welcome — we count on each other. Second-chance friendly, with a clear path to lead roles for those who stick with it.",
+      7
+    ),
+    mkJob(
+      empPeerWorks,
+      "Peer Support Specialist",
+      "Phoenix, AZ",
+      "full-time",
+      "$20–$23/hr",
+      "Your lived experience is the qualification. Walk beside people early in recovery as a certified (or soon-to-be-certified) peer support specialist. We provide training, supervision, and certification support.",
+      2
+    ),
+    mkJob(
+      empPeerWorks,
+      "Outreach Coordinator",
+      "Phoenix, AZ (hybrid)",
+      "part-time",
+      "$19/hr",
+      "Connect members with housing, jobs, and care. Great for someone with recovery capital and a heart for people. Flexible hours; recovery-friendly by design.",
+      20,
+      "closed"
+    ),
+  ];
+
   return {
     seedVersion: SEED_VERSION,
-    users: [sarah, ...mentors, ...members],
+    users: [sarah, ...mentors, ...members, ...employers],
     posts,
     threads: [dmThread, tyThread],
     donations,
@@ -2233,6 +2372,7 @@ function seed(): DB {
     careMessages,
     consentGrants,
     followUps,
+    jobPosts,
   };
 }
 
