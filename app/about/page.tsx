@@ -251,12 +251,20 @@ export default function About() {
               info@themystruggles.com
             </div>
           </div>
-          <Link
-            href="/mentor"
-            className="inline-flex h-[52px] w-full flex-none items-center justify-center rounded-full bg-blue-primary px-8 text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto"
-          >
-            Get in touch
-          </Link>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Link
+              href="/board"
+              className="inline-flex h-[52px] w-full flex-none items-center justify-center rounded-full border-2 border-blue-primary px-8 text-base font-bold text-blue-primary hover:bg-white sm:w-auto"
+            >
+              Join our board
+            </Link>
+            <Link
+              href="/mentor"
+              className="inline-flex h-[52px] w-full flex-none items-center justify-center rounded-full bg-blue-primary px-8 text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto"
+            >
+              Get in touch
+            </Link>
+          </div>
         </div>
       </section>
 

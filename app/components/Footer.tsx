@@ -81,6 +81,7 @@ export default function Footer() {
               { href: "/centers", label: "For centers" },
               { href: "/donate", label: "Donate today" },
               { href: "/mentor", label: "Become a Mentor" },
+              { href: "/board", label: "Join our board" },
               { href: "/give", label: "QR Code Giving" },
             ].map((l) => (
               <Link
