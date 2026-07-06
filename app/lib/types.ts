@@ -49,6 +49,10 @@ export interface User {
   // employer fields (role === "employer") - a recovery-friendly hiring account.
   // `name` is the contact's first name; `company` is the business they hire for.
   company?: string;
+  // employer platform (docs/17) - set the moment a member accepts the
+  // first-apply disclosure ("applying reveals community affiliation").
+  // Absent = the consent screen must be shown before their first apply.
+  jobConsentAt?: number;
 }
 
 // ── Employer accounts + job posts (recovery-friendly hiring) ──────────
@@ -72,9 +76,18 @@ export const JOB_TYPES: JobType[] = [
   "seasonal",
 ];
 
+/** Pay cadence for the structured pay fields on a JobPost. */
+export type PayPeriod = "hour" | "week" | "month" | "year";
+
 /** A recovery-friendly job opening posted by an employer account. Every post
  *  is recoveryFriendly by definition - this board only carries fair-chance,
- *  second-chance-welcome roles. status open↔closed; owner controls both. */
+ *  second-chance-welcome roles.
+ *
+ *  EXPANSION (docs/17): the status union widened from "open"|"closed" to the
+ *  full posting lifecycle - existing "open"/"closed" values stay valid and
+ *  every pre-expansion consumer (`=== "open"` filters, owner open↔closed
+ *  PATCH) keeps working unchanged. The structured fields below are all
+ *  optional so pre-expansion posts remain valid rows. */
 export interface JobPost {
   id: string;
   employerId: string; // === User.id of the posting employer
@@ -85,8 +98,23 @@ export interface JobPost {
   payRange?: string; // e.g. "$17–$19/hr" - optional, employer's words
   description: string;
   recoveryFriendly: true; // always true on this board (fair-chance by design)
-  status: "open" | "closed";
+  status:
+    | "draft"
+    | "pending_review"
+    | "open"
+    | "paused"
+    | "filled"
+    | "closed";
   createdAt: number;
+  // docs/17 structured posting fields - all optional (additive).
+  metro?: string; // coarse metro for board filtering, e.g. "Phoenix"
+  remote?: boolean; // remote/hybrid-friendly role
+  requirements?: string; // employer's words - what the role actually needs
+  benefits?: string; // employer's words - what the role gives back
+  fairChanceNotes?: string; // e.g. "we sponsor fidelity bonding"
+  payMinCents?: number; // structured pay floor (per payPeriod)
+  payMaxCents?: number; // structured pay ceiling (per payPeriod)
+  payPeriod?: PayPeriod;
 }
 
 // ── LMS ────────────────────────────────────────────────────────────────
@@ -322,6 +350,10 @@ export interface JobApplication {
   notes?: string;
   nextActionDate?: string;
   createdAt: number;
+  // EXPANSION (docs/17): set when the application targets a platform JobPost
+  // ("Apply with my resume"). REGRESSION NOTE: optional by design - external,
+  // self-tracked applications have no postingId and keep working unchanged.
+  postingId?: string;
 }
 
 export type ResumeSectionKind =
@@ -843,6 +875,77 @@ export interface StaffTask {
   done: boolean;
   createdBy: string;
   createdAt: number;
+}
+
+// ── Second-Chance Employer Platform (docs/17 + requirements/14) ────────
+// EXPANSION: additive only - nothing above this line changes. Reuse-first:
+// employers stay Users with role "employer"; postings stay JobPost (widened
+// above); member applications stay JobApplication (+ postingId above). The
+// four entities below are the ONLY new tables: vetting (EmployerProfile),
+// the employer-side pipeline (PostingCandidate), retention proof
+// (RetentionConfirm), and member job saves (SavedJob).
+
+/** The vetting record behind an employer account (docs/17 §Vetting). One per
+ *  employer User; nothing an employer posts is publicly visible until
+ *  verificationStatus === "verified". The Fair-Chance Pledge acceptance is
+ *  the trust product - who signed it and when is recorded forever. */
+export interface EmployerProfile {
+  id: string;
+  employerId: string; // === User.id (role "employer")
+  ein?: string;
+  website?: string;
+  industry?: string;
+  about?: string;
+  pledgeSignedAt?: number; // Fair-Chance Pledge acceptance timestamp
+  pledgeSignedBy?: string; // User.id of the signer
+  verificationStatus: "pending" | "verified" | "suspended";
+  verifiedBy?: string; // ms_admin (staff) User.id who verified/suspended
+  createdAt: number;
+}
+
+/** Employer-side pipeline stages - the kanban columns (docs/17 §Pipeline). */
+export type CandidateStage =
+  | "applied"
+  | "screening"
+  | "interview"
+  | "offer"
+  | "hired"
+  | "closed";
+
+/** One candidate on one posting's pipeline board. Wraps the member's existing
+ *  JobApplication - privacy-first: the employer sees ONLY the candidate's
+ *  chosen name, resume, and application; never recovery/journey/center/
+ *  continuum/community data. */
+export interface PostingCandidate {
+  id: string;
+  postingId: string; // → JobPost.id
+  jobApplicationId: string; // → JobApplication.id (the member's own row)
+  memberId: string;
+  stage: CandidateStage;
+  stageChangedAt: number;
+  employerNotes?: string; // e.g. interview scheduling note
+  createdAt: number;
+}
+
+/** A 30/90/180-day post-hire retention check-in - the employer's one-tap
+ *  "still employed?" confirm. Powers the retention stat both sides brag
+ *  about; each confirm also writes a continuum_event. */
+export interface RetentionConfirm {
+  id: string;
+  candidateId: string; // → PostingCandidate.id (a hired candidate)
+  memberId: string;
+  employerId: string; // === User.id of the confirming employer
+  day: 30 | 90 | 180;
+  stillEmployed: boolean;
+  confirmedAt: number;
+}
+
+/** A member's saved job on the board ("save for later"). */
+export interface SavedJob {
+  id: string;
+  memberId: string;
+  postingId: string; // → JobPost.id
+  savedAt: number;
 }
 
 /** What /api/auth/me returns - never includes credentials. */

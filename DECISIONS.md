@@ -3,6 +3,47 @@
 Judgment calls made while building, newest first. Format:
 `YYYY-MM-DD · area · decision · why`.
 
+- 2026-07-06 · audit · REUSE AUDIT - Employer Platform (docs/17 /
+  requirements/14 §A). Every docs/17 feature maps to an EXISTING system
+  extended; NO parallel systems were built:
+  - job_postings → the existing `jobPosts` table EXTENDED in place: status
+    union widened to the full lifecycle (draft/pending_review/open/paused/
+    filled/closed - "open"/"closed" rows stay valid) plus new OPTIONAL
+    structured fields (metro, remote, requirements, benefits,
+    fairChanceNotes, payMinCents/payMaxCents/payPeriod). No second postings
+    table.
+  - applications → the existing `jobApplications` table + nullable
+    `postingId`. External self-tracked applications carry no postingId and
+    keep working unchanged (all 22 pre-existing rows verified
+    byte-identical). No second application system.
+  - resume / "Apply with my resume" → the existing `resumes` +
+    `resumeSections` builder, untouched. No employer-side resume store.
+  - promotion → the existing `sponsoredPlacements` flow with the existing
+    kind "job_opening" (the seeded Sun Valley ad already exercises it). No
+    duplicate ad path.
+  - messaging / stage-change contact → the existing `notifications` inbox
+    (kind "job") + the care-channel patterns. No employer→member DM system.
+  - moderation → the existing staff review pipeline (posting review +
+    suspend switch are staff actions, same as placements/posts). No second
+    moderation queue.
+  - employer orgs → the existing `users` with role "employer" (same HMAC
+    session, same signup route) + the ONLY new table set: `employerProfiles`
+    (vetting/pledge), `postingCandidates` (employer-side pipeline),
+    `retentionConfirms` (30/90/180 confirms), `savedJobs` (board saves).
+  - hired → the existing continuum spine: continuum event source "goal"
+    (the same source the recovery-goals flow writes), a consented
+    celebration `posts` row (kind "win"), and the member's existing
+    employment RecoveryGoal.
+- 2026-07-06 · seed · Employer platform seed (v15) is APPEND-ONLY: every
+  pre-v15 row verified byte-identical old-vs-new (diff script over full JSON
+  dumps); the 7 existing jobPosts rows gained ONLY the new optional fields
+  (ids/status/createdAt untouched) and 8 members gained ONLY `jobConsentAt` ·
+  Two knowing trade-offs: (1) Danielle's hire arc (applied 45d ago, hired 32d
+  ago, day-30 confirm 2d ago) predates the frozen Sun Valley "Warehouse
+  Associate" posting createdAt (~3d) - the posting row could not move, so its
+  createdAt reads as a repost/refresh; (2) six new open postings were added,
+  not five, because 12 open total (requirements/14 §Seed) minus the 6
+  existing open postings requires 6.
 - 2026-07-06 · seed · Mock community ads (seed v14): three more running
   placements appended after all v13 sections - "Desert Bloom Residential"
   (external org, minted orgId "org-desert-bloom-residential", no Center row)

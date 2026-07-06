@@ -65,6 +65,10 @@ import type {
   PulseSurvey,
   PulseResponse,
   StaffTask,
+  EmployerProfile,
+  PostingCandidate,
+  RetentionConfirm,
+  SavedJob,
 } from "./types";
 
 interface DB {
@@ -131,11 +135,20 @@ interface DB {
   pulseSurveys: PulseSurvey[];
   pulseResponses: PulseResponse[];
   staffTasks: StaffTask[];
+  // second-chance employer platform (seed v15 - docs/17 / requirements/14).
+  // Reuse-first: employers stay `users` role "employer", postings stay
+  // `jobPosts`, member applications stay `jobApplications` (+ postingId).
+  // New here: vetting profiles, the employer-side candidate pipeline,
+  // 30/90/180-day retention confirms, and member job saves.
+  employerProfiles: EmployerProfile[];
+  postingCandidates: PostingCandidate[];
+  retentionConfirms: RetentionConfirm[];
+  savedJobs: SavedJob[];
 }
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 14;
+const SEED_VERSION = 15;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -2294,6 +2307,10 @@ function seed(): DB {
   );
   const employers = [empSunValley, empRoosevelt, empDesertBloom, empPeerWorks];
 
+  // `extra` (seed v15, docs/17) carries the structured posting fields - metro,
+  // remote, pay cents, requirements, benefits, fairChanceNotes. Spread LAST so
+  // it can only ADD optional fields; ids, status, and PRNG draw order are
+  // untouched (the v10 rows stay byte-identical apart from the new keys).
   const mkJob = (
     employer: User,
     title: string,
@@ -2302,7 +2319,8 @@ function seed(): DB {
     payRange: string,
     description: string,
     ageDays: number,
-    status: JobPost["status"] = "open"
+    status: JobPost["status"] = "open",
+    extra: Partial<JobPost> = {}
   ): JobPost => ({
     id: did(),
     employerId: employer.id,
@@ -2315,6 +2333,7 @@ function seed(): DB {
     recoveryFriendly: true,
     status,
     createdAt: now - ageDays * DAY - int(0, 23) * 3600e3,
+    ...extra,
   });
 
   const jobPosts: JobPost[] = [
@@ -2325,7 +2344,21 @@ function seed(): DB {
       "full-time",
       "$17–$19/hr",
       "Pick, pack, and keep our floor moving. We hire on who you are today - no experience needed, we train. Steady daytime hours, weekly pay, and a team that has your back. Bus route stops at our door.",
-      3
+      3,
+      "open",
+      {
+        metro: "Laveen",
+        remote: false,
+        payMinCents: 1700,
+        payMaxCents: 1900,
+        payPeriod: "hour",
+        requirements:
+          "Able to lift 40 lbs and stay on your feet for a shift. No experience needed - we train from day one.",
+        benefits:
+          "Weekly pay, paid training, health coverage after 60 days, and a bus route that stops at our door.",
+        fairChanceNotes:
+          "Fair-chance employer. Records are considered individually after we meet you - never as a blanket rule.",
+      }
     ),
     mkJob(
       empSunValley,
@@ -2334,7 +2367,21 @@ function seed(): DB {
       "full-time",
       "$19–$22/hr",
       "Certified or in training - we'll help you finish your cert. Move product safely across the warehouse floor. Fair-chance employer; we welcome applicants rebuilding their story.",
-      9
+      9,
+      "open",
+      {
+        metro: "Laveen",
+        remote: false,
+        payMinCents: 1900,
+        payMaxCents: 2200,
+        payPeriod: "hour",
+        requirements:
+          "Forklift certification, or active enrollment in a cert program - we help you finish it on the clock.",
+        benefits:
+          "Weekly pay, cert-completion support, health coverage after 60 days.",
+        fairChanceNotes:
+          "We participate in the Federal Bonding Program and review any record individually.",
+      }
     ),
     mkJob(
       empRoosevelt,
@@ -2343,7 +2390,21 @@ function seed(): DB {
       "full-time",
       "$16–$18/hr + tips",
       "Join a warm, busy kitchen that runs on teamwork. We care about showing up and giving your best, not about your past. Free shift meals, flexible scheduling around recovery commitments.",
-      5
+      5,
+      "open",
+      {
+        metro: "Phoenix",
+        remote: false,
+        payMinCents: 1600,
+        payMaxCents: 1800,
+        payPeriod: "hour",
+        requirements:
+          "Six months of line or prep experience helps but is not required. Food handler card - we cover the fee.",
+        benefits:
+          "Free shift meals, shared tips, and scheduling that flexes around meetings and appointments.",
+        fairChanceNotes:
+          "Your past does not disqualify you here. We hire on how you show up.",
+      }
     ),
     mkJob(
       empRoosevelt,
@@ -2352,7 +2413,21 @@ function seed(): DB {
       "part-time",
       "$15–$16/hr",
       "A great first step back to steady work. Learn the kitchen from the ground up with a crew that celebrates progress. Part-time shifts that fit around class or meetings.",
-      12
+      12,
+      "open",
+      {
+        metro: "Phoenix",
+        remote: false,
+        payMinCents: 1500,
+        payMaxCents: 1600,
+        payPeriod: "hour",
+        requirements:
+          "Reliability and a willingness to learn. That is the whole list.",
+        benefits:
+          "Free shift meals, flexible part-time shifts, and a clear path to prep and line roles.",
+        fairChanceNotes:
+          "First-job-back friendly - many of our leads started right here.",
+      }
     ),
     mkJob(
       empDesertBloom,
@@ -2361,7 +2436,21 @@ function seed(): DB {
       "full-time",
       "$18/hr",
       "Help us pack fresh meals for the Valley. Reliable people welcome - we count on each other. Second-chance friendly, with a clear path to lead roles for those who stick with it.",
-      7
+      7,
+      "open",
+      {
+        metro: "Phoenix",
+        remote: false,
+        payMinCents: 1800,
+        payMaxCents: 1800,
+        payPeriod: "hour",
+        requirements:
+          "Food handler card within 30 days (we help you get it). Comfortable working in a cool production room.",
+        benefits:
+          "Set schedules, overtime available, and a lead-role path for people who stick with it.",
+        fairChanceNotes:
+          "Second-chance friendly; records considered individually per EEOC guidance.",
+      }
     ),
     mkJob(
       empPeerWorks,
@@ -2370,7 +2459,21 @@ function seed(): DB {
       "full-time",
       "$20–$23/hr",
       "Your lived experience is the qualification. Walk beside people early in recovery as a certified (or soon-to-be-certified) peer support specialist. We provide training, supervision, and certification support.",
-      2
+      2,
+      "open",
+      {
+        metro: "Phoenix",
+        remote: false,
+        payMinCents: 2000,
+        payMaxCents: 2300,
+        payPeriod: "hour",
+        requirements:
+          "Lived recovery experience plus an AZ peer support certification - or the willingness to earn one with our support.",
+        benefits:
+          "Paid certification track, weekly supervision, health coverage, PTO.",
+        fairChanceNotes:
+          "Lived experience is the qualification here - justice involvement included.",
+      }
     ),
     mkJob(
       empPeerWorks,
@@ -2380,7 +2483,18 @@ function seed(): DB {
       "$19/hr",
       "Connect members with housing, jobs, and care. Great for someone with recovery capital and a heart for people. Flexible hours; recovery-friendly by design.",
       20,
-      "closed"
+      "closed",
+      {
+        metro: "Phoenix",
+        remote: true,
+        payMinCents: 1900,
+        payMaxCents: 1900,
+        payPeriod: "hour",
+        requirements:
+          "Recovery capital, people skills, and comfort working across housing and employment partners.",
+        benefits: "Flexible hybrid hours, mileage reimbursement.",
+        fairChanceNotes: "Recovery-friendly by design; fair-chance since day one.",
+      }
     ),
   ];
 
@@ -3215,9 +3329,512 @@ function seed(): DB {
   seedEvents(eveningIopAd.id, int(50, 90));
   seedEvents(warehouseAd.id, int(70, 110));
 
+  // ── Second-Chance Employer Platform (added in seed v15 - keep AFTER all
+  //    v14 sections so earlier PRNG draws and seed-* ids stay byte-identical)
+  // docs/17 / requirements/14, reuse-first: employers stay Users with role
+  // "employer", postings stay jobPosts (upgraded in place with the new
+  // OPTIONAL structured fields only - ids/status/draw order untouched), and
+  // member applications stay jobApplications (+ postingId). New here: a
+  // vetting profile for every employer, five more employer accounts (incl.
+  // the docs/11 ecosystem loop - My Safety and The Store hiring from the
+  // community), six more open postings (12 open total across types/metros),
+  // the employer-side candidate pipeline, 30/90/180-day retention confirms,
+  // saved jobs, and Danielle's posting→hired storyline. Every timestamp
+  // hangs off EPOCH (never Date.now()).
+
+  // ── five more employers: 2 verified ecosystem orgs, 2 pending, 1 suspended
+  const empMySafety = mkEmployer(
+    "Devon",
+    "My Safety",
+    "staffing@mysafety.example.org",
+    45
+  );
+  const empTheStore = mkEmployer(
+    "Nia",
+    "The Store",
+    "hiring@thestore.example.org",
+    40
+  );
+  const empCopperState = mkEmployer(
+    "Hector",
+    "Copper State Logistics",
+    "recruiting@copperstatelogistics.example.org",
+    6
+  );
+  const empMaryvale = mkEmployer(
+    "Lucia",
+    "Maryvale Diner",
+    "owner@maryvalediner.example.org",
+    3
+  );
+  // Suspended example: signed the pledge, then submitted a commission-only
+  // "street promotions crew" listing the moderation gate flagged predatory
+  // (requirements/14 §B suspend switch). Their postings never went live.
+  const empQuickCash = mkEmployer(
+    "Gary",
+    "QuickCash Promotions",
+    "talent@quickcashpromo.example.org",
+    30
+  );
+  const employersV15 = [
+    empMySafety,
+    empTheStore,
+    empCopperState,
+    empMaryvale,
+    empQuickCash,
+  ];
+
+  // ── vetting profiles - one per employer account (docs/17 §Vetting) ──────
+  const mkProfile = (
+    employer: User,
+    verificationStatus: EmployerProfile["verificationStatus"],
+    ageDays: number,
+    extra: Partial<EmployerProfile> = {}
+  ): EmployerProfile => ({
+    id: did(),
+    employerId: employer.id,
+    verificationStatus,
+    createdAt: now - ageDays * DAY,
+    ...extra,
+  });
+
+  const employerProfiles: EmployerProfile[] = [
+    // The four v10 employers - all verified, pledge on record.
+    mkProfile(empSunValley, "verified", 120, {
+      ein: "86-2041175",
+      website: "sunvalleywarehouse.example.org",
+      industry: "Warehousing & logistics",
+      about:
+        "Family-run distribution warehouse in Laveen. We hire on who you are today and train the rest.",
+      pledgeSignedAt: now - 119 * DAY,
+      pledgeSignedBy: empSunValley.id,
+      verifiedBy: sarah.id,
+    }),
+    mkProfile(empRoosevelt, "verified", 90, {
+      ein: "86-3187744",
+      website: "rooseveltrowkitchen.example.org",
+      industry: "Restaurants & hospitality",
+      about:
+        "A busy downtown kitchen that believes the best crews are built on second chances and shift meals.",
+      pledgeSignedAt: now - 89 * DAY,
+      pledgeSignedBy: empRoosevelt.id,
+      verifiedBy: sarah.id,
+    }),
+    mkProfile(empDesertBloom, "verified", 150, {
+      ein: "86-1266980",
+      website: "desertbloomfoods.example.org",
+      industry: "Food production",
+      about:
+        "Fresh-meal producer for the Valley. Clear schedules, real advancement, second-chance friendly since our first hire.",
+      pledgeSignedAt: now - 149 * DAY,
+      pledgeSignedBy: empDesertBloom.id,
+      verifiedBy: sarah.id,
+    }),
+    mkProfile(empPeerWorks, "verified", 60, {
+      ein: "86-4452019",
+      website: "peerworks.example.org",
+      industry: "Peer recovery services",
+      about:
+        "Peer-run recovery services provider. Lived experience is the first line of every job description.",
+      pledgeSignedAt: now - 59 * DAY,
+      pledgeSignedBy: empPeerWorks.id,
+      verifiedBy: sarah.id,
+    }),
+    // The docs/11 ecosystem loop, made real: members trained and hired to
+    // keep community spaces safe (My Safety) and to run community retail
+    // (The Store) - both verified fair-chance employers here.
+    mkProfile(empMySafety, "verified", 45, {
+      ein: "86-5570331",
+      website: "mysafety.example.org",
+      industry: "Peer safety staffing",
+      about:
+        "Peer-led safety staffing: trained members keeping community spaces, events, and centers safe - de-escalation first, always.",
+      pledgeSignedAt: now - 44 * DAY,
+      pledgeSignedBy: empMySafety.id,
+      verifiedBy: sarah.id,
+    }),
+    mkProfile(empTheStore, "verified", 40, {
+      ein: "86-6019482",
+      website: "thestore.example.org",
+      industry: "Community retail",
+      about:
+        "Community retail staffed by the community it serves. Every register shift is a step in someone's story.",
+      pledgeSignedAt: now - 39 * DAY,
+      pledgeSignedBy: empTheStore.id,
+      verifiedBy: sarah.id,
+    }),
+    // Two pending verifications - applied with the pledge, awaiting review.
+    mkProfile(empCopperState, "pending", 6, {
+      ein: "86-7130856",
+      website: "copperstatelogistics.example.org",
+      industry: "Trucking & logistics",
+      about:
+        "Regional carrier hiring dock crew and drivers. New to fair-chance hiring and ready to learn.",
+      pledgeSignedAt: now - 6 * DAY,
+      pledgeSignedBy: empCopperState.id,
+    }),
+    mkProfile(empMaryvale, "pending", 3, {
+      website: "maryvalediner.example.org",
+      industry: "Restaurants & hospitality",
+      about:
+        "Neighborhood diner in Maryvale looking for kitchen and counter help who want steady mornings.",
+      pledgeSignedAt: now - 3 * DAY,
+      pledgeSignedBy: empMaryvale.id,
+    }),
+    // Suspended - the reason was predatory (commission-only listing).
+    mkProfile(empQuickCash, "suspended", 30, {
+      industry: "Marketing & promotions",
+      about: "High-energy street teams. Unlimited earning potential.",
+      pledgeSignedAt: now - 29 * DAY,
+      pledgeSignedBy: empQuickCash.id,
+      verifiedBy: sarah.id, // ms_admin who threw the suspend switch
+    }),
+  ];
+
+  // ── six more open postings → 12 open total across types and metros ──────
+  const mySafetyOfficer = mkJob(
+    empMySafety,
+    "Peer Safety Officer",
+    "Phoenix, AZ",
+    "full-time",
+    "$19–$21/hr",
+    "Keep community spaces and events safe as a trained peer safety officer. De-escalation first, always - your lived experience is exactly what makes you good at this. Paid training and certification.",
+    44,
+    "open",
+    {
+      metro: "Phoenix",
+      remote: false,
+      payMinCents: 1900,
+      payMaxCents: 2100,
+      payPeriod: "hour",
+      requirements:
+        "Lived recovery experience, a calm presence, and completion of our paid de-escalation training.",
+      benefits: "Paid training and certification, health coverage, wellness days.",
+      fairChanceNotes:
+        "Built inside the recovery community - fair-chance hiring is the whole point.",
+    }
+  );
+  const mySafetyEvents = mkJob(
+    empMySafety,
+    "Event Safety Team (Peer)",
+    "Tempe, AZ",
+    "temporary",
+    "$18–$20/hr",
+    "Weekend and evening event coverage across the East Valley. Work alongside experienced peer officers, pick the shifts that fit your schedule, and get paid weekly.",
+    10,
+    "open",
+    {
+      metro: "Tempe",
+      remote: false,
+      payMinCents: 1800,
+      payMaxCents: 2000,
+      payPeriod: "hour",
+      requirements:
+        "18+, reliable transportation to event sites, and our two-day paid orientation.",
+      benefits: "Weekly pay, flexible shift picks, path to full-time officer roles.",
+      fairChanceNotes: "Records reviewed individually - lived experience welcome.",
+    }
+  );
+  const storeAssociate = mkJob(
+    empTheStore,
+    "Retail Associate",
+    "Laveen, AZ",
+    "part-time",
+    "$16–$17/hr",
+    "Run the register, stock the floor, and greet the neighborhood at the community's own store. Shifts that flex around class, meetings, and family.",
+    38,
+    "open",
+    {
+      metro: "Laveen",
+      remote: false,
+      payMinCents: 1600,
+      payMaxCents: 1700,
+      payPeriod: "hour",
+      requirements: "Friendly, dependable, comfortable learning a register. We train.",
+      benefits: "Store discount, flexible scheduling, mentorship from shift leads.",
+      fairChanceNotes:
+        "Staffed by the community it serves - your story is a strength here.",
+    }
+  );
+  const storeLead = mkJob(
+    empTheStore,
+    "Assistant Store Lead",
+    "Laveen, AZ",
+    "full-time",
+    "$18–$20/hr",
+    "Open and close the store, coach associates, and own the floor when the manager is out. A real leadership step for someone rebuilding their resume.",
+    9,
+    "open",
+    {
+      metro: "Laveen",
+      remote: false,
+      payMinCents: 1800,
+      payMaxCents: 2000,
+      payPeriod: "hour",
+      requirements:
+        "Six months of retail or customer-facing experience, or our associate track completed.",
+      benefits: "Store discount, health coverage after 90 days, leadership training.",
+      fairChanceNotes: "We promote from within and hire on trajectory, not history.",
+    }
+  );
+  const bloomSeasonal = mkJob(
+    empDesertBloom,
+    "Seasonal Packing Crew",
+    "Tolleson, AZ",
+    "seasonal",
+    "$17/hr",
+    "Join the packing crew for our busy season. Straightforward work, steady hours, and a crew lead who started exactly where you are. Strong performers convert to full-time.",
+    110,
+    "open",
+    {
+      metro: "Phoenix",
+      remote: false,
+      payMinCents: 1700,
+      payMaxCents: 1700,
+      payPeriod: "hour",
+      requirements: "Show up on time and lift 30 lbs. Everything else is trainable.",
+      benefits: "Weekly pay, seasonal-to-permanent conversion path.",
+      fairChanceNotes: "Second-chance friendly; many of our leads converted from this crew.",
+    }
+  );
+  const peerworksRemote = mkJob(
+    empPeerWorks,
+    "Recovery Support Line Specialist",
+    "Remote (Arizona)",
+    "part-time",
+    "$19/hr",
+    "Answer our warm line from home: listen, encourage, and connect callers to resources. Evening and weekend blocks available - a meaningful remote role for someone with recovery capital.",
+    6,
+    "open",
+    {
+      metro: "Phoenix",
+      remote: true,
+      payMinCents: 1900,
+      payMaxCents: 1900,
+      payPeriod: "hour",
+      requirements:
+        "Lived recovery experience, a quiet space to take calls, and our paid warm-line training.",
+      benefits: "Fully remote, paid training, flexible evening/weekend blocks.",
+      fairChanceNotes: "Lived experience is the qualification - fair-chance by design.",
+    }
+  );
+  jobPosts.push(
+    mySafetyOfficer,
+    mySafetyEvents,
+    storeAssociate,
+    storeLead,
+    bloomSeasonal,
+    peerworksRemote
+  );
+
+  // ── candidate pipeline + retention (privacy-first, docs/17 §Pipeline) ────
+  // Each pipeline row wraps a NEW jobApplications row linked via postingId -
+  // the member's existing external self-tracked rows are untouched. Applying
+  // through a posting requires the first-apply disclosure, so jobConsentAt is
+  // stamped on every member who appears here.
+  const postingCandidates: PostingCandidate[] = [];
+  const retentionConfirms: RetentionConfirm[] = [];
+
+  const mkPipeline = (
+    member: User,
+    posting: JobPost,
+    stage: PostingCandidate["stage"],
+    appliedDaysAgo: number,
+    stageDaysAgo: number,
+    notes?: string,
+    employerNotes?: string
+  ): PostingCandidate => {
+    member.jobConsentAt ??= now - appliedDaysAgo * DAY;
+    const app: JobApplication = {
+      id: did(),
+      memberId: member.id,
+      company: posting.company,
+      role: posting.title,
+      status:
+        stage === "hired" || stage === "offer"
+          ? "offer"
+          : stage === "interview"
+            ? "interview"
+            : "applied",
+      notes,
+      postingId: posting.id,
+      createdAt: now - appliedDaysAgo * DAY,
+    };
+    jobApplications.push(app);
+    const cand: PostingCandidate = {
+      id: did(),
+      postingId: posting.id,
+      jobApplicationId: app.id,
+      memberId: member.id,
+      stage,
+      stageChangedAt: now - stageDaysAgo * DAY,
+      employerNotes,
+      createdAt: app.createdAt,
+    };
+    postingCandidates.push(cand);
+    return cand;
+  };
+  const mkRetention = (
+    cand: PostingCandidate,
+    employer: User,
+    day: RetentionConfirm["day"],
+    stillEmployed: boolean,
+    daysAgo: number
+  ): void => {
+    retentionConfirms.push({
+      id: did(),
+      candidateId: cand.id,
+      memberId: cand.memberId,
+      employerId: employer.id,
+      day,
+      stillEmployed,
+      confirmedAt: now - daysAgo * DAY,
+    });
+  };
+
+  // DANIELLE: applied through the Sun Valley "Warehouse Associate" posting,
+  // moved through the pipeline, hired ~a month ago, day-30 confirm in. (Her
+  // hire arc predates that posting row's createdAt, which is frozen
+  // byte-identical per the append-only mandate - read it as a repost.)
+  const danielleCandidate = mkPipeline(
+    danielle,
+    jobPosts[0], // Sun Valley Warehouse - "Warehouse Associate"
+    "hired",
+    45,
+    32,
+    "I said YES. Four weeks in and I have not missed a shift.",
+    "Interviewed steady and honest, showed up fifteen minutes early. Started on the days crew."
+  );
+  mkRetention(danielleCandidate, empSunValley, 30, true, 2);
+
+  // The hire writes the continuum heartbeat - same "goal" source the
+  // recovery-goals flow uses for employment progress (docs/17: hired =
+  // community-capital event). refId points at the pipeline row.
+  continuumEvents.push({
+    id: did(),
+    memberId: danielle.id,
+    source: "goal",
+    weight: 4,
+    refId: danielleCandidate.id,
+    occurredAt: now - 32 * DAY,
+  });
+
+  // Her consented celebration post - kind "win", approved, feed-visible.
+  posts.push({
+    id: did(),
+    authorId: danielle.id,
+    authorName: "Danielle",
+    authorRole: "member",
+    avatarColor: "#2E7CD6",
+    body: "I got the job at Sun Valley Warehouse. Six months ago I could not have imagined this.",
+    kind: "win",
+    status: "approved",
+    hearts: heartsFrom(everyone, 24),
+    comments: commentsFor(now - 32 * DAY + 6 * 3600e3),
+    createdAt: now - 32 * DAY + 6 * 3600e3,
+  });
+
+  // Earlier-stage candidates so every kanban column reads alive.
+  mkPipeline(
+    tyrell,
+    jobPosts[1], // Sun Valley - "Forklift Operator"
+    "interview",
+    8,
+    2,
+    "Interview Thursday. My cert course finishes the same week - perfect timing.",
+    "Cert in progress - schedule the floor walk-through for Thursday."
+  );
+  mkPipeline(
+    andre,
+    storeAssociate, // The Store - "Retail Associate"
+    "applied",
+    3,
+    3,
+    "First application through the board. Fingers crossed."
+  );
+  mkPipeline(
+    generated[12],
+    jobPosts[2], // Roosevelt Row Kitchen - "Line Cook"
+    "screening",
+    4,
+    2,
+    undefined,
+    "Resume looks solid - two years of prep work. Phone screen Friday."
+  );
+
+  // Older hires powering the retention stat (30/90-day confirms).
+  const safetyHire = mkPipeline(
+    generated[27],
+    mySafetyOfficer,
+    "hired",
+    42,
+    35,
+    undefined,
+    "Completed de-escalation training top of the cohort."
+  );
+  mkRetention(safetyHire, empMySafety, 30, true, 4);
+
+  const storeHire = mkPipeline(
+    generated[33],
+    storeAssociate,
+    "hired",
+    36,
+    31,
+    undefined,
+    "Regulars ask for them by name already."
+  );
+  mkRetention(storeHire, empTheStore, 30, true, 1);
+
+  const bloomHire = mkPipeline(
+    generated[41],
+    bloomSeasonal,
+    "hired",
+    100,
+    95,
+    undefined,
+    "Converted to the permanent crew after week six."
+  );
+  mkRetention(bloomHire, empDesertBloom, 30, true, 65);
+  mkRetention(bloomHire, empDesertBloom, 90, true, 5);
+
+  // One honest data point - a hire that did not stick past day 30.
+  const bloomHire2 = mkPipeline(generated[8], bloomSeasonal, "hired", 68, 62);
+  mkRetention(bloomHire2, empDesertBloom, 30, false, 32);
+
+  // ── saved jobs - members bookmarking the board ──────────────────────────
+  const savedJobs: SavedJob[] = [
+    {
+      id: did(),
+      memberId: tyrell.id,
+      postingId: jobPosts[0].id, // Warehouse Associate - his backup plan
+      savedAt: now - 2 * DAY,
+    },
+    {
+      id: did(),
+      memberId: andre.id,
+      postingId: jobPosts[3].id, // Dishwasher / Prep - a first step back
+      savedAt: now - 1 * DAY,
+    },
+    {
+      id: did(),
+      memberId: generated[12].id,
+      postingId: mySafetyOfficer.id,
+      savedAt: now - 3 * DAY,
+    },
+  ];
+
   return {
     seedVersion: SEED_VERSION,
-    users: [sarah, ...mentors, ...members, ...employers, angela, devStaff],
+    // v15 employers appended LAST so every pre-v15 user keeps its position.
+    users: [
+      sarah,
+      ...mentors,
+      ...members,
+      ...employers,
+      angela,
+      devStaff,
+      ...employersV15,
+    ],
     posts,
     threads: [dmThread, tyThread],
     donations,
@@ -3265,6 +3882,10 @@ function seed(): DB {
     pulseSurveys,
     pulseResponses,
     staffTasks,
+    employerProfiles,
+    postingCandidates,
+    retentionConfirms,
+    savedJobs,
   };
 }
 

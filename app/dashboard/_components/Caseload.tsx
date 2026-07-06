@@ -6,6 +6,7 @@ import {
   HandHeart,
   Smile,
   MessageCircle,
+  Briefcase,
   Check,
   Plus,
   ClipboardList,
@@ -49,6 +50,16 @@ type StaffTask = {
 };
 
 type TouchKind = "kudos" | "nudge" | "checkin" | "message";
+
+/** One open posting from GET /api/jobs (public board projection). */
+type BoardJob = {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  payRange?: string;
+};
 
 const ROLE_LABELS: Record<CareTeamRole, string> = {
   case_manager: "Case manager",
@@ -98,8 +109,11 @@ export default function Caseload() {
     client: CaseloadClient;
     kind: TouchKind;
   } | null>(null);
+  const [referClient, setReferClient] = useState<CaseloadClient | null>(null);
   // memberId → "sent" flash after a successful touch (optimistic).
   const [sent, setSent] = useState<Record<string, boolean>>({});
+  // memberId → "referred" flash after a successful job referral (optimistic).
+  const [referred, setReferred] = useState<Record<string, boolean>>({});
 
   const loadClients = useCallback(async () => {
     try {
@@ -135,6 +149,19 @@ export default function Caseload() {
       loadClients();
       setTimeout(
         () => setSent((s) => ({ ...s, [memberId]: false })),
+        4000
+      );
+    },
+    [loadClients]
+  );
+
+  const onReferred = useCallback(
+    (memberId: string) => {
+      setReferred((s) => ({ ...s, [memberId]: true }));
+      setReferClient(null);
+      loadClients();
+      setTimeout(
+        () => setReferred((s) => ({ ...s, [memberId]: false })),
         4000
       );
     },
@@ -231,6 +258,11 @@ export default function Caseload() {
                       <Check size={12} strokeWidth={2.6} /> Sent
                     </span>
                   )}
+                  {referred[c.id] && (
+                    <span className="inline-flex h-[26px] items-center gap-1 rounded-full bg-[#E8F8F0] px-3 text-[11px] font-bold text-success">
+                      <Check size={12} strokeWidth={2.6} /> Referred
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => setModal({ client: c, kind: "kudos" })}
@@ -254,6 +286,14 @@ export default function Caseload() {
                     className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-sky-tint-2 px-4 text-[13px] font-bold text-ink-600 hover:border-blue-primary hover:text-blue-primary"
                   >
                     <Smile size={15} strokeWidth={2.4} /> Check-in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReferClient(c)}
+                    title="Suggest an open job - they always decide"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-sky-tint-2 px-4 text-[13px] font-bold text-ink-600 hover:border-blue-primary hover:text-blue-primary"
+                  >
+                    <Briefcase size={15} strokeWidth={2.4} /> Refer a job
                   </button>
                   <button
                     type="button"
@@ -295,6 +335,14 @@ export default function Caseload() {
           kind={modal.kind}
           onClose={() => setModal(null)}
           onSent={() => onSent(modal.client.id)}
+        />
+      )}
+
+      {referClient && (
+        <ReferJobModal
+          client={referClient}
+          onClose={() => setReferClient(null)}
+          onReferred={() => onReferred(referClient.id)}
         />
       )}
     </div>
@@ -508,6 +556,182 @@ function TouchModal({
             }
           >
             {busy ? "Sending…" : "Send"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Refer-a-job modal (docs/17: suggestion only - the member always decides)
+
+function ReferJobModal({
+  client,
+  onClose,
+  onReferred,
+}: {
+  client: CaseloadClient;
+  onClose: () => void;
+  onReferred: () => void;
+}) {
+  const [jobs, setJobs] = useState<BoardJob[] | null>(null);
+  const [query, setQuery] = useState("");
+  const [postingId, setPostingId] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/jobs");
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { jobs?: BoardJob[] };
+        if (alive) setJobs(data.jobs ?? []);
+      } catch {
+        if (alive) setJobs([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const filtered = (jobs ?? []).filter(
+    (j) =>
+      !q || `${j.title} ${j.company} ${j.location}`.toLowerCase().includes(q)
+  );
+
+  const send = async () => {
+    setError(null);
+    if (!postingId || !filtered.some((j) => j.id === postingId)) {
+      setError("Pick an open job first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/referrals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: client.id,
+          postingId,
+          note: note.trim() || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(data?.error || "Something went wrong. Try again.");
+      }
+      onReferred();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/40 px-5"
+      onClick={onClose}
+    >
+      <div
+        className={CARD + " w-full max-w-[440px] px-7 py-6"}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-[18px] font-extrabold tracking-[-0.01em] text-ink-900">
+            Refer {client.name} to a job
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-8 w-8 flex-none cursor-pointer items-center justify-center rounded-full text-ink-600 hover:bg-canvas"
+          >
+            <X size={16} strokeWidth={2.4} />
+          </button>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-4">
+          <div>
+            <div className={LABEL}>Find an open job</div>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              maxLength={120}
+              placeholder="Search title, company, or location…"
+              className={INPUT + " mt-1.5"}
+            />
+          </div>
+
+          <div>
+            <div className={LABEL}>Job</div>
+            {jobs === null ? (
+              <div className={SKELETON + " mt-1.5 h-[50px]"} />
+            ) : filtered.length === 0 ? (
+              <div className="mt-1.5 text-[13.5px] font-medium text-ink-600">
+                {jobs.length === 0
+                  ? "No open jobs on the board right now."
+                  : "No open jobs match that search."}
+              </div>
+            ) : (
+              <select
+                value={postingId}
+                onChange={(e) => setPostingId(e.target.value)}
+                className={INPUT + " mt-1.5"}
+              >
+                <option value="">Pick an open job…</option>
+                {filtered.map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {j.title} · {j.company} · {j.location}
+                    {j.payRange ? ` · ${j.payRange}` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div>
+            <div className={LABEL}>Encouragement (optional)</div>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={200}
+              rows={2}
+              placeholder="I know you have been looking - this one made me think of you."
+              className={INPUT + " mt-1.5 resize-none"}
+            />
+          </div>
+
+          {/* Docs/17 boundary: a referral is a suggestion, never an apply. */}
+          <div className="text-[12px] font-semibold text-ink-400">
+            This sends a suggestion, never an application. {client.name} always
+            decides.
+          </div>
+
+          {error && (
+            <div className="text-[13px] font-semibold text-amber-ink">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={send}
+            disabled={busy}
+            className={
+              "inline-flex min-h-[48px] items-center justify-center rounded-full text-[15px] font-extrabold text-white " +
+              (busy
+                ? "cursor-not-allowed bg-ink-400"
+                : "cursor-pointer bg-blue-primary hover:bg-blue-hover")
+            }
+          >
+            {busy ? "Sending…" : "Send referral"}
           </button>
         </div>
       </div>

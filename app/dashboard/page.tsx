@@ -20,6 +20,7 @@ import {
   Layers,
   HeartHandshake,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -40,6 +41,7 @@ import EventsManager from "./_components/EventsManager";
 import Programs from "./_components/Programs";
 import Caseload from "./_components/Caseload";
 import Engage from "./_components/Engage";
+import EmployerVetting from "./_components/EmployerVetting";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -69,7 +71,8 @@ type PageSection =
   | "events"
   | "programs"
   | "caseloads"
-  | "engage";
+  | "engage"
+  | "employerVetting";
 
 /** Final left-nav IA per docs/16: Overview · Programs · Participants ·
  *  Caseloads · Mentorship · Community · Giving · Engage · Reports · Settings.
@@ -127,6 +130,7 @@ const NAV_GROUPS = [
     heading: "Settings",
     items: [
       { key: "ads", label: "Ad Manager", Icon: Megaphone },
+      { key: "employerVetting", label: "Employers", Icon: Building2 },
       { key: "leads", label: "Demo Leads", Icon: Inbox },
     ],
   },
@@ -222,6 +226,7 @@ export default function DashboardPage() {
   const [adReviewCount, setAdReviewCount] = useState(0);
   const [alumniWatch, setAlumniWatch] = useState(0);
   const [openReports, setOpenReports] = useState(0);
+  const [employerPending, setEmployerPending] = useState(0);
 
   // ── LIVE data ────────────────────────────────────────────────────────
   const [overview, setOverview] = useState<OverviewData | null>(null);
@@ -448,6 +453,11 @@ export default function DashboardPage() {
                         {openReports}
                       </span>
                     )}
+                    {key === "employerVetting" && employerPending > 0 && (
+                      <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                        {employerPending}
+                      </span>
+                    )}
                     {key === "alumni" && alumniWatch > 0 && (
                       <span className="ml-auto inline-flex h-5 items-center rounded-full bg-gold-badge px-2 text-[11px] font-bold text-white">
                         {alumniWatch}
@@ -550,6 +560,9 @@ export default function DashboardPage() {
         {section === "programs" && <Programs />}
         {section === "caseloads" && <Caseload />}
         {section === "engage" && <Engage />}
+        {section === "employerVetting" && (
+          <EmployerVetting onPendingCount={setEmployerPending} />
+        )}
       </main>
 
       <PrototypeMap />
