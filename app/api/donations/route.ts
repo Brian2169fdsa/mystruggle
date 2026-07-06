@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid, findMemberBySlug, emitContinuumEvent } from "@/app/lib/store";
+import { db, save, uid, findMemberBySlug, emitContinuumEvent, emitNotification } from "@/app/lib/store";
 
 /** Record a donation to a member: splits 50/50 cash / Reentry Fund and
  *  advances the targeted support request's weekly progress. */
@@ -43,6 +43,17 @@ export async function POST(req: Request) {
 
   // Continuum: a gift received is an engagement/support signal on the member.
   emitContinuumEvent(member.id, "giving", 2);
+
+  // Notify the member who received the gift. Donations are anonymous — never
+  // name the donor.
+  emitNotification(
+    member.id,
+    "system",
+    "You received a gift",
+    "A supporter gave to your journey. 50% is available now; 50% is held in your Reentry Fund.",
+    "donation",
+    request?.id
+  );
 
   return NextResponse.json({
     ok: true,

@@ -51,6 +51,7 @@ import type {
   CommunityEvent,
   EventKind,
   EventRsvp,
+  PostReport,
 } from "./types";
 
 interface DB {
@@ -100,11 +101,13 @@ interface DB {
   memberBlocks: MemberBlock[];
   events: CommunityEvent[];
   eventRsvps: EventRsvp[];
+  // member-filed post reports → staff moderation queue (seed v12).
+  postReports: PostReport[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 11;
+const SEED_VERSION = 12;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -2594,6 +2597,33 @@ function seed(): DB {
     undefined
   );
 
+  // ── post reports — a couple of open reports so the moderation queue is
+  //    never empty (seed v12). Appended after all v11 sections so earlier
+  //    seed-* ids stay byte-identical. Reporters are flagship members. ───────
+  const flaggedForReport = posts.filter((p) => p.status === "flagged");
+  const postReports: PostReport[] = [];
+  if (flaggedForReport[0]) {
+    postReports.push({
+      id: did(),
+      postId: flaggedForReport[0].id,
+      reporterId: tyrell.id,
+      reason: "harassment",
+      note: "This felt targeted at someone. Can a person take a look?",
+      status: "open",
+      createdAt: now - 2 * DAY,
+    });
+  }
+  if (flaggedForReport[1]) {
+    postReports.push({
+      id: did(),
+      postId: flaggedForReport[1].id,
+      reporterId: andre.id,
+      reason: "spam",
+      status: "open",
+      createdAt: now - 1 * DAY,
+    });
+  }
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members, ...employers],
@@ -2631,6 +2661,7 @@ function seed(): DB {
     memberBlocks,
     events,
     eventRsvps,
+    postReports,
   };
 }
 
@@ -2753,6 +2784,38 @@ export function emitContinuumEvent(
   db().continuumEvents.push(evt);
   save();
   return evt;
+}
+
+/** Fire-and-forget notification into a user's inbox. The single write path for
+ *  live notifications (mirrors emitContinuumEvent). Guards `d.notifications`,
+ *  unshifts newest-first, persists. Returns null when there is no valid target
+ *  (empty userId) — call sites additionally skip self-notification (never notify
+ *  a user about their OWN action) by comparing target vs. actor before calling. */
+export function emitNotification(
+  userId: string,
+  kind: NotificationKind,
+  title: string,
+  body: string,
+  refType?: string,
+  refId?: string
+): Notification | null {
+  if (!userId) return null;
+  const d = db();
+  d.notifications ??= [];
+  const n: Notification = {
+    id: uid(),
+    userId,
+    kind,
+    title,
+    body,
+    refType,
+    refId,
+    read: false,
+    createdAt: Date.now(),
+  };
+  d.notifications.unshift(n);
+  save();
+  return n;
 }
 
 export function addComment(post: Post, author: User, body: string): Comment {

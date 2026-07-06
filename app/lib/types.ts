@@ -640,6 +640,18 @@ export interface EventRsvp {
   createdAt: number;
 }
 
+/** A member-filed report on a community post, awaiting staff review. Feeds the
+ *  moderation queue: status "open" until a staff member marks it "reviewed". */
+export interface PostReport {
+  id: string;
+  postId: string;
+  reporterId: string;
+  reason: string;
+  note?: string;
+  status: "open" | "reviewed";
+  createdAt: number;
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid, emitContinuumEvent } from "@/app/lib/store";
+import { db, save, uid, emitContinuumEvent, emitNotification } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { CommunityEvent, EventRsvp } from "@/app/lib/types";
 
@@ -62,6 +62,17 @@ export async function POST(
       save();
       // An RSVP is an engagement signal → the continuum heartbeat.
       emitContinuumEvent(user.id, "community", 2, id);
+      // Notify the event creator (never when RSVP'ing your own event).
+      if (event.creatorId !== user.id) {
+        emitNotification(
+          event.creatorId,
+          "event",
+          "New RSVP",
+          `${user.name} is coming to ${event.title}.`,
+          "event",
+          id
+        );
+      }
     }
   } else if (existing) {
     d.eventRsvps = d.eventRsvps.filter(

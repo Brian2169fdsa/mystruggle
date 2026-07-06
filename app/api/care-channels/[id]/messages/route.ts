@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser, getRoleUser } from "@/app/lib/auth";
-import { save, uid } from "@/app/lib/store";
+import { save, uid, emitNotification } from "@/app/lib/store";
 import { isCrisisText } from "@/app/lib/crisis";
 import {
   careDb,
@@ -108,7 +108,42 @@ export async function POST(
   save();
 
   if (crisis) {
+    // NEVER notify on a crisis-held message — it isn't broadcast. Return support.
     return NextResponse.json({ held: true, resources: CRISIS_RESOURCES });
   }
+
+  // Notify the OTHER party in a one_to_one channel only (no group/announcement
+  // fan-out, no message text for privacy). Staff → the member; member → the
+  // center's staff (the assigned care team side).
+  if (channel.kind === "one_to_one") {
+    if (isStaff) {
+      if (channel.memberId && channel.memberId !== user.id) {
+        emitNotification(
+          channel.memberId,
+          "care_message",
+          "New message",
+          "New message from your care team.",
+          "channel",
+          channel.id
+        );
+      }
+    } else {
+      const staff = careDb().users.filter(
+        (u) => u.role === "staff" && u.centerId === channel.centerId
+      );
+      for (const s of staff) {
+        if (s.id === user.id) continue;
+        emitNotification(
+          s.id,
+          "care_message",
+          "New message",
+          "New message from your member.",
+          "channel",
+          channel.id
+        );
+      }
+    }
+  }
+
   return NextResponse.json({ message: toClientMessage(message) });
 }

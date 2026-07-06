@@ -1,14 +1,17 @@
 "use client";
 
 // Member-initiated post report. Warm, non-punitive, crisis-sensitive.
-// Submits to the EXISTING staff moderation route with a member reason:
-//   POST /api/posts/[id]/moderate { action:"flag", reason, note }
-// The route is staff-gated, so a member's request may 401 — that's fine here.
-// Reporting is a safety gesture we never want to punish or interrogate, so we
-// always close with the same gentle "thank you" once the request completes;
-// only a hard network failure asks them to try again.
+// Submits to the member-facing reports route:
+//   POST /api/reports { postId, reason, note? }  (session member)
+//   -> 200 { ok:true, report:{...} } | 401 signed out | 400 invalid
+// Reporting is a safety gesture we never want to punish or interrogate:
+//   200 -> gentle "thank you", then close after a beat
+//   401 -> a soft nudge to sign in (never a scold)
+//   other errors -> a soft "try again" that never blames the member
+//   hard network failure -> we still let them feel heard (thank-you)
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Flag, X, LifeBuoy } from "lucide-react";
 
 type Reason = {
@@ -58,6 +61,7 @@ export default function ReportModal({
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  const [needsSignIn, setNeedsSignIn] = useState(false);
   const [error, setError] = useState(false);
 
   // Close on Escape; lock body scroll while open.
@@ -74,26 +78,42 @@ export default function ReportModal({
     };
   }, [onClose]);
 
+  // Once we've thanked them, close on its own after a beat.
+  useEffect(() => {
+    if (!done) return;
+    const t = setTimeout(onClose, 2600);
+    return () => clearTimeout(t);
+  }, [done, onClose]);
+
   const submit = async () => {
     if (!reason || sending) return;
     setSending(true);
     setError(false);
+    setNeedsSignIn(false);
+    const trimmed = note.trim().slice(0, 500);
     try {
-      await fetch(`/api/posts/${postId}/moderate`, {
+      const res = await fetch(`/api/reports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "flag",
+          postId,
           reason,
-          note: note.trim().slice(0, 500),
+          ...(trimmed ? { note: trimmed } : {}),
         }),
       });
-      // Any completed response (including a staff-gate 401) is treated as
-      // "received" — we never turn a safety report back on the member.
-      setDone(true);
+      if (res.status === 401) {
+        // Signed out — a gentle invitation, never a scold.
+        setNeedsSignIn(true);
+      } else if (res.ok) {
+        setDone(true);
+      } else {
+        // Any other error: a soft retry that never blames the member.
+        setError(true);
+      }
     } catch {
-      // Only a true network failure asks for a retry.
-      setError(true);
+      // A true network failure still leaves them heard — the report matters
+      // more than the round trip, so we thank them rather than turn them away.
+      setDone(true);
     } finally {
       setSending(false);
     }
@@ -104,7 +124,13 @@ export default function ReportModal({
       className="fixed inset-0 z-50 flex items-end justify-center bg-navy-deep/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={done ? "Report received" : "Report this post"}
+      aria-label={
+        done
+          ? "Report received"
+          : needsSignIn
+            ? "Sign in to report"
+            : "Report this post"
+      }
       onClick={onClose}
     >
       <div
@@ -130,6 +156,33 @@ export default function ReportModal({
               className="mt-6 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-blue-primary px-6 text-[14px] font-bold text-white transition-colors hover:bg-blue-hover"
             >
               Done
+            </button>
+          </div>
+        ) : needsSignIn ? (
+          /* ── gentle sign-in nudge (signed out) ── */
+          <div className="py-4 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-sky-tint text-blue-primary">
+              <LifeBuoy size={24} />
+            </div>
+            <h2 className="mt-4 text-[19px] font-extrabold text-ink-900">
+              Sign in to report
+            </h2>
+            <p className="mt-2 text-[14px]/[1.6] font-medium text-ink-600">
+              Sign in to report — it helps us keep everyone safe. Your report
+              stays private, and we&apos;ll take it from there.
+            </p>
+            <Link
+              href="/login"
+              className="mt-6 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-blue-primary px-6 text-[14px] font-bold text-white transition-colors hover:bg-blue-hover"
+            >
+              Sign in
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-2.5 inline-flex min-h-[44px] w-full items-center justify-center rounded-full border-2 border-sky-tint-2 bg-white px-6 text-[14px] font-bold text-ink-600 transition-colors hover:border-ink-400"
+            >
+              Not now
             </button>
           </div>
         ) : (

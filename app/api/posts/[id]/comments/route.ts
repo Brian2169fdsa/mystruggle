@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, addComment } from "@/app/lib/store";
+import { db, addComment, emitNotification } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 
 /** Add a comment to a post. */
@@ -20,5 +20,18 @@ export async function POST(
     return NextResponse.json({ error: "Write something first (max 1,000 chars)." }, { status: 400 });
   }
   const comment = addComment(post, user, text);
+
+  // Notify the post author (never on your own post).
+  if (post.authorId !== user.id) {
+    emitNotification(
+      post.authorId,
+      "comment",
+      "New comment",
+      `${user.name} commented on your post.`,
+      "post",
+      post.id
+    );
+  }
+
   return NextResponse.json({ comment });
 }

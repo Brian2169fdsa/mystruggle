@@ -7,6 +7,8 @@ import {
   Users,
   Heart,
   Flag,
+  FlagTriangleRight,
+  CalendarDays,
   BarChart3,
   ClipboardList,
   Megaphone,
@@ -30,6 +32,8 @@ import LeadQueue from "./_components/LeadQueue";
 import Billing from "./_components/Billing";
 import ProgramCockpit from "./_components/ProgramCockpit";
 import AlumniDashboard from "./_components/AlumniDashboard";
+import ReportsQueue from "./_components/ReportsQueue";
+import EventsManager from "./_components/EventsManager";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -54,7 +58,9 @@ type PageSection =
   | "leads"
   | "billing"
   | "cockpit"
-  | "alumni";
+  | "alumni"
+  | "memberReports"
+  | "events";
 
 const NAV = [
   { key: "overview", label: "Overview", Icon: LayoutGrid },
@@ -64,6 +70,8 @@ const NAV = [
   { key: "applications", label: "Applications", Icon: ClipboardList },
   { key: "giving", label: "Giving desk", Icon: Heart },
   { key: "moderation", label: "Moderation", Icon: Flag },
+  { key: "memberReports", label: "Member reports", Icon: FlagTriangleRight },
+  { key: "events", label: "Events", Icon: CalendarDays },
   { key: "ads", label: "Ad Manager", Icon: Megaphone },
   { key: "adReview", label: "Ad Review", Icon: ShieldCheck },
   { key: "leads", label: "Demo Leads", Icon: Inbox },
@@ -160,6 +168,7 @@ export default function DashboardPage() {
   const [redeemAmount, setRedeemAmount] = useState(20);
   const [adReviewCount, setAdReviewCount] = useState(0);
   const [alumniWatch, setAlumniWatch] = useState(0);
+  const [openReports, setOpenReports] = useState(0);
 
   // ── LIVE data ────────────────────────────────────────────────────────
   const [overview, setOverview] = useState<OverviewData | null>(null);
@@ -277,6 +286,29 @@ export default function DashboardPage() {
     };
   }, [isStaff]);
 
+  // Live badge for member Reports — count of open reports. Quiet on 404/500
+  // (the reports API may still be coming online); polls on the same cadence.
+  useEffect(() => {
+    if (!isStaff) return;
+    let stop = false;
+    const poll = () => {
+      fetch("/api/reports")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (stop || !d) return;
+          const list = (d.reports ?? []) as Array<{ status?: string }>;
+          setOpenReports(list.filter((x) => x.status === "open").length);
+        })
+        .catch(() => {});
+    };
+    poll();
+    const t = setInterval(poll, 30_000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [isStaff]);
+
   const moderate = useCallback(
     async (postId: string, action: ModerateAction) => {
       const res = await fetch(`/api/posts/${postId}/moderate`, {
@@ -348,6 +380,11 @@ export default function DashboardPage() {
               {key === "adReview" && adReviewCount > 0 && (
                 <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
                   {adReviewCount}
+                </span>
+              )}
+              {key === "memberReports" && openReports > 0 && (
+                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                  {openReports}
                 </span>
               )}
               {key === "alumni" && alumniWatch > 0 && (
@@ -442,6 +479,10 @@ export default function DashboardPage() {
           />
         )}
         {section === "reports" && <Reports />}
+        {section === "memberReports" && (
+          <ReportsQueue onOpenCount={setOpenReports} />
+        )}
+        {section === "events" && <EventsManager />}
       </main>
 
       <PrototypeMap />

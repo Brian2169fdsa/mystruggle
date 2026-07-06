@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save } from "@/app/lib/store";
+import { db, save, emitNotification } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 
 type ReactionKind = "heart" | "proud" | "same";
@@ -29,9 +29,22 @@ export async function POST(
   const arr =
     kind === "heart" ? post.hearts : kind === "proud" ? post.proud : post.same;
   const i = arr.indexOf(user.id);
+  const added = i < 0;
   if (i >= 0) arr.splice(i, 1);
   else arr.push(user.id);
   save();
+
+  // Notify the post author on ADD only (not un-react). Skip self-reactions.
+  if (added && post.authorId !== user.id) {
+    emitNotification(
+      post.authorId,
+      "reaction",
+      "New reaction",
+      `${user.name} reacted to your post.`,
+      "post",
+      post.id
+    );
+  }
 
   return NextResponse.json({
     // Original heart contract — unchanged keys for existing clients.

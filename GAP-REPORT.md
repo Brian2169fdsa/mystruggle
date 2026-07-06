@@ -1,3 +1,39 @@
+# Gap Report — run 2026-07-06-10 (make it live: notification emission + real member reports)
+
+## Run 10 summary
+Turned the engagement layer from seed-only into a LIVE system, and closed the
+Run 9 P1 safety gap. SEED_VERSION 12, tsc clean, build green (74 pages), all
+flows negative-tested live:
+- emitNotification(userId,kind,title,body,refType?,refId?) helper (store.ts),
+  wired into 5 live routes — reactions, comments, care messages, event RSVPs,
+  and gifts now create real notifications. Self-notify guarded everywhere;
+  crisis-held care messages NEVER emit; donors never named. VERIFIED live: a
+  reaction on Danielle's post raised her unread 4→5 instantly.
+- Real member-report route /api/reports: POST (member files), GET (staff queue
+  with post excerpt + reporter), PATCH (staff mark reviewed). Notifies all
+  staff on a new report. ReportModal now posts here (was 401-ing on the staff
+  moderate route). VERIFIED live: member report → staff open-count 2→3;
+  mark-reviewed → 2; member GET blocked 403.
+- Dashboard: "Member reports" moderation queue (open-first, reason-toned chips,
+  mark-reviewed, live badge) + "Events" manager (list + create form). Keyed
+  "memberReports" to avoid colliding with the existing analytics Reports tab.
+
+## GAP REGISTER — run 10 deferrals
+1. Notification emission covers 5 routes; still to add: follow-up-due and
+   job-match notifications (seeded kinds exist but no live emitter), mention
+   detection in posts/comments.
+2. Realtime still polling (bell 45s, reports 30s, events 8-30s) — Supabase
+   realtime + chat read receipts at cutover.
+3. Report actions are file + mark-reviewed only; no hide-post / warn-author /
+   escalate-to-concern chain yet. Reports don't auto-hide the post.
+4. Carried: staff-readable BARC/résumé consent gate; AI Companion deeper
+   context; Resend email (leads/reports/employer); real PDF export; ms_admin
+   role; milestone→journey_task mirror; circle/group browse in discovery;
+   Supabase schema for run-9/10 tables (notifications, events, blocks,
+   reports) — extend the migration package.
+5. Standing DECISIONS-NEEDED: Stripe keys, Supabase keys, verbatim copy, real
+   /centers prices.
+
 # Gap Report — run 2026-07-06-9 (community engagement layer: notifications, safety, events, discovery)
 
 ## Run 9 summary
