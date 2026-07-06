@@ -9,14 +9,32 @@ Deliverables already in the repo (this package):
 
 | File | What it is |
 |---|---|
-| `supabase/schema.sql` | Complete DDL: 10 enums, 16 tables, FKs, indexes, signup trigger |
-| `supabase/policies.sql` | RLS on every table + 49 policies + public views + negative tests |
+| `supabase/schema.sql` | Core DDL (v1): 10 enums, 16 tables, FKs, indexes, signup trigger |
+| `supabase/schema-expansion.sql` | **Expansion DDL (v2): 21 enums, 21 tables** — community expansion, continuum of care, ad product, + optional employers/job_posts |
+| `supabase/policies.sql` | RLS on every v1 table + 49 policies + public views + negative tests |
+| `supabase/policies-expansion.sql` | **RLS on every v2 table + 76 policies + consent helpers + `placement_stats()` RPC + negative tests** |
+| `supabase/outcomes-analytics.sql` | **The two-plane outcomes data product: `analytics.*` (identified center plane) + `licensed.*` matviews (`mv_continuum_score` / `mv_care_outcomes` / `mv_efficacy`, k≥11 suppressed) + the `licensed_research` role** |
 | `supabase/seed.sql` | Flagship demo rows (Danielle, Tyrell, Andre, Marcus, Sarah, 2 centers, requests, posts, threads, courses) |
 
-All three were executed against a scratch Postgres 16 with a Supabase auth
-stub (2026-07-05): schema/policies/seed apply cleanly; every RLS negative
-test in `policies.sql` passes. No live Supabase project exists yet — rerun
-`supabase db reset` verification on the real project as phase 1.
+The full v1+v2 sequence was executed against a scratch **Postgres 16** with a
+Supabase auth stub (schema → schema-expansion → policies → policies-expansion
+→ outcomes-analytics): every file applies cleanly, all 21 expansion tables end
+with RLS enabled, and the trust-boundary negative tests pass —
+
+- **k≥11 suppression:** a bucket/LOC/quartile with <11 members returns `NULL`
+  for its value while `cohort_n` shows the true (small) size.
+- **consent gate:** center staff see a member in `analytics.center_member_outcome`
+  ONLY with an active `consent_grant` to their center; revoking `revoked_at`
+  drops the member on the very next query.
+- **plane isolation:** the `licensed_research` role reads the three `licensed.*`
+  aggregates and is `permission denied` on `public.continuum_events`,
+  `analytics.member_outcome_all`, and `analytics.center_member_outcome`.
+
+No live Supabase project exists yet — rerun `supabase db reset` verification on
+the real project as phase 1. **The package is Supabase-ready**: it depends only
+on `auth.users` / `auth.uid()` / the `anon`/`authenticated`/`service_role`
+roles Supabase provisions, plus the v1 signup trigger. See §(h) for the ordered
+apply sequence, the store→table map, and the decisions still needed.
 
 ---
 
@@ -204,3 +222,147 @@ after the cutover has survived a week of AUTOPILOT audits.
 cookie) — users re-login. Data written to Supabase during the window stays
 there; the memory store reseeds. Acceptable while everything is demo data;
 after real users exist, rollback is forward-fix only.
+
+---
+
+## (h) Expansion package (v2) — the tables added since v1
+
+The v1 package above covered the tables the app used at seed v5. Since then the
+store grew three domains + an outcomes data product (store seed v6–v9). This
+section covers `schema-expansion.sql`, `policies-expansion.sql`, and
+`outcomes-analytics.sql`. Same seam rule: `app/lib/store.ts` `interface DB`
+arrays → tables; route handlers keep their shapes.
+
+### Ordered apply sequence
+
+Run top to bottom. Each SQL file is idempotent-per-object (no `if not exists`
+on tables — reset the DB to re-run) and was verified in this order:
+
+1. `supabase/schema.sql` — v1 tables + enums + signup trigger.
+2. `supabase/schema-expansion.sql` — v2 enums + tables + indexes.
+3. `supabase/policies.sql` — v1 RLS (defines `is_staff()`, `is_mentor()`,
+   `is_mentor_of()`, `is_thread_participant()` — **required by the expansion
+   policies, so this must run before step 4**).
+4. `supabase/policies-expansion.sql` — v2 RLS + `caller_center()`,
+   `has_active_consent()`, `staff_has_consent()`, `can_read_care_channel()`,
+   `is_circle_member()`, and the `placement_stats()` aggregate RPC.
+5. `supabase/outcomes-analytics.sql` — `analytics` + `licensed` schemas,
+   score functions, `member_outcome_all` matview, the `center_member_outcome`
+   security-invoker view, the three `licensed.*` matviews, `refresh_outcomes()`,
+   and the `licensed_research` role + grants.
+6. `supabase/seed.sql` — flagship rows (then the bulk store→CSV loader for the
+   generated breadth, per §Seed; extend the converter to the v2 arrays).
+
+*Verify after step 5:* `select analytics.refresh_outcomes();` then confirm
+`set role licensed_research; select * from public.continuum_events;` →
+permission denied, while `select * from licensed.mv_continuum_score;` works.
+
+### store.ts arrays → tables
+
+| `interface DB` array (store.ts) | Table(s) | Notes |
+|---|---|---|
+| `profileDetails` | `profile_details` | PK = `user_id`; public rings via `public_profile_details` view |
+| `barcChecks` | `barc_checks` | `scores` → jsonb; self + staff only, never public |
+| `circles` | `circles` | `circle_kind` enum |
+| `circleMemberships` | `circle_memberships` | unique (circle, member) |
+| `recoveryGoals` | `recovery_goals` | `visibility` widens read to mentor/circle |
+| `goalMilestones` | `goal_milestones` | owner via parent goal |
+| `jobApplications` | `job_applications` | TS `role` → `job_title` column |
+| `resumes` | `resumes` | one primary per member (partial unique idx) |
+| `resumeSections` | `resume_sections` | `content` → jsonb (shape varies by kind) |
+| `careEpisodes` | `care_episodes` | `center_id` NULL = pre-care/unaffiliated |
+| `phaseTransitions` | `phase_transitions` | append-only (no update/delete policy) |
+| `continuumEvents` | `continuum_events` | single write path (service role/emit hook) |
+| `careChannels` | `care_channels` | `one_to_one`/`program_group`/`announcement` shape check |
+| `careMessages` | `care_messages` | `flagged` (held) not broadly readable |
+| `consentGrants` | `consent_grants` | member-owned; **the center-plane gate** |
+| `followUps` | `follow_up_checkins` | 30/60/90/180/365d cadence |
+| `sponsoredPlacements` | `sponsored_placements` | `targeting` jsonb, non-clinical CHECK guard |
+| `placementEvents` | `placement_events` | `member_id` internal-only; aggregate via `placement_stats()` |
+| `demoLeads` | `demo_leads` | public write-only drop box |
+| *(outcomes data product)* | `analytics.member_outcome_all` (matview), `analytics.center_member_outcome` (view), `licensed.mv_continuum_score` / `mv_care_outcomes` / `mv_efficacy` (matviews) | mirror `app/api/outcomes/compute.ts` |
+| *(no store array yet)* | `employers`, `job_posts` | **provisional** — see Decisions |
+
+New route handlers that will bind to these (glob the current `app/api/` tree at
+cutover — the seam rule is unchanged): `outcomes/*` → `analytics.*` /
+`licensed.*` (staff = center plane via `center_member_outcome`; licensing seat =
+`licensed_research`); `placements/*` → `sponsored_placements` +
+`placement_events` (serve trust gates stay in app code) + `placement_stats()`;
+`continuum/*`, `care-channels/*`, `consent/*`, `checkins/*` → the continuum
+tables under the consent gate; `circles/*`, `goals/*`, `resumes/*`,
+`job-applications/*`, `barc/*`, `profile-details/*` → the community-expansion
+tables. `continuum_events` writes go through a definer `emit_continuum_event()`
+RPC (like `record_donation`) — reward/engagement rows are never self-writable.
+
+### The two-plane outcomes data product (the P0 trust boundary)
+
+`outcomes-analytics.sql` is the SQL realization of `app/api/outcomes/compute.ts`
+and encodes the same two planes as database structure, not convention:
+
+- **Identified center plane (`analytics`).** `analytics.center_member_outcome`
+  is a `security_invoker` view over the RLS'd base tables, so a staff member
+  sees identifiable rows for **their own center's consented members only** — the
+  `consent_grant` gate in `policies-expansion.sql` applies to the caller. A
+  member sees only their own row. Not suppressed (single center, consented,
+  identified). `analytics.member_outcome_all` is the private global frame the
+  aggregates are grouped from; it is granted to **no one** (revoked from
+  `anon`/`authenticated`/`licensed_research`).
+- **De-identified licensed plane (`licensed`).** `mv_continuum_score`,
+  `mv_care_outcomes`, `mv_efficacy` are matviews that `GROUP` the frame into
+  distributions/rates and **select no name/member_number/slug/member_id** — a
+  leaked identity is unreachable by construction. Score parity with compute.ts:
+  `round(100·raw/(raw+40))`, `raw` = trailing-90-day event weights from
+  `ref_now` (the latest recorded event).
+- **k≥11 minimum-cohort suppression, in SQL.** Every aggregate cell computes its
+  distinct-member cohort size `n`; the value column is
+  `case when n >= analytics.min_cohort() then <value> end` (= `NULL` below 11).
+  Applied per cell — each bucket, phase edge, LOC, retention horizon and
+  engagement quartile is its own cohort, so a 1–10-member cell is nulled the
+  same way. `cohort_n` is kept beside each value so a reader sees *why* a cell is
+  blank, never the members.
+- **Structural role isolation.** A `licensed_research` NOLOGIN role gets `USAGE`
+  on schema `licensed` + `SELECT` on the three aggregate matviews and **nothing
+  else** — `USAGE` on `public`/`analytics` is revoked, so it literally cannot
+  name a table that has an identifiable column. A licensing seat's connection
+  maps into this role.
+
+### Supabase-ready — decisions still needed
+
+The package assumes the standard Supabase surface (`auth.users`, `auth.uid()`,
+`anon`/`authenticated`/`service_role`). Open items before/at cutover:
+
+- **Auth provider mapping (HMAC cookie → Supabase Auth).** Same swap as §(c):
+  the current HMAC `ms_session` cookie and `app/lib/auth.ts` are replaced by
+  Supabase Auth; `profiles.role` stays the source of truth and expansion
+  policies read it via `is_staff()`. New: the **`employer` role** now in
+  `app/lib/types.ts` is **not** in the `public.user_role` enum yet — add it
+  (`alter type public.user_role add value 'employer';`, run outside a txn
+  block) if the employer-as-account model is adopted (next item).
+- **Employers/job_posts model.** `schema-expansion.sql §4` ships **standalone**
+  `employers` (id, name, contact, created_at) + `job_posts` per the specified
+  fields. The in-flight app model instead treats an employer as a
+  `profiles.role = 'employer'` user (with a `company` field) and keys
+  `JobPost.employerId` to that user id. **Decide one model**; if the account
+  model wins, drop `employers`, repoint `job_posts.employer_id → profiles(id)`,
+  add the enum value above, and tighten the placeholder job_posts policies to
+  owner-scoped writes. These two tables are inert (no store array) until then.
+- **"Center staff" vs "platform staff" role.** Expansion policies gate
+  center-plane reads with `is_staff()` **AND** `caller_center()` **AND**
+  `has_active_consent()`. Today `profiles.role='staff'` is a single role and a
+  staff member's center = `profiles.center_id`. If/when a distinct per-center
+  admin vs. platform (`ms_admin`) role lands, split `is_staff()` accordingly —
+  the consent + center-match predicates already scope correctly, but ad
+  approval (`sponsored_placements` moderate) should move to the platform role.
+- **`continuum_events` write path.** Add the `emit_continuum_event()` definer
+  RPC (mirrors the emit hook in `store.ts`) so the single-write-path guarantee
+  holds under RLS; no user-facing insert policy exists by design.
+- **Outcomes licensing governance gate (docs/10 §5–6).** `compute.ts` surfaces
+  `GOVERNANCE.licensingBlockedUntilCounselItemsChecked = true`. The
+  `licensed_research` role and matviews exist, but **do not provision a real
+  licensing seat** until the Part 2/BAA + IRB-grade governance + privacy/ToS
+  items are signed off. Refresh cadence for the matviews (pg_cron vs. edge
+  function after continuum writes settle) is an ops decision.
+- **Ad-product content policy.** The schema makes clinical targeting
+  unrepresentable (jsonb CHECK guard + coarse `targeting` only), but the written
+  advertising policy + human review gate (docs/10 §5a) must be signed off before
+  paid placements run.

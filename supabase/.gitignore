@@ -4,3 +4,7 @@
 !schema.sql
 !policies.sql
 !seed.sql
+# Expansion package (v2) — also source, keep tracked.
+!schema-expansion.sql
+!policies-expansion.sql
+!outcomes-analytics.sql
