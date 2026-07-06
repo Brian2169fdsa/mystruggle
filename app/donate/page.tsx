@@ -91,12 +91,13 @@ export default function Donate() {
     <>
       <Nav />
 
-      {/* HERO */}
-      <section className="relative flex min-h-[440px] items-center overflow-hidden bg-[repeating-linear-gradient(45deg,#DFEAF9_0_14px,#D2E2F5_14px_28px)]">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.55)_55%,rgba(11,37,69,.2)_100%)]" />
-        <span className="absolute bottom-4 right-5 rounded-md bg-[rgba(11,37,69,.5)] px-2.5 py-1 font-mono text-[11px] font-medium text-white/75">
-          photo: a hand passing a bag of essentials, warm light
-        </span>
+      {/* HERO — full screen */}
+      <section className="relative flex min-h-screen items-center overflow-hidden bg-navy-deep">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/donate-hero.png')" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.94)_0%,rgba(11,37,69,.66)_48%,rgba(11,37,69,.28)_100%)]" />
         <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-5 py-16 lg:px-6 lg:py-20">
           <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
             DONATE TODAY
