@@ -191,6 +191,12 @@ export interface Post {
   body: string;
   kind: PostKind;
   status: PostStatus;
+  // MODERATION: a staff "hide" action on a report sets this true, removing the
+  // post from the community feed (docs/06). Optional/undefined = visible, so
+  // pre-moderation posts stay untouched. Distinct from `status: "removed"`:
+  // hidden is the report→action safety chain's soft take-down, reversible in
+  // spirit, and still visible to staff via the dashboard moderation queue.
+  hidden?: boolean;
   topic?: Topic; // community channel (defaults to "general" when absent)
   requestId?: string; // links a support-request post to its goal
   hearts: string[]; // user ids who reacted
@@ -641,14 +647,20 @@ export interface EventRsvp {
 }
 
 /** A member-filed report on a community post, awaiting staff review. Feeds the
- *  moderation queue: status "open" until a staff member marks it "reviewed". */
+ *  moderation queue. Lifecycle:
+ *   - "open"     — filed, awaiting a staff look.
+ *   - "reviewed" — staff looked and resolved it WITHOUT a take-down (a plain
+ *                  "mark reviewed" or an explicit "dismiss" — post stays).
+ *   - "actioned" — staff resolved it WITH a moderation action (hid the post or
+ *                  warned the author). A distinct state so the queue can show
+ *                  "this report changed something," not just "someone glanced." */
 export interface PostReport {
   id: string;
   postId: string;
   reporterId: string;
   reason: string;
   note?: string;
-  status: "open" | "reviewed";
+  status: "open" | "reviewed" | "actioned";
   createdAt: number;
 }
 

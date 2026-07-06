@@ -1,3 +1,34 @@
+# Gap Report — run 2026-07-06-12 (app-side gap closure: safety chain, emitters, consent gate)
+
+## Run 12 summary
+Closed the top app-side gaps that needed no external keys — tsc clean, build
+green (75 pages), all negative-tested live on a fresh seed:
+- **Report → action safety chain (C1 closed):** staff can now Hide post / Warn
+  author / Dismiss / Mark reviewed from the dashboard queue. `Post.hidden` is a
+  reversible soft take-down; hidden posts are excluded from the public feed
+  (server GET + client defense-in-depth). VERIFIED: report → hide_post → post
+  gone from /api/posts (0 occurrences).
+- **More live notifications (B1 partial):** @mentions in comments (matches
+  members/mentors by first name, crisis-guarded, self-excluding) and job-match
+  alerts (members with an active employment goal, capped 25) now emit. VERIFIED:
+  @Danielle mention → her unread +1 ("Marcus mentioned you"); new job → member
+  with employment goal +1.
+- **Staff BARC/résumé consent gate (D1 closed):** /api/staff/participant returns
+  a member's BARC trend + résumé ONLY with an active ConsentGrant to the staff's
+  center; fails closed (no consent → literal nulls). BARC is totals-only (never
+  raw domain scores); email never exposed. VERIFIED: staff+consent → data;
+  member → 403; no-consent → {consent:false}.
+- **Facebook fully stripped** site-wide (footer/homepage social links + code
+  comments) — the word appears nowhere in the codebase.
+- Site: About hero uses the real center photo (taller); Donate hero is now a
+  full-screen image section (essentials handoff); Danielle spotlight on Donate.
+
+## Run 12 residual (moved forward)
+- B2 realtime still polling; follow-up-due + @mention-in-posts emitters still
+  pending (mentions live in comments only this run).
+- C2 discovery group browse; E1 email; E2 real ad-review; E3 PDF; E4 ms_admin —
+  unchanged, see master list below.
+
 # Gap Report — run 2026-07-06-11 (Supabase-ready: one-file schema + inert cutover seam)
 
 ## Run 11 summary

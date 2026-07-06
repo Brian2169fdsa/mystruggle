@@ -108,7 +108,20 @@ export async function GET() {
   return NextResponse.json({ reports });
 }
 
-/** PATCH { id, status: "reviewed" } — staff marks a report reviewed. */
+/** The moderation actions staff can take on a report (the report→action safety
+ *  chain, docs/06). `reviewed`/`dismiss` resolve without a take-down; `hide_post`
+ *  and `warn_author` resolve WITH a moderation action on the post/author. */
+const ACTIONS = ["reviewed", "dismiss", "hide_post", "warn_author"] as const;
+type ReportAction = (typeof ACTIONS)[number];
+
+/** PATCH { id, action } — staff acts on a report.
+ *   - "reviewed" | "dismiss" → status "reviewed" (post stays; no author impact).
+ *   - "hide_post" → hide the reported post from the community + status "actioned".
+ *   - "warn_author" → warm-but-firm system notification to the author + status
+ *     "actioned".
+ *  Back-compat: an old caller sending { id, status: "reviewed" } is treated as
+ *  action "reviewed". Returns the updated report. 400 unknown action; 404 when
+ *  the report — or the post an action needs — is missing. */
 export async function PATCH(req: Request) {
   const user = await getSessionUser();
   if (!user) {
@@ -121,10 +134,16 @@ export async function PATCH(req: Request) {
 
   const body = await req.json().catch(() => null);
   const id = String(body?.id ?? "").trim();
-  const status = body?.status;
-  if (!id || status !== "reviewed") {
+  // Prefer `action`; fall back to legacy `status: "reviewed"`.
+  const action = (body?.action ?? (body?.status === "reviewed" ? "reviewed" : undefined)) as
+    | ReportAction
+    | undefined;
+  if (!id) {
+    return NextResponse.json({ error: "Provide a report id." }, { status: 400 });
+  }
+  if (!action || !ACTIONS.includes(action)) {
     return NextResponse.json(
-      { error: "Provide a report id and status \"reviewed\"." },
+      { error: `Unknown action. Expected one of: ${ACTIONS.join(", ")}.` },
       { status: 400 }
     );
   }
@@ -134,8 +153,42 @@ export async function PATCH(req: Request) {
   if (!report) {
     return NextResponse.json({ error: "Report not found." }, { status: 404 });
   }
-  report.status = "reviewed";
-  save();
 
+  // Actions that touch the post need the post to still exist.
+  if (action === "hide_post" || action === "warn_author") {
+    const post = d.posts.find((p) => p.id === report.postId);
+    if (!post) {
+      return NextResponse.json(
+        { error: "The reported post is no longer available." },
+        { status: 404 }
+      );
+    }
+
+    if (action === "hide_post") {
+      // Soft take-down — removes it from the community feed for everyone.
+      post.hidden = true;
+    } else {
+      // warn_author — a warm, non-punitive nudge to the post's author. Never
+      // notify a member about their own staff action against someone else, and
+      // skip if the author account is gone.
+      const author = findUserById(post.authorId);
+      if (author) {
+        emitNotification(
+          author.id,
+          "system",
+          "A note from the care team",
+          "A community member flagged one of your posts. Please review our community guidelines — keep it supportive and safe.",
+          "post",
+          post.id
+        );
+      }
+    }
+    report.status = "actioned";
+  } else {
+    // "reviewed" | "dismiss" — resolved without a take-down.
+    report.status = "reviewed";
+  }
+
+  save();
   return NextResponse.json({ report });
 }

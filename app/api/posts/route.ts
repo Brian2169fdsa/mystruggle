@@ -74,7 +74,10 @@ export async function GET(req: Request) {
     if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
     posts = posts.filter((p) => p.authorId === user.id && p.status !== "removed");
   } else {
-    posts = posts.filter((p) => p.status === "approved");
+    // Community feed: approved AND not hidden by a staff moderation action.
+    // A "hide_post" report action removes the post from the community for
+    // everyone; it stays visible to staff only via the dashboard queue.
+    posts = posts.filter((p) => p.status === "approved" && !p.hidden);
   }
   if (circleId) {
     posts = posts.filter((p) => p.circleId === circleId);

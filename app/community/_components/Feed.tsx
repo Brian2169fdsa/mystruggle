@@ -511,8 +511,12 @@ export default function Feed({
   ];
 
   const inPrivateCircle = blocked || (!!circleInfo && circleInfo.locked);
-  // Posts from blocked authors are dropped before render/interleave.
-  const shown = (posts ?? []).filter((p) => !blockedIds.has(p.authorId));
+  // Posts from blocked authors — and any a staff moderator has hidden — are
+  // dropped before render/interleave (defense in depth; the API already
+  // excludes hidden posts from the community feed).
+  const shown = (posts ?? []).filter(
+    (p) => !blockedIds.has(p.authorId) && !p.hidden
+  );
 
   return (
     <div className="flex min-w-0 flex-col gap-5">

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid } from "@/app/lib/store";
+import { db, save, uid, emitNotification } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import { JOB_TYPES, type JobPost, type JobType } from "@/app/lib/types";
 
@@ -114,5 +114,39 @@ export async function POST(req: Request) {
   };
   jobStore().jobPosts.push(job);
   save();
+
+  // Job-match alerts — non-fatal, must never block the job-create response.
+  // Audience: members (role === "member") with an ACTIVE recovery goal in the
+  // employment domain. Capped at the first 25 matches to avoid a huge fan-out
+  // of notifications on a single post. The employer is never a "member", but we
+  // exclude the poster explicitly for safety.
+  try {
+    const JOB_MATCH_CAP = 25;
+    const d = db();
+    const seen = new Set<string>([user.id]); // never notify the poster
+    let sent = 0;
+    for (const goal of d.recoveryGoals) {
+      if (sent >= JOB_MATCH_CAP) break;
+      if (goal.domain !== "employment" || goal.status !== "active") continue;
+      if (seen.has(goal.memberId)) continue;
+      const member = d.users.find(
+        (u) => u.id === goal.memberId && u.role === "member"
+      );
+      if (!member) continue;
+      seen.add(member.id);
+      emitNotification(
+        member.id,
+        "job",
+        "New job posted",
+        `${company} posted "${title}" — a recovery-friendly opening.`,
+        "job",
+        job.id
+      );
+      sent++;
+    }
+  } catch {
+    // Notifications are best-effort; the job is already created.
+  }
+
   return NextResponse.json({ job });
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { EyeOff, HeartHandshake, ShieldCheck, X } from "lucide-react";
 import { CARD, SKELETON, relTime } from "./types";
 
 /** One member report against a community post (GET /api/reports).
@@ -13,11 +13,14 @@ type MemberReport = {
   reporterId: string;
   reason: string;
   note?: string | null;
-  status: "open" | "reviewed";
+  status: "open" | "reviewed" | "actioned";
   createdAt: number | string;
   post: { id: string; authorName: string; excerpt: string } | null;
   reporterName: string;
 };
+
+/** The moderation actions staff can take on a report (PATCH /api/reports). */
+type ReportAction = "reviewed" | "dismiss" | "hide_post" | "warn_author";
 
 /** Normalize any timestamp shape (ms, seconds, or ISO string) to ms epoch. */
 function toMs(v: number | string | null | undefined): number {
@@ -75,21 +78,27 @@ export default function ReportsQueue({
     return () => clearInterval(t);
   }, [load]);
 
-  const markReviewed = useCallback(
-    async (id: string) => {
+  // One handler for every moderation action. reviewed/dismiss resolve the
+  // report as "reviewed"; hide_post/warn_author resolve it as "actioned" (they
+  // changed something). Optimistic flip, then the badge is reconciled.
+  const act = useCallback(
+    async (id: string, action: ReportAction) => {
+      const resolvedStatus: MemberReport["status"] =
+        action === "hide_post" || action === "warn_author"
+          ? "actioned"
+          : "reviewed";
       setBusyId(id);
       try {
         const res = await fetch("/api/reports", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, status: "reviewed" }),
+          body: JSON.stringify({ id, action }),
         });
         if (!res.ok) throw new Error(String(res.status));
-        // Optimistically flip locally, then reconcile the badge.
         setReports((cur) => {
           if (!Array.isArray(cur)) return cur;
           const next = cur.map((r) =>
-            r.id === id ? { ...r, status: "reviewed" as const } : r
+            r.id === id ? { ...r, status: resolvedStatus } : r
           );
           onOpenCount?.(next.filter((r) => r.status === "open").length);
           return next;
@@ -160,7 +169,7 @@ export default function ReportsQueue({
         </div>
         {/* Recently reviewed stays visible for context, if any. */}
         {rows.length > 0 && (
-          <ReviewedList rows={rows.filter((r) => r.status === "reviewed")} />
+          <ReviewedList rows={rows.filter((r) => r.status !== "open")} />
         )}
       </div>
     );
@@ -180,7 +189,9 @@ export default function ReportsQueue({
 
       <div className="flex flex-col gap-[18px]">
         {rows.map((r) => {
-          const reviewed = r.status === "reviewed";
+          const resolved = r.status !== "open";
+          const actioned = r.status === "actioned";
+          const busy = busyId === r.id;
           const concern = CONCERN.test(r.reason);
           return (
             <div
@@ -188,7 +199,7 @@ export default function ReportsQueue({
               className={
                 CARD +
                 " px-[30px] py-6 " +
-                (reviewed ? "opacity-70" : "")
+                (resolved ? "opacity-70" : "")
               }
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -203,9 +214,10 @@ export default function ReportsQueue({
                   >
                     {reasonLabel(r.reason)}
                   </span>
-                  {reviewed && (
+                  {resolved && (
                     <span className="inline-flex h-[26px] items-center gap-1 rounded-full bg-[#E8F8F0] px-3 text-[11px] font-bold text-success">
-                      <ShieldCheck size={12} strokeWidth={2.6} /> Reviewed
+                      <ShieldCheck size={12} strokeWidth={2.6} />{" "}
+                      {actioned ? "Action taken" : "Reviewed"}
                     </span>
                   )}
                 </div>
@@ -243,25 +255,79 @@ export default function ReportsQueue({
                 </div>
               )}
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-4 flex flex-col gap-3 border-t border-canvas pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <span className="text-xs font-semibold text-ink-600">
                   Reported by {r.reporterName}
                 </span>
-                {!reviewed && (
-                  <button
-                    type="button"
-                    onClick={() => markReviewed(r.id)}
-                    disabled={busyId === r.id}
-                    className={
-                      "inline-flex h-11 items-center gap-2 rounded-full px-6 text-[13px] font-bold text-white " +
-                      (busyId === r.id
-                        ? "cursor-not-allowed bg-ink-400"
-                        : "cursor-pointer bg-blue-primary hover:bg-blue-hover")
-                    }
-                  >
-                    <ShieldCheck size={15} strokeWidth={2.4} />
-                    {busyId === r.id ? "Saving…" : "Mark reviewed"}
-                  </button>
+                {!resolved && (
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Take-down + author-warning act on the post; dismiss and
+                        mark-reviewed resolve without touching it. Safety first,
+                        never punitive. */}
+                    <button
+                      type="button"
+                      onClick={() => act(r.id, "hide_post")}
+                      disabled={busy || !r.post}
+                      title={
+                        r.post
+                          ? "Remove this post from the community feed"
+                          : "This post is no longer available"
+                      }
+                      className={
+                        "inline-flex min-h-[44px] items-center gap-2 rounded-full px-5 text-[13px] font-bold text-white " +
+                        (busy || !r.post
+                          ? "cursor-not-allowed bg-ink-400"
+                          : "cursor-pointer bg-blue-primary hover:bg-blue-hover")
+                      }
+                    >
+                      <EyeOff size={15} strokeWidth={2.4} />
+                      Hide post
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => act(r.id, "warn_author")}
+                      disabled={busy || !r.post}
+                      title="Send the author a gentle reminder about community guidelines"
+                      className={
+                        "inline-flex min-h-[44px] items-center gap-2 rounded-full border-[1.5px] px-5 text-[13px] font-bold " +
+                        (busy || !r.post
+                          ? "cursor-not-allowed border-sky-tint-2 text-ink-400"
+                          : "cursor-pointer border-blue-primary text-blue-primary hover:bg-sky-tint")
+                      }
+                    >
+                      <HeartHandshake size={15} strokeWidth={2.4} />
+                      Warn author
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => act(r.id, "dismiss")}
+                      disabled={busy}
+                      title="No action needed — close this report"
+                      className={
+                        "inline-flex min-h-[44px] items-center gap-2 rounded-full border-[1.5px] px-5 text-[13px] font-bold " +
+                        (busy
+                          ? "cursor-not-allowed border-sky-tint-2 text-ink-400"
+                          : "cursor-pointer border-sky-tint-2 text-ink-600 hover:border-blue-primary hover:text-blue-primary")
+                      }
+                    >
+                      <X size={15} strokeWidth={2.4} />
+                      Dismiss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => act(r.id, "reviewed")}
+                      disabled={busy}
+                      className={
+                        "inline-flex min-h-[44px] items-center gap-2 rounded-full px-5 text-[13px] font-bold " +
+                        (busy
+                          ? "cursor-not-allowed text-ink-400"
+                          : "cursor-pointer text-blue-primary hover:bg-sky-tint")
+                      }
+                    >
+                      <ShieldCheck size={15} strokeWidth={2.4} />
+                      {busy ? "Saving…" : "Mark reviewed"}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

@@ -335,66 +335,241 @@ function MyPlanCard({ memberId }: { memberId: string }) {
   );
 }
 
-/** RÉSUMÉ — a member's résumé is owner + mentor visible only; there is no
- *  staff-readable API this pass, so we show a tasteful, honest stub rather
- *  than fabricate content or weaken privacy. (Gap flagged in the report.) */
-function ResumeCard({ memberName }: { memberName: string }) {
+// ── CONSENT-GATED staff read (GET /api/staff/participant?memberId=…) ──────
+// A member's BARC-10 trend + résumé are member-private. Staff see them ONLY
+// when the member has an active continuum consent grant to this center. The
+// route returns { consent:false, … } — never the data — when consent is
+// absent. Code the response shape defensively.
+type BarcTrendPoint = { takenAt: number; total: number };
+type StaffResume = {
+  fullName: string;
+  headline?: string;
+  summary?: string;
+  contact?: { phone?: string; city?: string };
+  template: string;
+  updatedAt: number;
+  sections: {
+    id: string;
+    kind: string;
+    content: Record<string, unknown>;
+    sort: number;
+  }[];
+};
+type StaffParticipant = {
+  consent: boolean;
+  barc: { trend: BarcTrendPoint[] } | null;
+  resume: StaffResume | null;
+};
+
+const RESUME_SECTION_LABEL: Record<string, string> = {
+  experience: "Experience",
+  education: "Education",
+  skills: "Skills",
+  certifications: "Certifications",
+  volunteer: "Volunteer",
+  references: "References",
+  projects: "Projects",
+};
+
+/** BARC total is 0–50 (10 domains × 0–5). Read the last two totals as a warm,
+ *  never-clinical direction — amber for a dip (concern, never red). */
+function barcRead(trend: BarcTrendPoint[]): {
+  label: string;
+  chip: string; // tailwind classes for the direction chip
+  bar: string; // bar fill color class
+} {
+  if (trend.length < 2)
+    return {
+      label: "First self-check on record",
+      chip: "bg-sky-tint text-blue-primary",
+      bar: "bg-blue-primary",
+    };
+  const delta = trend[trend.length - 1].total - trend[trend.length - 2].total;
+  if (delta >= 3)
+    return {
+      label: "Trending up",
+      chip: "bg-[#E8F8F0] text-success",
+      bar: "bg-success",
+    };
+  if (delta <= -3)
+    return {
+      label: "Could use extra support",
+      chip: "bg-[#FFF7EA] text-[#B54708]", // amber — concern, never red
+      bar: "bg-[#E9A23B]",
+    };
+  return {
+    label: "Holding steady",
+    chip: "bg-sky-tint text-blue-primary",
+    bar: "bg-blue-primary",
+  };
+}
+
+/** The respectful "not shared" state — shown for both cards when the member
+ *  hasn't granted this center continuum consent. Never shows data. */
+function GatedNote({ what }: { what: string }) {
   return (
-    <div className={CARD + " flex flex-col px-[26px] py-[22px]"}>
-      <div className="text-[15px] font-bold text-ink-900">Résumé</div>
-      <div className="mt-3.5 flex items-start gap-3 rounded-xl bg-sky-tint px-4 py-3.5">
-        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white text-[16px] font-extrabold text-blue-primary">
-          ▤
-        </span>
-        <div className="text-[13px] text-ink-600">
-          <div className="font-bold text-ink-900">Résumé on file</div>
-          Visible to {memberName} and their mentor. Built in the member
-          app&apos;s Résumé Builder.
-        </div>
-      </div>
-      <div className="mt-3 text-[11px]/[1.5] text-ink-400">
-        The center dashboard doesn&apos;t surface résumé content — it&apos;s the
-        member&apos;s to share. Ask {memberName} to print or send a copy from
-        their app when they&apos;re ready.
+    <div className="mt-3.5 flex items-start gap-3 rounded-xl bg-sky-tint px-4 py-3.5">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white text-[15px] font-extrabold text-blue-primary">
+        ♡
+      </span>
+      <div className="text-[13px]/[1.55] text-ink-600">
+        This member hasn&apos;t shared their {what} with the center yet — ask
+        them in your next session if they&apos;d like to.
       </div>
     </div>
   );
 }
 
-/** BARC TREND — BARC-10 self-checks are private to the member + supporting
- *  staff, and the profile API doesn't expose another member's trend to the
- *  dashboard this pass. Honest stub with the never-a-diagnosis framing;
- *  amber accents, never red. (Gap flagged in the report.) */
-function BarcCard({ memberName }: { memberName: string }) {
+/** RÉSUMÉ — LIVE, consent-gated. Shows the member's résumé projection when
+ *  they've granted this center continuum consent; a warm gated note otherwise.
+ *  Read-only — the dashboard never edits a member's résumé. */
+function ResumeCard({
+  data,
+  memberName,
+}: {
+  data: StaffParticipant | null;
+  memberName: string;
+}) {
+  const resume = data?.resume ?? null;
   return (
     <div className={CARD + " flex flex-col px-[26px] py-[22px]"}>
-      <div className="text-[15px] font-bold text-ink-900">BARC trend</div>
-
-      {/* Placeholder mini-trend — clearly a ghost, no fabricated numbers. */}
-      <div className="mt-3.5 flex h-14 items-end gap-1.5 rounded-xl bg-[#FFF7EA] px-4 py-3">
-        {[40, 55, 48, 62, 70, 66, 78].map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-sm bg-[#F2C879]"
-            style={{ height: `${h}%`, opacity: 0.5 }}
-          />
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="text-[15px] font-bold text-ink-900">Résumé</div>
+        {data?.consent && resume && (
+          <span className="inline-flex h-[22px] items-center rounded-full bg-[#E8F8F0] px-2.5 text-[11px] font-bold text-success">
+            Shared with center
+          </span>
+        )}
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
-        <span className="inline-flex h-[22px] items-center rounded-full bg-[#FFF7EA] px-2.5 text-[11px] font-bold text-[#B54708]">
-          Assigned-staff-only
-        </span>
+      {data === null ? (
+        <div className="mt-3.5 flex flex-col gap-2.5">
+          <div className={SKELETON + " h-9"} />
+          <div className={SKELETON + " h-16"} />
+        </div>
+      ) : !data.consent ? (
+        <GatedNote what="résumé" />
+      ) : !resume ? (
+        <div className="mt-3.5 text-[13px] text-ink-600">
+          {memberName} hasn&apos;t built a résumé yet. When they do, it&apos;ll
+          appear here.
+        </div>
+      ) : (
+        <>
+          <div className="mt-3.5 rounded-xl bg-sky-tint px-4 py-3.5">
+            <div className="text-[15px] font-bold text-ink-900">
+              {resume.fullName}
+            </div>
+            {resume.headline && (
+              <div className="mt-0.5 text-[13px] font-semibold text-blue-primary">
+                {resume.headline}
+              </div>
+            )}
+            {resume.summary && (
+              <div className="mt-2 text-[12px]/[1.6] text-ink-600">
+                {resume.summary}
+              </div>
+            )}
+          </div>
+
+          {resume.sections.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {resume.sections.map((s) => (
+                <span
+                  key={s.id}
+                  className="inline-flex h-6 items-center rounded-full bg-[#DDEBFB] px-2.5 text-[10px] font-bold text-blue-primary"
+                >
+                  {RESUME_SECTION_LABEL[s.kind] ?? s.kind}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-3 text-[11px]/[1.5] text-ink-400">
+            Read-only — {memberName}&apos;s résumé, shared with the center.
+            Edits happen in their app&apos;s Résumé Builder.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** BARC TREND — LIVE, consent-gated. BARC-10 self-checks are member-private;
+ *  staff see totals-over-time ONLY with an active consent grant. Never a
+ *  diagnosis; amber for a dip, never red. */
+function BarcCard({
+  data,
+  memberName,
+}: {
+  data: StaffParticipant | null;
+  memberName: string;
+}) {
+  const trend = data?.barc?.trend ?? [];
+  const read = barcRead(trend);
+  const latest = trend.length ? trend[trend.length - 1] : null;
+
+  return (
+    <div className={CARD + " flex flex-col px-[26px] py-[22px]"}>
+      <div className="flex items-center justify-between">
+        <div className="text-[15px] font-bold text-ink-900">BARC trend</div>
+        {data?.consent && trend.length > 0 && (
+          <span
+            className={
+              "inline-flex h-[22px] items-center rounded-full px-2.5 text-[11px] font-bold " +
+              read.chip
+            }
+          >
+            {read.label}
+          </span>
+        )}
       </div>
 
-      <div className="mt-2.5 text-[13px] text-ink-600">
-        {memberName}&apos;s self-check trend isn&apos;t shared with this view.
-      </div>
-      <div className="mt-2 text-[11px]/[1.5] text-ink-400">
-        Self-reflection, assigned-staff-only — never a diagnosis. When shared,
-        this shows check-in totals over time with a trending-up / steady /
-        needs-support read.
-      </div>
+      {data === null ? (
+        <div className="mt-3.5 flex flex-col gap-2.5">
+          <div className={SKELETON + " h-14"} />
+          <div className={SKELETON + " h-9"} />
+        </div>
+      ) : !data.consent ? (
+        <GatedNote what="self-checks" />
+      ) : trend.length === 0 ? (
+        <div className="mt-3.5 text-[13px] text-ink-600">
+          {memberName} hasn&apos;t recorded a self-check yet. When they do, the
+          trend shows up here.
+        </div>
+      ) : (
+        <>
+          {/* Real mini-trend — check-in totals over time (each bar = one
+              self-check, 0–50). */}
+          <div className="mt-3.5 flex h-16 items-end gap-1.5 rounded-xl bg-sky-tint px-4 py-3">
+            {trend.map((p) => (
+              <div
+                key={p.takenAt}
+                title={`${p.total}/50 · ${new Date(
+                  p.takenAt
+                ).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                className={"flex-1 rounded-sm " + read.bar}
+                style={{ height: `${Math.max(8, (p.total / 50) * 100)}%` }}
+              />
+            ))}
+          </div>
+
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="tnum text-[22px] font-extrabold text-ink-900">
+              {latest?.total}
+            </span>
+            <span className="text-[12px] font-semibold text-ink-400">
+              / 50 latest · {trend.length} check-in
+              {trend.length === 1 ? "" : "s"} on record
+            </span>
+          </div>
+
+          <div className="mt-2 text-[11px]/[1.5] text-ink-400">
+            Self-reflection, shared by {memberName} — never a diagnosis. Totals
+            over time only; the ten domain details stay with the member.
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -461,6 +636,33 @@ export default function ParticipantDetail({
       })
       .catch(() => {
         if (alive) setSessions([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [member.id]);
+
+  // CONSENT-GATED BARC trend + résumé — LIVE. null = loading. The route
+  // returns { consent:false, barc:null, resume:null } (never the data) unless
+  // this member granted the center continuum consent; the cards render a
+  // respectful gated state in that case.
+  const [participant, setParticipant] = useState<StaffParticipant | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setParticipant(null);
+    fetch(`/api/staff/participant?memberId=${member.id}`)
+      .then((r) => r.json())
+      .then((d: StaffParticipant) => {
+        if (alive)
+          setParticipant({
+            consent: Boolean(d?.consent),
+            barc: d?.barc ?? null,
+            resume: d?.resume ?? null,
+          });
+      })
+      .catch(() => {
+        // On failure, fail CLOSED — treat as not-shared, never guess data.
+        if (alive) setParticipant({ consent: false, barc: null, resume: null });
       });
     return () => {
       alive = false;
@@ -537,10 +739,12 @@ export default function ParticipantDetail({
       <MyPlanCard memberId={member.id} />
 
       {/* RÉSUMÉ + BARC TREND (docs/13/14) — paired. Both are member-private
-          surfaces with no staff-readable API this pass, so honest stubs. */}
+          surfaces, now LIVE for staff via GET /api/staff/participant, gated on
+          an active continuum consent grant to this center. No consent → a
+          respectful "not shared" state, never the data. */}
       <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
-        <ResumeCard memberName={member.name} />
-        <BarcCard memberName={member.name} />
+        <ResumeCard data={participant} memberName={member.name} />
+        <BarcCard data={participant} memberName={member.name} />
       </div>
 
       {/* Tabs */}
