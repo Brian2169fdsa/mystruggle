@@ -139,7 +139,7 @@ export default function RailAdCard({ slot }: { slot: RailAdSlot }) {
       <img
         src={SLOT_IMAGE[slot]}
         alt={`${ad.orgName} - sponsored`}
-        className="mt-3 h-32 w-full rounded-xl object-cover"
+        className="mt-3 aspect-[16/10] w-full rounded-xl object-cover"
         loading="lazy"
       />
 
