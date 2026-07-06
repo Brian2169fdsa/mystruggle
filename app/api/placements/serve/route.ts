@@ -34,11 +34,19 @@ export async function GET() {
   // KILL SWITCH - platform-wide off switch beats everything else.
   if (isAdKillSwitchOn()) return empty;
 
-  // Signed-out viewers see no sponsored content (and no targeting exists).
+  // Signed-out viewers get COMMUNITY-SCOPED placements only - the broadest,
+  // least-targeted tier (no viewer attributes exist to match on, and no
+  // crisis state can exist without an account). Circle/phase/geo-targeted
+  // placements still require a signed-in match below.
   const user = await getSessionUser();
-  if (!user) return empty;
-
   const d = db();
+  if (!user) {
+    const openPlacements = d.sponsoredPlacements
+      .filter((p) => p.status === "running" && p.audienceScope === "community")
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map(toServed);
+    return NextResponse.json({ placements: openPlacements, everyN });
+  }
 
   // ── RULE (a): crisis / at-risk exclusion ────────────────────────────
   // If ANY of the viewer's own posts is held as "flagged" AND actually reads
