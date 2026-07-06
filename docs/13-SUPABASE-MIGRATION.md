@@ -13,6 +13,9 @@ Deliverables already in the repo (this package):
 | `supabase/schema-expansion.sql` | **Expansion DDL (v2): 21 enums, 21 tables** — community expansion, continuum of care, ad product, + optional employers/job_posts |
 | `supabase/policies.sql` | RLS on every v1 table + 49 policies + public views + negative tests |
 | `supabase/policies-expansion.sql` | **RLS on every v2 table + 76 policies + consent helpers + `placement_stats()` RPC + negative tests** |
+| `supabase/schema-run9-10.sql` | **Engagement DDL (Runs 9–10 / store seed v11): 3 enums, 5 tables** — `notifications`, `community_events` + `event_rsvps`, `member_blocks`, `post_reports` |
+| `supabase/policies-run9-10.sql` | **RLS on all 5 engagement tables + 18 policies + `event_rsvp_count()` aggregate RPC + negative tests** |
+| `supabase/apply-employer-role.sql` | **Reconciliation of the locked employer-as-role decision — runs LAST** (adds `'employer'` to `user_role`, `profiles.company`, repoints `job_posts.employer_id → profiles(id)`, drops standalone `employers`, owner-scoped `job_posts` RLS via `is_employer()`) |
 | `supabase/outcomes-analytics.sql` | **The two-plane outcomes data product: `analytics.*` (identified center plane) + `licensed.*` matviews (`mv_continuum_score` / `mv_care_outcomes` / `mv_efficacy`, k≥11 suppressed) + the `licensed_research` role** |
 | `supabase/seed.sql` | Flagship demo rows (Danielle, Tyrell, Andre, Marcus, Sarah, 2 centers, requests, posts, threads, courses) |
 
@@ -236,22 +239,37 @@ arrays → tables; route handlers keep their shapes.
 ### Ordered apply sequence
 
 Run top to bottom. Each SQL file is idempotent-per-object (no `if not exists`
-on tables — reset the DB to re-run) and was verified in this order:
+on tables — reset the DB to re-run) and was verified in this order (a scratch
+**Postgres 16** + the Supabase auth stub — `auth.users`, `auth.uid()` reading
+`request.jwt.claims`, and the `anon`/`authenticated`/`service_role` roles):
 
 1. `supabase/schema.sql` — v1 tables + enums + signup trigger.
 2. `supabase/schema-expansion.sql` — v2 enums + tables + indexes.
-3. `supabase/policies.sql` — v1 RLS (defines `is_staff()`, `is_mentor()`,
+3. `supabase/schema-run9-10.sql` — engagement enums + tables + indexes
+   (`notifications`, `community_events`, `event_rsvps`, `member_blocks`,
+   `post_reports`). Depends only on `profiles` / `centers` / `posts`.
+4. `supabase/policies.sql` — v1 RLS (defines `is_staff()`, `is_mentor()`,
    `is_mentor_of()`, `is_thread_participant()` — **required by the expansion
-   policies, so this must run before step 4**).
-4. `supabase/policies-expansion.sql` — v2 RLS + `caller_center()`,
+   policies, so this must run before step 5**).
+5. `supabase/policies-expansion.sql` — v2 RLS + `caller_center()`,
    `has_active_consent()`, `staff_has_consent()`, `can_read_care_channel()`,
    `is_circle_member()`, and the `placement_stats()` aggregate RPC.
-5. `supabase/outcomes-analytics.sql` — `analytics` + `licensed` schemas,
+6. `supabase/policies-run9-10.sql` — engagement RLS (reuses `is_staff()` /
+   `is_mentor()`) + the `event_rsvp_count()` aggregate RPC.
+7. `supabase/apply-employer-role.sql` — **RUNS LAST.** The employer-as-role
+   reconciliation supersedes objects that `schema-expansion.sql §4` and the
+   `policies-expansion.sql §Employers` block define, so it MUST come after both.
+   (Verified: running it earlier fails twice — it references `is_staff()` before
+   `policies.sql` creates it, and it drops `employers` before
+   `policies-expansion.sql` re-creates policies on it.) Run WITHOUT
+   `--single-transaction`: step 1 (`alter type … add value 'employer'`) commits
+   before later steps use the value; every step is guarded to re-run safely.
+8. `supabase/outcomes-analytics.sql` — `analytics` + `licensed` schemas,
    score functions, `member_outcome_all` matview, the `center_member_outcome`
    security-invoker view, the three `licensed.*` matviews, `refresh_outcomes()`,
    and the `licensed_research` role + grants.
-6. `supabase/seed.sql` — flagship rows (then the bulk store→CSV loader for the
-   generated breadth, per §Seed; extend the converter to the v2 arrays).
+9. `supabase/seed.sql` — flagship rows (then the bulk store→CSV loader for the
+   generated breadth, per §Seed; extend the converter to the v2 + v11 arrays).
 
 *Verify after step 5:* `select analytics.refresh_outcomes();` then confirm
 `set role licensed_research; select * from public.continuum_events;` →
@@ -280,8 +298,13 @@ permission denied, while `select * from licensed.mv_continuum_score;` works.
 | `sponsoredPlacements` | `sponsored_placements` | `targeting` jsonb, non-clinical CHECK guard |
 | `placementEvents` | `placement_events` | `member_id` internal-only; aggregate via `placement_stats()` |
 | `demoLeads` | `demo_leads` | public write-only drop box |
+| `notifications` | `notifications` | one inbox per user; NO user insert path (`emit_notification` hook / service role); `(user_id, read, created_at)` index |
+| `events` | `community_events` | `event_kind` enum; `center_id` nullable; public-read (GET /api/events is open) |
+| `eventRsvps` | `event_rsvps` | own rows only; per-event `rsvpCount` via `event_rsvp_count()` RPC; unique (event, user) |
+| `memberBlocks` | `member_blocks` | blocker-owned; unique (blocker, blocked) + self-block CHECK |
+| `postReports` | `post_reports` | `post_report_status` enum (open/reviewed); member files own, staff resolve (all-staff — posts have no center linkage) |
 | *(outcomes data product)* | `analytics.member_outcome_all` (matview), `analytics.center_member_outcome` (view), `licensed.mv_continuum_score` / `mv_care_outcomes` / `mv_efficacy` (matviews) | mirror `app/api/outcomes/compute.ts` |
-| *(no store array yet)* | `employers`, `job_posts` | **provisional** — see Decisions |
+| `users` (role='employer') | `profiles` (role `employer`, `company`) + `job_posts` | **RESOLVED** — employer is a User with role `'employer'`; `job_posts.employer_id → profiles(id)`. `apply-employer-role.sql` (runs last) drops the standalone `employers` table |
 
 New route handlers that will bind to these (glob the current `app/api/` tree at
 cutover — the seam rule is unchanged): `outcomes/*` → `analytics.*` /
@@ -291,8 +314,14 @@ cutover — the seam rule is unchanged): `outcomes/*` → `analytics.*` /
 `continuum/*`, `care-channels/*`, `consent/*`, `checkins/*` → the continuum
 tables under the consent gate; `circles/*`, `goals/*`, `resumes/*`,
 `job-applications/*`, `barc/*`, `profile-details/*` → the community-expansion
-tables. `continuum_events` writes go through a definer `emit_continuum_event()`
-RPC (like `record_donation`) — reward/engagement rows are never self-writable.
+tables. The engagement routes bind to the Run 9–10 tables: `notifications/*` →
+`notifications` (self-scoped read/mark-read; writes via `emit_notification`),
+`events/*` + `events/[id]/rsvp` → `community_events` + `event_rsvps` (+
+`event_rsvp_count()` for the shown count), `blocks/*` → `member_blocks`,
+`reports/*` → `post_reports` (member files own; staff GET/PATCH the queue).
+`continuum_events` **and `notifications`** writes go through definer RPCs
+(`emit_continuum_event()` / `emit_notification()`, like `record_donation`) —
+reward/engagement/inbox rows are never self-writable.
 
 ### The two-plane outcomes data product (the P0 trust boundary)
 
@@ -334,18 +363,26 @@ The package assumes the standard Supabase surface (`auth.users`, `auth.uid()`,
 - **Auth provider mapping (HMAC cookie → Supabase Auth).** Same swap as §(c):
   the current HMAC `ms_session` cookie and `app/lib/auth.ts` are replaced by
   Supabase Auth; `profiles.role` stays the source of truth and expansion
-  policies read it via `is_staff()`. New: the **`employer` role** now in
-  `app/lib/types.ts` is **not** in the `public.user_role` enum yet — add it
-  (`alter type public.user_role add value 'employer';`, run outside a txn
-  block) if the employer-as-account model is adopted (next item).
-- **Employers/job_posts model.** `schema-expansion.sql §4` ships **standalone**
-  `employers` (id, name, contact, created_at) + `job_posts` per the specified
-  fields. The in-flight app model instead treats an employer as a
-  `profiles.role = 'employer'` user (with a `company` field) and keys
-  `JobPost.employerId` to that user id. **Decide one model**; if the account
-  model wins, drop `employers`, repoint `job_posts.employer_id → profiles(id)`,
-  add the enum value above, and tighten the placeholder job_posts policies to
-  owner-scoped writes. These two tables are inert (no store array) until then.
+  policies read it via `is_staff()`. The **`employer` role** decision is
+  **RESOLVED** (next item): `apply-employer-role.sql` adds it to
+  `public.user_role` (`alter type … add value 'employer'`, run outside a txn
+  block, LAST in the apply sequence).
+- **Employers/job_posts model — RESOLVED (employer = a User with role
+  `'employer'`).** `schema-expansion.sql §4` still ships the provisional
+  **standalone** `employers` table + placeholder `job_posts` policies, and
+  `policies-expansion.sql §Employers` its provisional RLS — both are now
+  **superseded** by `supabase/apply-employer-role.sql`, which runs **LAST** and
+  reconciles the base package to the locked decision: it adds `'employer'` to
+  `user_role`, adds `profiles.company` (`User.company`), repoints
+  `job_posts.employer_id → profiles(id)`, drops the standalone `employers`
+  table, and replaces the placeholder job_posts RLS with owner-scoped writes
+  (`employer_id = me AND is_employer()`) + public SELECT of open jobs. It runs
+  last (not at its intuitive spot after `schema-expansion.sql`) because it
+  references `is_staff()` — defined in `policies.sql` — and because
+  `policies-expansion.sql` re-creates policies on `employers`; running it early
+  fails on both counts. Do NOT hand-edit `schema-expansion.sql` /
+  `policies-expansion.sql` to remove the standalone tables — the reconciliation
+  file is the single, re-runnable source of the resolved model.
 - **"Center staff" vs "platform staff" role.** Expansion policies gate
   center-plane reads with `is_staff()` **AND** `caller_center()` **AND**
   `has_active_consent()`. Today `profiles.role='staff'` is a single role and a
