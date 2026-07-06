@@ -1,3 +1,53 @@
+# Gap Report — run 2026-07-06-8 (continuum of care: care channels, cockpit, alumni, outcomes)
+
+## Run 8 summary
+Shipped the full Continuum of Care operating slice — pre-center → in-center →
+post-center as ONE continuous record — all typed, seeded, and negative-tested
+live (tsc clean, `npm run build` green at 69 route lines):
+- Data spine v9 (SEED_VERSION 9): careChannels / careMessages / consentGrants
+  / followUps added to the store + types; deterministic seed (Danielle's IOP
+  program group, 1:1 with her mentor, Laveen announcement channel, 14 seeded
+  IOP messages, alumni follow-up cadence 30/60/90/180/365).
+- Continuum-event hooks wired into 5 LIVE routes (single write path,
+  `emitContinuumEvent`): posts→community(2), donations→giving(2),
+  sessions→session(4), lessons→lms(3), BARC→checkin(3). Verified Danielle's
+  event count advances on a real post.
+- Care channels API (`/api/care-channels`, `/[id]/messages`): in-program
+  center↔client comms, read/post gating by role. VERIFIED live: crisis text
+  held + 988 resources returned (not delivered to feed); member POST to an
+  announcement channel → 403 ("posted by your care team"); staff can post
+  announcements. Member "My Program" surface pinned above The Guide.
+- Program cockpit (`/api/admin/cohort`) + alumni/continuing dashboard
+  (`/api/admin/alumni`): cohort roster w/ 30-day engagement + attendance +
+  at-risk flag; alumni continuum score, months-since-discharge, follow-up
+  cadence status. New dashboard tabs (ProgramCockpit, AlumniDashboard) with
+  alumni-watch badge.
+- Outcomes data product (`/api/outcomes`, `/export`, compute.ts): two data
+  planes. VERIFIED live: `?plane=licensed` is de-identified, aggregate-only,
+  k≥11 cohort (population 61, minCohort 11), ZERO PII markers
+  (memberNumber/name/email/seed-id/avatarColor all 0). CSV export.
+- Dashboard participant panes: My Plan (real recovery goals), résumé, BARC
+  trend on ParticipantDetail; outcomes/efficacy block on Reports.
+
+## GAP REGISTER — run 8 deferrals
+1. **Staff-readable BARC/résumé APIs** (PRIVACY GAP): participant panes render
+   from member-owned data; the staff-side read path for BARC trend + résumé
+   needs an explicit supporting-staff consent check before it's more than a
+   stub. Do NOT widen these reads without the consent gate.
+2. **AI Companion** — plan-aware Guide (extend The Guide with recovery-goal +
+   care-channel context) still carried.
+3. Supabase schema for the run-8 tables (care_channels, care_messages,
+   consent_grants, follow_up_checkins, continuum_events) — extend the
+   migration package in `/docs` before the Supabase cutover.
+4. Carried from run 7: real Claude-review ad gate; distinct ms_admin role;
+   Resend email on new leads; employer accounts + posting flow; real PDF
+   export; report/block controls; milestone→journey_task mirror.
+5. **Footer "facebook" grep hit** (DECISION NEEDED, carried): footer links to
+   the org's real facebook.com page — keep the social link or drop the icon?
+6. **Privacy/Terms pages** (footer links currently 404) — still to build.
+7. Standing DECISIONS-NEEDED: Stripe keys, Supabase keys, verbatim copy,
+   real prices for /centers pricing tiers.
+
 # Gap Report — run 2026-07-05-7 (centers page + community ad product)
 
 ## Run 7 summary

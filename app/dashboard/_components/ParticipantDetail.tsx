@@ -24,6 +24,57 @@ const SESSION_MODE_LABEL: Record<SessionRow["mode"], string> = {
 const TABS = ["Journey", "Courses", "Mentorship", "Balances", "Consent"] as const;
 type Tab = (typeof TABS)[number];
 
+// ── MY PLAN (docs/14) — GET /api/recovery-goals?memberId=… is staff-readable.
+// Code the enriched response shape defensively.
+type PlanMilestone = { id: string; title: string; done: boolean };
+type PlanLinkedRequest = {
+  label: string;
+  raised: number;
+  weeklyTarget: number;
+  status: string;
+} | null;
+type PlanGoal = {
+  id: string;
+  title: string;
+  domain: string;
+  why?: string;
+  status: "active" | "achieved" | "paused" | "archived";
+  progressPct: number;
+  milestones: PlanMilestone[];
+  linkedRequest: PlanLinkedRequest;
+};
+
+// The nine recovery domains (docs/14). Drives the coverage strip.
+const RECOVERY_DOMAINS = [
+  "housing",
+  "employment",
+  "education",
+  "health",
+  "relationships",
+  "legal",
+  "financial",
+  "transportation",
+  "other",
+] as const;
+
+function domainLabel(d: string): string {
+  return d ? d[0].toUpperCase() + d.slice(1) : d;
+}
+
+const GOAL_STATUS_CHIP: Record<PlanGoal["status"], string> = {
+  active: "bg-sky-tint text-blue-primary",
+  achieved: "bg-[#E8F8F0] text-success",
+  paused: "bg-[#FFF7EA] text-[#B54708]", // amber — concern, never red
+  archived: "bg-canvas text-ink-400",
+};
+
+const GOAL_STATUS_LABEL: Record<PlanGoal["status"], string> = {
+  active: "Active",
+  achieved: "✓ Achieved",
+  paused: "Paused",
+  archived: "Archived",
+};
+
 // Journey timeline stays the styled demo — journey stages aren't in the
 // data model yet.
 const TIMELINE = [
@@ -81,6 +132,270 @@ function Toggle({
         }
       />
     </span>
+  );
+}
+
+/** MY PLAN — the member's recovery goals, milestones, progress + linked
+ *  funding. LIVE for staff via GET /api/recovery-goals?memberId=… */
+function MyPlanCard({ memberId }: { memberId: string }) {
+  const [goals, setGoals] = useState<PlanGoal[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    setGoals(null);
+    fetch(`/api/recovery-goals?memberId=${memberId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive) setGoals((d?.goals as PlanGoal[]) ?? []);
+      })
+      .catch(() => {
+        if (alive) setGoals([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [memberId]);
+
+  // Which of the nine domains this member has a goal in — drives the strip.
+  const covered = new Set((goals ?? []).map((g) => g.domain));
+
+  return (
+    <div className={CARD + " px-[30px] py-[26px]"}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[15px] font-bold text-ink-900">My Plan</div>
+        {goals && goals.length > 0 && (
+          <span className="text-[11px] font-semibold text-ink-400">
+            {covered.size} of {RECOVERY_DOMAINS.length} life domains active
+          </span>
+        )}
+      </div>
+
+      {goals === null ? (
+        <div className="mt-4 flex flex-col gap-2.5">
+          <div className={SKELETON + " h-16"} />
+          <div className={SKELETON + " h-16"} />
+        </div>
+      ) : goals.length === 0 ? (
+        <div className="mt-3 text-[13px] text-ink-600">
+          No recovery goals yet.
+        </div>
+      ) : (
+        <>
+          {/* Nine-domain coverage strip */}
+          <div className="mt-3.5 flex flex-wrap gap-1.5">
+            {RECOVERY_DOMAINS.map((d) => {
+              const on = covered.has(d);
+              return (
+                <span
+                  key={d}
+                  title={domainLabel(d)}
+                  className={
+                    "inline-flex h-6 items-center rounded-full px-2.5 text-[10px] font-bold " +
+                    (on
+                      ? "bg-blue-primary text-white"
+                      : "bg-sky-tint text-ink-400")
+                  }
+                >
+                  {domainLabel(d)}
+                </span>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-[18px]">
+            {goals.map((g) => {
+              const done = g.milestones.filter((m) => m.done).length;
+              const achieved = g.status === "achieved";
+              const req = g.linkedRequest;
+              const reqPct = req
+                ? Math.min(
+                    100,
+                    Math.round((req.raised / req.weeklyTarget) * 100)
+                  )
+                : 0;
+              const reqFunded = req?.status === "funded";
+              return (
+                <div
+                  key={g.id}
+                  className="rounded-xl border border-canvas px-4 py-3.5"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex h-[22px] items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-bold uppercase tracking-[0.03em] text-blue-primary">
+                      {domainLabel(g.domain)}
+                    </span>
+                    <span
+                      className={
+                        "inline-flex h-[22px] items-center rounded-full px-2.5 text-[10px] font-bold " +
+                        (GOAL_STATUS_CHIP[g.status] ??
+                          "bg-sky-tint text-blue-primary")
+                      }
+                    >
+                      {GOAL_STATUS_LABEL[g.status] ?? g.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 text-[15px] font-bold text-ink-900">
+                    {g.title}
+                  </div>
+                  {g.why && (
+                    <div className="mt-0.5 text-[13px] italic text-ink-600">
+                      “{g.why}”
+                    </div>
+                  )}
+
+                  {/* Progress bar */}
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="h-2.5 flex-1 rounded-full bg-sky-tint">
+                      <div
+                        className={
+                          "h-full rounded-full " +
+                          (achieved ? "bg-success" : "bg-blue-primary")
+                        }
+                        style={{
+                          width: `${Math.max(0, Math.min(100, g.progressPct))}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="tnum flex-none text-[11px] font-bold text-ink-600">
+                      {g.progressPct}%
+                    </span>
+                  </div>
+
+                  {/* Milestone checklist — read-only ticks */}
+                  {g.milestones.length > 0 && (
+                    <div className="mt-3 flex flex-col gap-1.5">
+                      {g.milestones.map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex items-center gap-2.5 text-[13px]"
+                        >
+                          <span
+                            className={
+                              "inline-flex h-[18px] w-[18px] flex-none items-center justify-center rounded-full text-[10px] font-bold " +
+                              (m.done
+                                ? "bg-success text-white"
+                                : "border-[1.5px] border-sky-tint-2 text-transparent")
+                            }
+                          >
+                            ✓
+                          </span>
+                          <span
+                            className={
+                              m.done
+                                ? "text-ink-600 line-through"
+                                : "text-ink-900"
+                            }
+                          >
+                            {m.title}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="mt-0.5 text-[11px] font-semibold text-ink-400">
+                        {done} of {g.milestones.length} milestones
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Linked funding request */}
+                  {req && (
+                    <div className="mt-3 rounded-lg bg-sky-tint/60 px-3 py-2.5">
+                      <div className="flex items-center justify-between text-[12px] font-semibold text-ink-900">
+                        <span className="flex items-center gap-2">
+                          <span className="text-ink-400">Funding ·</span>{" "}
+                          {req.label}
+                          {reqFunded && (
+                            <span className="inline-flex h-[20px] items-center rounded-full bg-[#E8F8F0] px-2 text-[10px] font-extrabold text-success">
+                              ✓ Funded
+                            </span>
+                          )}
+                        </span>
+                        <span className="tnum text-ink-600">
+                          {fmtMoney(req.raised)} of {fmtMoney(req.weeklyTarget)}
+                          /wk
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2.5 rounded-full bg-white">
+                        <div
+                          className={
+                            "h-full rounded-full " +
+                            (reqFunded ? "bg-success" : "bg-blue-primary")
+                          }
+                          style={{ width: `${reqPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** RÉSUMÉ — a member's résumé is owner + mentor visible only; there is no
+ *  staff-readable API this pass, so we show a tasteful, honest stub rather
+ *  than fabricate content or weaken privacy. (Gap flagged in the report.) */
+function ResumeCard({ memberName }: { memberName: string }) {
+  return (
+    <div className={CARD + " flex flex-col px-[26px] py-[22px]"}>
+      <div className="text-[15px] font-bold text-ink-900">Résumé</div>
+      <div className="mt-3.5 flex items-start gap-3 rounded-xl bg-sky-tint px-4 py-3.5">
+        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white text-[16px] font-extrabold text-blue-primary">
+          ▤
+        </span>
+        <div className="text-[13px] text-ink-600">
+          <div className="font-bold text-ink-900">Résumé on file</div>
+          Visible to {memberName} and their mentor. Built in the member
+          app&apos;s Résumé Builder.
+        </div>
+      </div>
+      <div className="mt-3 text-[11px]/[1.5] text-ink-400">
+        The center dashboard doesn&apos;t surface résumé content — it&apos;s the
+        member&apos;s to share. Ask {memberName} to print or send a copy from
+        their app when they&apos;re ready.
+      </div>
+    </div>
+  );
+}
+
+/** BARC TREND — BARC-10 self-checks are private to the member + supporting
+ *  staff, and the profile API doesn't expose another member's trend to the
+ *  dashboard this pass. Honest stub with the never-a-diagnosis framing;
+ *  amber accents, never red. (Gap flagged in the report.) */
+function BarcCard({ memberName }: { memberName: string }) {
+  return (
+    <div className={CARD + " flex flex-col px-[26px] py-[22px]"}>
+      <div className="text-[15px] font-bold text-ink-900">BARC trend</div>
+
+      {/* Placeholder mini-trend — clearly a ghost, no fabricated numbers. */}
+      <div className="mt-3.5 flex h-14 items-end gap-1.5 rounded-xl bg-[#FFF7EA] px-4 py-3">
+        {[40, 55, 48, 62, 70, 66, 78].map((h, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-sm bg-[#F2C879]"
+            style={{ height: `${h}%`, opacity: 0.5 }}
+          />
+        ))}
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <span className="inline-flex h-[22px] items-center rounded-full bg-[#FFF7EA] px-2.5 text-[11px] font-bold text-[#B54708]">
+          Assigned-staff-only
+        </span>
+      </div>
+
+      <div className="mt-2.5 text-[13px] text-ink-600">
+        {memberName}&apos;s self-check trend isn&apos;t shared with this view.
+      </div>
+      <div className="mt-2 text-[11px]/[1.5] text-ink-400">
+        Self-reflection, assigned-staff-only — never a diagnosis. When shared,
+        this shows check-in totals over time with a trending-up / steady /
+        needs-support read.
+      </div>
+    </div>
   );
 }
 
@@ -216,6 +531,17 @@ export default function ParticipantDetail({
       {/* CONTINUUM — the continuum-of-care ribbon (docs/14). Top of the pane,
           above balances. */}
       <ContinuumRibbon memberId={member.id} />
+
+      {/* MY PLAN (docs/14) — recovery goals, milestones, funding. LIVE. Sits
+          right under the journey ribbon, always visible above the tabs. */}
+      <MyPlanCard memberId={member.id} />
+
+      {/* RÉSUMÉ + BARC TREND (docs/13/14) — paired. Both are member-private
+          surfaces with no staff-readable API this pass, so honest stubs. */}
+      <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
+        <ResumeCard memberName={member.name} />
+        <BarcCard memberName={member.name} />
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-2.5">

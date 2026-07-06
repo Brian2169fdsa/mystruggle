@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   Inbox,
   CreditCard,
+  Activity,
+  GraduationCap,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -26,6 +28,8 @@ import AdManager from "./_components/AdManager";
 import AdApproval from "./_components/AdApproval";
 import LeadQueue from "./_components/LeadQueue";
 import Billing from "./_components/Billing";
+import ProgramCockpit from "./_components/ProgramCockpit";
+import AlumniDashboard from "./_components/AlumniDashboard";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -48,11 +52,15 @@ type PageSection =
   | "ads"
   | "adReview"
   | "leads"
-  | "billing";
+  | "billing"
+  | "cockpit"
+  | "alumni";
 
 const NAV = [
   { key: "overview", label: "Overview", Icon: LayoutGrid },
   { key: "participants", label: "Participants", Icon: Users },
+  { key: "cockpit", label: "Program cockpit", Icon: Activity },
+  { key: "alumni", label: "Alumni", Icon: GraduationCap },
   { key: "applications", label: "Applications", Icon: ClipboardList },
   { key: "giving", label: "Giving desk", Icon: Heart },
   { key: "moderation", label: "Moderation", Icon: Flag },
@@ -151,6 +159,7 @@ export default function DashboardPage() {
   const [givingStep, setGivingStep] = useState<GivingStep>("amount");
   const [redeemAmount, setRedeemAmount] = useState(20);
   const [adReviewCount, setAdReviewCount] = useState(0);
+  const [alumniWatch, setAlumniWatch] = useState(0);
 
   // ── LIVE data ────────────────────────────────────────────────────────
   const [overview, setOverview] = useState<OverviewData | null>(null);
@@ -246,6 +255,28 @@ export default function DashboardPage() {
     };
   }, [isStaff]);
 
+  // Live badge for Alumni — the on-watch count. Quiet on 404/500 (the alumni
+  // API may still be coming online); retries with the same interval.
+  useEffect(() => {
+    if (!isStaff) return;
+    let stop = false;
+    const poll = () => {
+      fetch("/api/admin/alumni")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (stop || !d?.summary) return;
+          setAlumniWatch(Number(d.summary.watchCount ?? 0));
+        })
+        .catch(() => {});
+    };
+    poll();
+    const t = setInterval(poll, 30_000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [isStaff]);
+
   const moderate = useCallback(
     async (postId: string, action: ModerateAction) => {
       const res = await fetch(`/api/posts/${postId}/moderate`, {
@@ -319,6 +350,11 @@ export default function DashboardPage() {
                   {adReviewCount}
                 </span>
               )}
+              {key === "alumni" && alumniWatch > 0 && (
+                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-gold-badge px-2 text-[11px] font-bold text-white">
+                  {alumniWatch}
+                </span>
+              )}
             </button>
           );
         })}
@@ -371,6 +407,10 @@ export default function DashboardPage() {
               onOpenMember={openMember}
             />
           ))}
+        {section === "cockpit" && <ProgramCockpit />}
+        {section === "alumni" && (
+          <AlumniDashboard onWatchCount={setAlumniWatch} />
+        )}
         {section === "applications" && <Applications />}
         {section === "ads" && <AdManager />}
         {section === "adReview" && (

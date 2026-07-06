@@ -126,6 +126,68 @@ function RetentionCell({
   );
 }
 
+/* ── GET /api/outcomes?plane=center shape (docs/14 data product) ───────── */
+
+type ScoreBucket = { label: string; count: number | null };
+type RetentionPoint = {
+  day: number;
+  eligible: number;
+  retained: number;
+  pct: number | null;
+};
+type CapitalDelta = {
+  pre: number | null;
+  during: number | null;
+  post: number | null;
+  note: string;
+};
+type Quartile = {
+  label: string;
+  n: number | null;
+  avgScore: number | null;
+  retention90Pct: number | null;
+  avgGoalsAchieved: number | null;
+};
+
+type OutcomesData = {
+  plane: "center" | "licensed";
+  centerId: string | null;
+  governance: { note: string; citation: string };
+  mvContinuumScore: { n: number; avg: number | null; buckets: ScoreBucket[] };
+  mvCareOutcomes: {
+    retentionInRecovery: RetentionPoint[];
+    recoveryCapitalDelta: CapitalDelta;
+  };
+  mvEfficacy: { note: string; quartiles: Quartile[] };
+};
+
+/** Retention-in-recovery benchmark line (illustrative, New-Freedom framing:
+ *  long-term recovery target). Not a clinical threshold. */
+const RETENTION_BENCH = 60;
+
+/** pre → during → post recovery-capital bars — reuse the domain palette so the
+ *  outcomes block reads as one system with the recovery-capital block above. */
+const CAPITAL_PHASES = [
+  { key: "pre", label: "Pre-care", bar: "bg-indigo-brand" },
+  { key: "during", label: "During", bar: "bg-blue-primary" },
+  { key: "post", label: "Post-discharge", bar: "bg-success" },
+] as const;
+
+/** Download the de-identified (k≥11) licensed CSV — Blob download, cookie auth,
+ *  same pattern as the cohort export. The licensed plane is the ONLY exportable
+ *  one: identifiable single-center rows never leave the building (docs/10 §6). */
+async function exportLicensedCsv() {
+  const res = await fetch("/api/outcomes/export?plane=licensed");
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "licensed-outcomes.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Client-side CSV of the cohort table — Blob download, no deps. */
 function exportCohortCsv(retention: Cohort[]) {
   const cell = (h: Horizon) => (h.pct === null ? "" : String(h.pct));
@@ -153,14 +215,26 @@ export default function Reports() {
   // takes down the existing retention/giving report.
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsError, setAnalyticsError] = useState(false);
+  // Outcomes data product (docs/14) loads independently too — the retention /
+  // efficacy block never blocks the existing retention + recovery-capital cards.
+  const [outcomes, setOutcomes] = useState<OutcomesData | null>(null);
+  const [outcomesError, setOutcomesError] = useState(false);
 
   const load = useCallback(async () => {
     setError(false);
     setAnalyticsError(false);
+    setOutcomesError(false);
     fetch("/api/admin/analytics")
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((body) => setAnalytics(body as AnalyticsData))
       .catch(() => setAnalyticsError(true));
+    // Center plane: the staff member's own center (identified) + platform
+    // aggregates. The licensed (de-identified) plane is reached only via the
+    // Export CSV button below.
+    fetch("/api/outcomes?plane=center")
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((body) => setOutcomes(body as OutcomesData))
+      .catch(() => setOutcomesError(true));
     try {
       const res = await fetch("/api/admin/reports");
       if (!res.ok) throw new Error(String(res.status));
@@ -466,6 +540,186 @@ export default function Reports() {
               <div className="mt-0.5 text-xs font-semibold text-ink-600">
                 across {data.members} members&apos; savings
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── OUTCOMES & EFFICACY (docs/14 data product — additive) ──────────
+          Retention-in-recovery curve, pre→during→post recovery-capital delta,
+          the engagement→outcome efficacy table, and the de-identified (k≥11)
+          licensed export. Loads independently of the reports above. */}
+      {!outcomes && !outcomesError && (
+        <>
+          <div className={SKELETON + " h-[240px]"} />
+          <div className={SKELETON + " h-[190px]"} />
+        </>
+      )}
+
+      {outcomes && (
+        <>
+          {/* retention-in-recovery curve */}
+          <div className={CARD + " px-8 py-7"}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-base font-bold text-ink-900">
+                Retention in recovery
+              </div>
+              <div className="text-xs font-semibold text-ink-600">
+                Post-discharge follow-up ·{" "}
+                {RETENTION_BENCH}% long-term benchmark · engagement, never
+                clinical
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-5 items-end gap-4">
+              {outcomes.mvCareOutcomes.retentionInRecovery.map((r) => {
+                const observable = r.eligible > 0 && r.pct !== null;
+                const h = observable ? Math.max(4, r.pct as number) : 0;
+                const hitsBench = observable && (r.pct as number) >= RETENTION_BENCH;
+                return (
+                  <div
+                    key={r.day}
+                    title={
+                      observable
+                        ? `${r.day}d: ${r.retained}/${r.eligible} retained`
+                        : `${r.day}d: not yet observable in this cohort`
+                    }
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <div className="relative flex h-28 w-full items-end justify-center">
+                      {/* benchmark reference line */}
+                      <div
+                        className="absolute left-0 right-0 border-t border-dashed border-ink-400/60"
+                        style={{ bottom: `${RETENTION_BENCH}%` }}
+                      />
+                      {observable ? (
+                        <div
+                          className={
+                            "w-full max-w-[46px] rounded-t-[5px] " +
+                            (hitsBench ? "bg-success" : "bg-blue-primary")
+                          }
+                          style={{ height: `${h}%` }}
+                        />
+                      ) : (
+                        <span className="text-[22px] font-extrabold text-ink-400">
+                          —
+                        </span>
+                      )}
+                    </div>
+                    <span className="tnum text-[15px] font-extrabold text-ink-900">
+                      {observable ? `${r.pct}%` : "—"}
+                    </span>
+                    <span className="text-[11px] font-semibold text-ink-600">
+                      {r.day}d
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* recovery-capital pre → during → post + efficacy table */}
+          <div className="grid grid-cols-[1fr_1.2fr] gap-[18px] max-lg:grid-cols-1">
+            <div className={CARD + " px-8 py-7"}>
+              <div className="text-base font-bold text-ink-900">
+                Recovery capital: pre → during → post
+              </div>
+              <div className="mt-1 text-xs font-semibold text-ink-600">
+                The delta the pre-care window makes provable
+              </div>
+              <div className="mt-6 grid grid-cols-3 items-end gap-6">
+                {CAPITAL_PHASES.map((p) => {
+                  const val = outcomes.mvCareOutcomes.recoveryCapitalDelta[p.key];
+                  const h = val === null ? 0 : Math.max(4, val);
+                  return (
+                    <div key={p.key} className="flex flex-col items-center gap-2">
+                      <div className="flex h-32 w-full items-end justify-center">
+                        {val === null ? (
+                          <span className="text-[20px] font-extrabold text-ink-400">
+                            —
+                          </span>
+                        ) : (
+                          <div
+                            className={"w-full max-w-[54px] rounded-t-[5px] " + p.bar}
+                            style={{ height: `${h}%` }}
+                          />
+                        )}
+                      </div>
+                      <span className="tnum text-[18px] font-extrabold text-ink-900">
+                        {val === null ? "—" : val}
+                      </span>
+                      <span className="text-center text-[11px] font-semibold text-ink-600">
+                        {p.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 text-[11px] font-medium leading-snug text-ink-600">
+                {outcomes.mvCareOutcomes.recoveryCapitalDelta.note}
+              </div>
+            </div>
+
+            {/* efficacy: engagement quartile → outcome */}
+            <div className={CARD + " px-8 py-7"}>
+              <div className="text-base font-bold text-ink-900">
+                Engagement &rarr; efficacy
+              </div>
+              <div className="mt-1 text-xs font-semibold text-ink-600">
+                Members bucketed by engagement quartile
+              </div>
+              <div className="mt-5 grid grid-cols-[1.3fr_1fr_1fr] px-1 text-[11px] font-bold tracking-[.06em] text-ink-600">
+                <span>QUARTILE</span>
+                <span className="text-right">AVG SCORE</span>
+                <span className="text-right">GOALS/MBR</span>
+              </div>
+              {outcomes.mvEfficacy.quartiles.map((q, i) => (
+                <div
+                  key={q.label}
+                  className={
+                    "grid grid-cols-[1.3fr_1fr_1fr] items-center border-t border-canvas px-1 py-3" +
+                    (i === 0 ? " mt-2" : "")
+                  }
+                >
+                  <span className="text-[13px] font-bold text-ink-900">
+                    {q.label}
+                    <span className="ml-1 text-[11px] font-semibold text-ink-600">
+                      {q.n === null ? "" : `· ${q.n}`}
+                    </span>
+                  </span>
+                  <span className="tnum text-right text-[15px] font-extrabold text-blue-primary">
+                    {q.avgScore ?? "—"}
+                  </span>
+                  <span className="tnum text-right text-[15px] font-extrabold text-ink-900">
+                    {q.avgGoalsAchieved ?? "—"}
+                  </span>
+                </div>
+              ))}
+              <div className="mt-3 text-[11px] font-medium leading-snug text-ink-600">
+                {outcomes.mvEfficacy.note}
+              </div>
+            </div>
+          </div>
+
+          {/* de-identified export (k≥11) + governance note */}
+          <div className={CARD + " border border-sky-tint px-8 py-7"}>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="max-w-[560px]">
+                <div className="text-base font-bold text-ink-900">
+                  De-identified export (k&ge;11)
+                </div>
+                <div className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-600">
+                  {outcomes.governance.note} Cohorts smaller than 11 are
+                  suppressed. Licensing to third parties is gated on counsel
+                  sign-off ({outcomes.governance.citation}).
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={exportLicensedCsv}
+                className="inline-flex h-11 shrink-0 cursor-pointer items-center rounded-full bg-blue-primary px-[22px] text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+              >
+                Export CSV
+              </button>
             </div>
           </div>
         </>

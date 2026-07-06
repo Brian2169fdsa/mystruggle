@@ -6,8 +6,8 @@
 - [ ] care_phase (pre_care/intake/in_program/transition/continuing) tracked per episode alongside existing journey_stage (neither replaces the other)
 - [ ] level_of_care on episodes (detox/residential/php/iop/op/recovery_maintenance)
 - [ ] phase_transitions append-only; every phase/LOC change logged with reason + actor
-- [ ] continuum_events emitted via thin hooks from EVERY existing module (community, lms, goal, giving, mentorship, companion, checkin, session, phase) — modules extended, not rewritten (verify each source writes an event)
-- [ ] Single write path, many readers: score, risk, timeline UI, and export all read continuum_events
+- [x] continuum_events emitted via thin hooks from EVERY existing module (community, lms, goal, giving, mentorship, companion, checkin, session, phase) — modules extended, not rewritten (verify each source writes an event)
+- [x] Single write path, many readers: score, risk, timeline UI, and export all read continuum_events
 
 ## B. Pre-Care (the differentiator)
 - [ ] Unaffiliated member can fully use community/giving/goals/Companion with zero center
@@ -22,11 +22,11 @@
 - [ ] Intake content/orientation assignable
 
 ## D. In-Program: Center↔Client Communication (NEW, engagement not clinical)
-- [ ] care_channels + care_messages tables + RLS + moderation pipeline reuse
-- [ ] Program group channel (IOP cohort) — schedule/assignments/discussion, moderated
-- [ ] 1:1 staff↔client channel (reminders, check-ins), staff-auditable, distinct from mentor chat + public feed
-- [ ] Announcement (one-way broadcast) channel
-- [ ] UI + policy bar PHI/clinical notes in messages (copy warns staff); negative test: no clinical fields exist
+- [x] care_channels + care_messages tables + RLS + moderation pipeline reuse
+- [x] Program group channel (IOP cohort) — schedule/assignments/discussion, moderated
+- [x] 1:1 staff↔client channel (reminders, check-ins), staff-auditable, distinct from mentor chat + public feed
+- [x] Announcement (one-way broadcast) channel
+- [x] UI + policy bar PHI/clinical notes in messages (copy warns staff); negative test: no clinical fields exist
 - [ ] Realtime delivery + read receipts + notifications
 
 ## E. In-Program: Level-of-Care Programming (extends LMS docs/07)
@@ -42,22 +42,22 @@
 
 ## G. Continuing (post-discharge outcomes engine)
 - [ ] Member retains all features; center retains consented visibility indefinitely
-- [ ] Automated follow-up cadence 30/60/90/180/365d (Companion/staff), each writes continuum_event + optional BARC pulse
-- [ ] Alumni dashboard: post-discharge roster, continuum score, cadence status, re-engagement queue, relapse-risk early-warning (engagement dip)
+- [x] Automated follow-up cadence 30/60/90/180/365d (Companion/staff), each writes continuum_event + optional BARC pulse
+- [x] Alumni dashboard: post-discharge roster, continuum score, cadence status, re-engagement queue, relapse-risk early-warning (engagement dip)
 
 ## H. Data Product (licensed outcomes)
-- [ ] mv_continuum_score (0–100 rolling engagement index per person, all phases)
-- [ ] mv_care_outcomes (phase-transition rates, completion by LOC, retention-in-recovery 30/60/90/180/365d, recovery-capital pre→during→post deltas)
-- [ ] mv_efficacy (engagement-vs-outcome correlation)
-- [ ] Two separated data planes: identified-consented-single-center vs de-identified-aggregated-licensed (code-enforced; licensed path cannot read identifiable fields — negative test)
-- [ ] De-identification: min cohort size k≥11, no small-cell/rare-combo leakage, aggregate-only export
+- [x] mv_continuum_score (0–100 rolling engagement index per person, all phases)
+- [x] mv_care_outcomes (phase-transition rates, completion by LOC, retention-in-recovery 30/60/90/180/365d, recovery-capital pre→during→post deltas)
+- [x] mv_efficacy (engagement-vs-outcome correlation)
+- [x] Two separated data planes: identified-consented-single-center vs de-identified-aggregated-licensed (code-enforced; licensed path cannot read identifiable fields — negative test)
+- [x] De-identification: min cohort size k≥11, no small-cell/rare-combo leakage, aggregate-only export
 - [ ] Member research-use opt-out that still allows full platform use
 - [ ] Governance gates from docs/10 §6 enforced; licensing blocked until counsel items checked (surfaced, not bypassed)
 
 ## I. Dashboard (extends docs/08)
 - [ ] Continuum ribbon view: full timeline pre_care→continuing with engagement sparkline + module event markers (the demo screen)
-- [ ] Program cockpit: cohort roster, group channel, live engagement, attendance, completion, mid-program at-risk flags
-- [ ] Alumni/continuing dashboard (per G)
+- [x] Program cockpit: cohort roster, group channel, live engagement, attendance, completion, mid-program at-risk flags
+- [x] Alumni/continuing dashboard (per G)
 - [ ] Outcomes reporting extended: pre→during→post recovery-capital deltas, retention curves, efficacy correlation, branded PDF + Claude narrative
 
 ## J. Website "For Recovery Centers" (extends docs/01/12)

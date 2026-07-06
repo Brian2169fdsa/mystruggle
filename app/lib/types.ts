@@ -468,6 +468,75 @@ export interface DemoLead {
   createdAt: number;
 }
 
+// ── Continuum: Care Channels + Consent + Follow-up cadence ────────────
+// (docs/14 §In-Program D + §Intake C + §Continuing G; requirements/11 §C/§D/§G)
+// EXPANSION: additive only — nothing above this line changes. Three additions
+// to the continuum spine: (1) in-program center↔client ENGAGEMENT comms — NOT
+// clinical notes/PHI, never therapy delivery; (2) a granular, revocable consent
+// grant to a SPECIFIC center (extends consentPublic, replaces nothing); (3) the
+// post-discharge follow-up cadence. All read/write against the same spine.
+
+/** A care communication space. Engagement comms only — no PHI/clinical notes.
+ *  - program_group: an IOP cohort's shared space (staff schedule/assignments +
+ *    peer discussion, moderated) — keyed by `cohortId`.
+ *  - one_to_one: a staff↔member channel (reminders, "you missed group — ok?")
+ *    — keyed by `memberId`. Distinct from mentor chat and the public feed.
+ *  - announcement: one-way center broadcast (no `memberId`/`cohortId`). */
+export type CareChannelKind = "program_group" | "one_to_one" | "announcement";
+
+export interface CareChannel {
+  id: string;
+  centerId: string; // the owning center (=== Center.id)
+  kind: CareChannelKind;
+  title: string;
+  memberId?: string; // set for one_to_one — the member side of the channel
+  cohortId?: string; // set for program_group — the cohort key (e.g. "cohort-iop-laveen")
+  createdAt: number;
+}
+
+/** A message in a CareChannel. Engagement content only — the UI/policy bar
+ *  PHI + clinical notes (requirements/11 §D). moderationStatus reuses the
+ *  community moderation pipeline (docs/06) for group-channel discussion. */
+export interface CareMessage {
+  id: string;
+  channelId: string; // → CareChannel.id
+  senderId: string; // → User.id (staff / member / mentor)
+  senderName: string; // first name, denormalized for display
+  senderRole: Role;
+  body: string;
+  createdAt: number;
+  moderationStatus?: "approved" | "flagged";
+}
+
+/** A member's granular, revocable grant of continuum access to ONE specific
+ *  center (requirements/11 §C). EXTENDS existing consent — it does NOT replace
+ *  User.consentPublic (public giving page) and is a separate axis: consentPublic
+ *  governs donor visibility; a ConsentGrant governs a center's continuum access.
+ *  Revoking (revokedAt) cuts the center's access to future data; append-only
+ *  in spirit (grant a new row to re-consent). scope is fixed "continuum" today,
+ *  left as a union point for future scopes (e.g. pre-care history opt-in). */
+export interface ConsentGrant {
+  id: string;
+  memberId: string;
+  centerId: string;
+  scope: "continuum";
+  grantedAt: number;
+  revokedAt?: number; // set when the member revokes; undefined = active
+}
+
+/** A post-discharge follow-up touchpoint on the evidence-backed 30/60/90/180/365d
+ *  cadence (requirements/11 §G). A completed check-in emits a continuum_event of
+ *  source "checkin" and can carry an optional BARC-10 pulse (barcTotal, 0–50). */
+export interface FollowUpCheckin {
+  id: string;
+  memberId: string;
+  centerId: string;
+  dueDay: 30 | 60 | 90 | 180 | 365;
+  status: "pending" | "done" | "missed";
+  completedAt?: number; // set when status === "done"
+  barcTotal?: number; // optional BARC-10 pulse captured at the check-in (0–50)
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 

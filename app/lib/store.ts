@@ -40,6 +40,10 @@ import type {
   SponsoredPlacement,
   PlacementEvent,
   DemoLead,
+  CareChannel,
+  CareMessage,
+  ConsentGrant,
+  FollowUpCheckin,
 } from "./types";
 
 interface DB {
@@ -73,11 +77,16 @@ interface DB {
   sponsoredPlacements: SponsoredPlacement[];
   placementEvents: PlacementEvent[];
   demoLeads: DemoLead[];
+  // continuum care channels + consent + follow-up (seed v9 — docs/14 §D/§C/§G)
+  careChannels: CareChannel[];
+  careMessages: CareMessage[];
+  consentGrants: ConsentGrant[];
+  followUps: FollowUpCheckin[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 8;
+const SEED_VERSION = 9;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -1910,6 +1919,288 @@ function seed(): DB {
     },
   ];
 
+  // ── Care Channels + Consent + Follow-up cadence (added in seed v9 — keep
+  //    AFTER all v8 sections so earlier PRNG draws and seed-* ids stay
+  //    byte-identical) ──────────────────────────────────────────────────
+  // In-program engagement comms (NOT clinical), a granular revocable consent
+  // grant per center, and the post-discharge follow-up cadence. Danielle's
+  // IOP cohort channel + 1:1 + a Laveen announcement anchor the demo; breadth
+  // makes the program cockpit roster + alumni cadence dashboard look alive.
+  // Every timestamp hangs off EPOCH (never Date.now()).
+
+  const careChannels: CareChannel[] = [];
+  const careMessages: CareMessage[] = [];
+  const consentGrants: ConsentGrant[] = [];
+  const followUps: FollowUpCheckin[] = [];
+
+  const mkMsg = (
+    channelId: string,
+    sender: User,
+    body: string,
+    createdAt: number,
+    moderationStatus?: CareMessage["moderationStatus"]
+  ): void => {
+    careMessages.push({
+      id: did(),
+      channelId,
+      senderId: sender.id,
+      senderName: sender.name,
+      senderRole: sender.role,
+      body,
+      createdAt,
+      moderationStatus,
+    });
+  };
+
+  // Each center gets a program_group channel (its IOP cohort) + an announcement
+  // channel. Deterministic string ids so the four downstream agents can
+  // reference them directly. Laveen's group is Danielle's cohort.
+  const centerKey = (c: Center) => c.id.replace(/^center-/, "");
+  for (const c of centers) {
+    careChannels.push({
+      id: `channel-iop-${centerKey(c)}`,
+      centerId: c.id,
+      kind: "program_group",
+      title: "IOP Cohort · Tuesdays",
+      cohortId: `cohort-iop-${centerKey(c)}`,
+      createdAt: now - 210 * DAY,
+    });
+    careChannels.push({
+      id: `channel-ann-${centerKey(c)}`,
+      centerId: c.id,
+      kind: "announcement",
+      title:
+        c.id === laveen.id
+          ? "Center closed July 4 · Alumni BBQ Saturday"
+          : "Weekly schedule & transportation updates",
+      createdAt: now - 210 * DAY,
+    });
+  }
+
+  // ── Danielle's IOP cohort channel (cohort-iop-laveen) ─────────────────
+  // ~14 warm, engagement (NOT clinical) messages across her in-program window
+  // (dInProgramAt → dTransitionAt): Sarah posts schedule/assignments/
+  // encouragement, 8 distinct peers keep the roster alive, Danielle chimes in.
+  const groupChannelId = "channel-iop-laveen";
+  const oneToOneId = "channel-1to1-danielle";
+  const laveenAnnId = "channel-ann-laveen";
+
+  const GROUP_STAFF_MSGS = [
+    "Morning, cohort! Reminder: group meets Tuesday at 5:30. Doors open at 5:15 — come grab coffee first.",
+    "This week we're on coping skills. Please finish Lesson 2 in the Learn tab before Tuesday.",
+    "Proud of the energy in group yesterday. Keep leaning on each other this week — that's the whole point.",
+    "Small assignment: jot down three things that went right this week. We'll share a few Tuesday.",
+  ];
+  const GROUP_PEER_MSGS = [
+    "See everyone Tuesday. This group keeps me steady.",
+    "Finished the lesson early this week — it actually helped.",
+    "Rough couple days but I'm still here. Thanks for the check-ins.",
+    "Anyone want to carpool Tuesday? I've got room for two.",
+    "Grateful for this cohort. Didn't think I'd say that a month ago.",
+    "Did my three good things — first time I could name that many.",
+    "Made it to every group this month. Small win, but I'll take it.",
+    "Thanks Sarah — the bus pass made this week possible.",
+  ];
+
+  // 8 distinct Laveen peers (reuse seeded member names) for the roster.
+  const laveenGenerated = generated.filter((m) => m.centerId === laveen.id);
+  const cohortPeerSet = new Set<User>();
+  while (cohortPeerSet.size < 8 && cohortPeerSet.size < laveenGenerated.length)
+    cohortPeerSet.add(pick(laveenGenerated));
+  const cohortPeers = [...cohortPeerSet];
+
+  const gWinStart = dInProgramAt;
+  const gSpan = dTransitionAt - dInProgramAt;
+  const groupAuthored: { author: User; body: string }[] = [
+    { author: sarah, body: GROUP_STAFF_MSGS[0] },
+    { author: cohortPeers[0], body: GROUP_PEER_MSGS[0] },
+    { author: cohortPeers[1], body: GROUP_PEER_MSGS[1] },
+    { author: sarah, body: GROUP_STAFF_MSGS[1] },
+    { author: danielle, body: "Coping-skills worksheet done. Actually used one today at work." },
+    { author: cohortPeers[2], body: GROUP_PEER_MSGS[2] },
+    { author: cohortPeers[3], body: GROUP_PEER_MSGS[3] },
+    { author: sarah, body: GROUP_STAFF_MSGS[2] },
+    { author: cohortPeers[4], body: GROUP_PEER_MSGS[4] },
+    { author: cohortPeers[5], body: GROUP_PEER_MSGS[5] },
+    { author: danielle, body: "Made every group this month. Thank you all for holding the door open." },
+    { author: cohortPeers[6], body: GROUP_PEER_MSGS[6] },
+    { author: cohortPeers[7], body: GROUP_PEER_MSGS[7] },
+    { author: sarah, body: GROUP_STAFF_MSGS[3] },
+  ];
+  for (let i = 0; i < groupAuthored.length; i++) {
+    const at =
+      Math.round(gWinStart + ((i + 0.5) / groupAuthored.length) * gSpan) +
+      int(0, 8) * 3600e3;
+    const a = groupAuthored[i];
+    mkMsg(groupChannelId, a.author, a.body, at, "approved");
+  }
+
+  // ── Danielle's 1:1 channel (Sarah ↔ Danielle) — ~6 reminders/check-ins ─
+  careChannels.push({
+    id: oneToOneId,
+    centerId: laveen.id,
+    kind: "one_to_one",
+    title: "Sarah & Danielle",
+    memberId: danielle.id,
+    createdAt: dInProgramAt,
+  });
+  const oneToOne: { author: User; body: string }[] = [
+    { author: sarah, body: "Hi Danielle — welcome to the cohort. I'm your point of contact any time you need something." },
+    { author: danielle, body: "Thank you. Nervous, but I'm here." },
+    { author: sarah, body: "You missed group Tuesday — everything okay? No pressure, just checking on you." },
+    { author: danielle, body: "Bus ran late and I got discouraged. I'll be there Thursday, promise." },
+    { author: sarah, body: "That's all I needed to hear. Left a bus pass for you at the front desk." },
+    { author: danielle, body: "You're the best. See you Thursday." },
+  ];
+  for (let i = 0; i < oneToOne.length; i++) {
+    const at =
+      Math.round(gWinStart + ((i + 0.5) / oneToOne.length) * gSpan) +
+      int(0, 6) * 3600e3;
+    const a = oneToOne[i];
+    mkMsg(oneToOneId, a.author, a.body, at);
+  }
+
+  // ── Announcement channels (one-way broadcasts) ────────────────────────
+  mkMsg(
+    laveenAnnId,
+    sarah,
+    "The center will be closed Friday, July 4 for the holiday. We reopen Saturday morning.",
+    now - 5 * DAY,
+    "approved"
+  );
+  mkMsg(
+    laveenAnnId,
+    sarah,
+    "Alumni BBQ this Saturday at noon — food, music, and familiar faces. Bring someone you're walking beside.",
+    now - 4 * DAY,
+    "approved"
+  );
+  const spStaff = mentors.find((m) => m.centerId === southPhoenix.id) ?? marcus;
+  mkMsg(
+    "channel-ann-south-phoenix",
+    spStaff,
+    "New evening IOP track opens Monday — daytime spots still available too. Talk to us about the right fit.",
+    now - 6 * DAY,
+    "approved"
+  );
+
+  // ── Danielle's consent grant (granted during intake) ──────────────────
+  consentGrants.push({
+    id: "consent-danielle-laveen",
+    memberId: danielle.id,
+    centerId: laveen.id,
+    scope: "continuum",
+    grantedAt: dIntakeAt,
+  });
+
+  // ── Danielle's follow-up cadence (post-discharge, anchored at continuing)
+  //    30/60/90 done (BARC 31/36/41, matching her self-checks), 180 + 365
+  //    pending. Each done check-in emits a checkin continuum_event. ────────
+  const danielleCadence: {
+    dueDay: FollowUpCheckin["dueDay"];
+    status: FollowUpCheckin["status"];
+    barc?: number;
+  }[] = [
+    { dueDay: 30, status: "done", barc: 31 },
+    { dueDay: 60, status: "done", barc: 36 },
+    { dueDay: 90, status: "done", barc: 41 },
+    { dueDay: 180, status: "pending" },
+    { dueDay: 365, status: "pending" },
+  ];
+  for (const f of danielleCadence) {
+    const completedAt =
+      f.status === "done" ? dContinuingAt + f.dueDay * DAY : undefined;
+    const fu: FollowUpCheckin = {
+      id: did(),
+      memberId: danielle.id,
+      centerId: laveen.id,
+      dueDay: f.dueDay,
+      status: f.status,
+      completedAt,
+      barcTotal: f.barc,
+    };
+    followUps.push(fu);
+    if (f.status === "done") {
+      continuumEvents.push({
+        id: did(),
+        memberId: danielle.id,
+        source: "checkin",
+        refId: fu.id,
+        weight: 3,
+        occurredAt: completedAt!,
+      });
+    }
+  }
+
+  // ── BREADTH: ~40 post-program members get a consent grant + a follow-up
+  //    set so the alumni dashboard + cadence look alive. Selected from the
+  //    v7 continuum episodes (prefer discharged: continuing/transition, then
+  //    top up with in_program) so consent + cadence sit on real episodes. ──
+  const phaseByMember = new Map<string, CarePhase>();
+  for (const ep of careEpisodes) phaseByMember.set(ep.memberId, ep.carePhase);
+  const isPost = (m: User, ...phases: CarePhase[]) =>
+    !!m.centerId && phases.includes(phaseByMember.get(m.id) ?? "pre_care");
+  const alumniMembers = [
+    ...generated.filter((m) => isPost(m, "continuing", "transition")),
+    ...generated.filter((m) => isPost(m, "in_program")),
+  ].slice(0, 40);
+
+  const DUE_DAYS: FollowUpCheckin["dueDay"][] = [30, 60, 90, 180, 365];
+  for (const m of alumniMembers) {
+    const ep = careEpisodes.find((e) => e.memberId === m.id);
+    // consent granted a couple weeks into their episode (intake handshake).
+    const grantedAt = ep
+      ? ep.startedAt + int(3, 20) * DAY
+      : now - int(120, 400) * DAY;
+    const revoked = rnd() < 0.08; // a few revocations, for negative-test coverage
+    consentGrants.push({
+      id: did(),
+      memberId: m.id,
+      centerId: m.centerId!,
+      scope: "continuum",
+      grantedAt,
+      revokedAt: revoked ? grantedAt + int(60, 200) * DAY : undefined,
+    });
+
+    // Cadence anchored at discharge (endedAt when present, else a plausible date).
+    const dischargeAt = ep?.endedAt ?? now - int(30, 400) * DAY;
+    for (const d of DUE_DAYS) {
+      const dueAt = dischargeAt + d * DAY;
+      let status: FollowUpCheckin["status"];
+      let completedAt: number | undefined;
+      let barcTotal: number | undefined;
+      if (dueAt > now) {
+        status = "pending";
+      } else if (rnd() < 0.8) {
+        status = "done";
+        completedAt = dueAt + int(0, 5) * DAY;
+        barcTotal = int(28, 48);
+      } else {
+        status = "missed";
+      }
+      const fu: FollowUpCheckin = {
+        id: did(),
+        memberId: m.id,
+        centerId: m.centerId!,
+        dueDay: d,
+        status,
+        completedAt,
+        barcTotal,
+      };
+      followUps.push(fu);
+      if (status === "done") {
+        continuumEvents.push({
+          id: did(),
+          memberId: m.id,
+          source: "checkin",
+          refId: fu.id,
+          weight: 3,
+          occurredAt: completedAt!,
+        });
+      }
+    }
+  }
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members],
@@ -1938,6 +2229,10 @@ function seed(): DB {
     sponsoredPlacements,
     placementEvents,
     demoLeads,
+    careChannels,
+    careMessages,
+    consentGrants,
+    followUps,
   };
 }
 

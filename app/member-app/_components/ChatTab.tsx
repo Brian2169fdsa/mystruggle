@@ -7,6 +7,11 @@ import ChatThread, {
   timeAgo,
   type ThreadSummary,
 } from "@/app/components/chat/ChatThread";
+import {
+  ProgramCard,
+  CareThread,
+  type CareChannelSummary,
+} from "./ProgramSurface";
 
 const GUIDE_CHIPS = [
   "I’m looking for a halfway house",
@@ -50,6 +55,12 @@ export default function ChatTab({
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [viewerId, setViewerId] = useState("");
   const [open, setOpen] = useState<ThreadSummary | null>(null);
+  // My Program (docs/14 §D) — an open care channel takes over the full tab,
+  // same pattern as the mentor thread. Not a 6th tab.
+  const [openCare, setOpenCare] = useState<{
+    channel: CareChannelSummary;
+    viewerId: string;
+  } | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -78,6 +89,19 @@ export default function ChatTab({
       alive = false;
     };
   }, []);
+
+  // ── Open care channel — full height within the tab ──
+  if (openCare) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <CareThread
+          channel={openCare.channel}
+          viewerId={openCare.viewerId}
+          onBack={() => setOpenCare(null)}
+        />
+      </div>
+    );
+  }
 
   // ── Open conversation — full height within the tab ──
   if (open && open.other && viewerId) {
@@ -182,6 +206,11 @@ export default function ChatTab({
             Sign in to message your mentor →
           </a>
         )}
+
+        {/* My Program — care channels (IOP cohort, care team, announcements) */}
+        <ProgramCard
+          onOpen={(channel, vId) => setOpenCare({ channel, viewerId: vId })}
+        />
 
         {/* Divider */}
         <div className="mt-1 flex items-center gap-2.5">
