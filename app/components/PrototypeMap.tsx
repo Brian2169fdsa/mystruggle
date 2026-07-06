@@ -13,6 +13,7 @@ type Msg = {
   links?: ChatLink[];
   hint?: string; // small muted helper line (e.g. demo creds)
   care?: boolean; // navy "care" styling - used for the 988 line
+  crisis?: boolean; // heart-red crisis styling - 988 rendered prominently
   grid?: boolean; // render the compact site-map link grid
 };
 
@@ -36,19 +37,27 @@ const GREETING: Msg = {
   text: "Hi! I can point you anywhere on My Struggle. What do you need?",
 };
 
-// Quick-reply chips shown under the greeting.
-const CHIPS: { id: string; label: string }[] = [
-  { id: "giving", label: "How does giving work?" },
-  { id: "support", label: "I need support" },
-  { id: "community", label: "Explore the community" },
-  { id: "donate", label: "I want to donate" },
-  { id: "center", label: "I run a recovery center" },
-  { id: "employer", label: "I'm an employer" },
-  { id: "app", label: "Open my app" },
+// Quick-reply chips shown under the greeting. Every chip is sent through the
+// live /api/guide companion as a plain message.
+const VISITOR_CHIPS = [
+  "What is My Struggle?",
+  "How does giving work?",
+  "I want to join",
+  "I need help now",
 ];
 
-// ── Canned answers ─────────────────────────────────────────────────────────
-// Each id returns one or more guide messages. No network / external AI.
+// When GET /api/guide returns member context, the chips switch to the
+// plan-aware member set (same starters as the in-app companion).
+const MEMBER_CHIPS = [
+  "How am I doing?",
+  "I'm having an urge",
+  "Help me with my goal",
+  "Tell me about my program",
+];
+
+// ── Static fallback answers ────────────────────────────────────────────────
+// Used ONLY when /api/guide is unreachable. Each id returns one or more guide
+// messages - the old canned engine, kept as a graceful degradation path.
 function answersFor(id: string): Msg[] {
   switch (id) {
     case "giving":
@@ -57,37 +66,6 @@ function answersFor(id: string): Msg[] {
           role: "guide",
           text: "Every gift splits 50/50 - half reaches the member right away as cash at their center, half is held as their Reentry Fund and released when they step back into society.",
           links: [{ href: "/giving", label: "See how giving works" }],
-        },
-      ];
-    case "support":
-      return [
-        {
-          role: "guide",
-          text: "You're not alone - the community is here. You can create an account to connect with a mentor, or read the feed to see people walking the same road.",
-          links: [
-            { href: "/signup", label: "Create an account" },
-            { href: "/community", label: "Read the community feed" },
-          ],
-        },
-        { role: "guide", care: true, text: CARE_988 },
-      ];
-    case "community":
-      return [
-        {
-          role: "guide",
-          text: "The community feed is where members and mentors share wins, ask for help, and cheer each other on.",
-          links: [{ href: "/community", label: "Open the community feed" }],
-        },
-      ];
-    case "donate":
-      return [
-        {
-          role: "guide",
-          text: "Thank you - every gift is split 50/50 with the member. You can give to the mission or to a specific member's page.",
-          links: [
-            { href: "/donate", label: "Donate to the mission" },
-            { href: "/give", label: "Give to a member" },
-          ],
         },
       ];
     case "center":
@@ -110,19 +88,6 @@ function answersFor(id: string): Msg[] {
               label: "Email info@themystruggles.com",
               external: true,
             },
-          ],
-        },
-      ];
-    case "app":
-      return [
-        {
-          role: "guide",
-          text: "Here's every app surface - jump straight in:",
-          links: [
-            { href: "/member-app", label: "Member app" },
-            { href: "/mentor-app", label: "Mentor app" },
-            { href: "/dashboard", label: "Center dashboard" },
-            { href: "/account", label: "My account" },
           ],
         },
       ];
@@ -149,7 +114,8 @@ function answersFor(id: string): Msg[] {
   }
 }
 
-// Free-text keyword routing. Crisis check is handled by the caller first.
+// Free-text keyword routing for the OFFLINE fallback only. Crisis check is
+// handled by the caller first.
 function routeText(text: string): Msg[] {
   const t = text.toLowerCase();
   if (/\b(give|giving|donate|donation|gift)\b/.test(t))
@@ -163,6 +129,33 @@ function routeText(text: string): Msg[] {
 }
 
 // ── Shared UI bits ─────────────────────────────────────────────────────────
+function firstName(name: string): string {
+  return name.split(/\s+/)[0] || name;
+}
+
+/**
+ * The live companion writes plain site paths (like /giving or /signup) in its
+ * replies - turn each one into a real Next Link, leaving trailing punctuation
+ * outside the link. Everything else renders as plain text.
+ */
+function linkify(text: string): React.ReactNode[] {
+  return text.split(/(\s+)/).map((part, i) => {
+    const m = part.match(/^(\/[a-z][a-z0-9\-/]*)([.,!?;:)]*)$/i);
+    if (!m) return part;
+    return (
+      <span key={i}>
+        <Link
+          href={m[1]}
+          className="font-bold text-blue-primary underline underline-offset-2 hover:text-blue-hover"
+        >
+          {m[1]}
+        </Link>
+        {m[2]}
+      </span>
+    );
+  });
+}
+
 /** Script "M" tile - indigo→blue gradient, white glyph. */
 function GuideTile({ size = 36 }: { size?: number }) {
   return (
@@ -218,6 +211,23 @@ function MessageBubble({ m }: { m: Msg }) {
       </div>
     );
   }
+  // Crisis reply - heart-red styling, 988 rendered prominently up top.
+  if (m.crisis) {
+    return (
+      <div className="flex items-start gap-2.5">
+        <GuideTile />
+        <div className="max-w-[280px] whitespace-pre-line rounded-2xl rounded-tl-md border-[1.5px] border-[#F3C7C0] bg-[#FDF2F0] px-4 py-3 text-[14px]/[1.55] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+          <div className="mb-1 text-[11px] font-extrabold uppercase tracking-[.08em] text-heart-red">
+            You matter - reach out now
+          </div>
+          <div className="mb-2 text-[16px] font-extrabold text-heart-red">
+            Call or text 988
+          </div>
+          {m.text && linkify(m.text)}
+        </div>
+      </div>
+    );
+  }
   // Guide "care" bubble - distinct navy, never dismissive.
   if (m.care) {
     return (
@@ -234,8 +244,8 @@ function MessageBubble({ m }: { m: Msg }) {
       <GuideTile />
       <div className="flex max-w-[280px] flex-col gap-2.5">
         {m.text && (
-          <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[14px]/[1.55] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
-            {m.text}
+          <div className="whitespace-pre-line rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[14px]/[1.55] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+            {linkify(m.text)}
           </div>
         )}
         {m.grid && <LinkGrid />}
@@ -259,8 +269,11 @@ const TOOLTIP_KEY = "ms-guide-tooltip-dismissed";
 
 /**
  * Floating AI assistant ("The Guide") - collapsed bubble → chat panel on every
- * page. Canned answers only, no network/AI calls. Keeps the default export
- * name so existing imports are untouched.
+ * page, now LIVE against /api/guide. Signed-out visitors get the rule-based
+ * visitor companion; signed-in members get the same plan-aware companion as
+ * the member app. Crisis language always comes back as 988-first care. If the
+ * API is unreachable, the old static answers keep the widget useful. Keeps
+ * the default export name so existing imports are untouched.
  */
 export default function PrototypeMap() {
   const pathname = usePathname();
@@ -268,9 +281,31 @@ export default function PrototypeMap() {
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [showChips, setShowChips] = useState(true);
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [member, setMember] = useState<{ name: string } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Ask the companion who's here. Members get plan-aware chips + a hint;
+  // everyone else stays in visitor mode ({ context: null, anonymous: true }).
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/guide");
+        const data = await res.json().catch(() => null);
+        if (alive && res.ok && typeof data?.context?.member?.name === "string") {
+          setMember({ name: data.context.member.name });
+        }
+      } catch {
+        /* visitor mode */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Apps use bottom tab bars - lift the bubble so it clears them.
   const inApp =
@@ -300,7 +335,7 @@ export default function PrototypeMap() {
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, open]);
+  }, [messages, sending, open]);
 
   function openPanel() {
     dismissTooltip();
@@ -311,24 +346,46 @@ export default function PrototypeMap() {
     setMessages((prev) => [...prev, ...msgs]);
   }
 
-  function handleChip(id: string, label: string) {
+  // Graceful degradation - the old static answers, used ONLY when the live
+  // companion can't be reached. Crisis language still gets the 988 care line.
+  function pushFallback(message: string) {
+    if (isCrisisText(message)) {
+      push({ role: "guide", care: true, text: CARE_988 });
+      return;
+    }
+    push(...routeText(message));
+  }
+
+  // Live send - every message (typed or chip) goes through /api/guide.
+  async function send(raw: string) {
+    const message = raw.trim();
+    if (!message || sending) return;
+    setInput("");
     setShowChips(false);
-    push({ role: "user", text: label }, ...answersFor(id));
+    push({ role: "user", text: message });
+    setSending(true);
+    try {
+      const res = await fetch("/api/guide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && typeof data?.reply === "string") {
+        push({ role: "guide", text: data.reply, crisis: !!data.crisis });
+      } else {
+        pushFallback(message);
+      }
+    } catch {
+      pushFallback(message);
+    } finally {
+      setSending(false);
+    }
   }
 
   function handleSend(e?: React.FormEvent) {
     e?.preventDefault();
-    const text = input.trim();
-    if (!text) return;
-    setInput("");
-    setShowChips(false);
-    const userMsg: Msg = { role: "user", text };
-    // Crisis language → respond ONLY with the warm 988 care message.
-    if (isCrisisText(text)) {
-      push(userMsg, { role: "guide", care: true, text: CARE_988 });
-      return;
-    }
-    push(userMsg, ...routeText(text));
+    void send(input);
   }
 
   return (
@@ -392,16 +449,30 @@ export default function PrototypeMap() {
               <MessageBubble key={i} m={m} />
             ))}
 
+            {sending && (
+              <div className="flex items-start gap-2.5">
+                <GuideTile />
+                <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[14px] font-medium text-ink-400 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+                  …
+                </div>
+              </div>
+            )}
+
             {showChips && (
               <div className="flex flex-col items-start gap-2 pl-[46px]">
-                {CHIPS.map((c) => (
+                {member && (
+                  <div className="text-[11px] font-semibold text-ink-400">
+                    Signed in as {firstName(member.name)}
+                  </div>
+                )}
+                {(member ? MEMBER_CHIPS : VISITOR_CHIPS).map((label) => (
                   <button
-                    key={c.id}
+                    key={label}
                     type="button"
-                    onClick={() => handleChip(c.id, c.label)}
+                    onClick={() => void send(label)}
                     className="inline-flex min-h-[40px] items-center self-start rounded-full border-[1.5px] border-blue-primary px-4 py-2 text-left text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
                   >
-                    {c.label}
+                    {label}
                   </button>
                 ))}
               </div>

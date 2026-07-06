@@ -72,6 +72,7 @@ import type {
   CenterPolicy,
   MessageRead,
   Spotlight,
+  CircleSeen,
 } from "./types";
 
 interface DB {
@@ -154,11 +155,15 @@ interface DB {
   centerPolicies: CenterPolicy[];
   messageReads: MessageRead[];
   spotlights: Spotlight[];
+  // circle activity signal (seed v20): per-(user, circle) last-seen markers.
+  // GET /api/circles turns these into the "N new posts" badge; POST
+  // /api/circles/seen upserts the viewer's row when they open a circle.
+  circleSeen: CircleSeen[];
 }
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 19;
+const SEED_VERSION = 20;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -4051,6 +4056,26 @@ function seed(): DB {
   };
   const spotlights: Spotlight[] = [tyrellSpotlight, danielleSpotlight];
 
+  // ── v20 additions (circle activity signal - appended AFTER every existing
+  //    draw so all prior seed-* ids and PRNG output stay byte-identical):
+  //    per-(user, circle) last-seen markers. Danielle last opened her circles
+  //    a stretch back - her own recent posts and any circle posts newer than
+  //    each marker light up as "N new" in the browser + left rail. A handful
+  //    of generated joiners get markers too so counts vary across accounts. ──
+  const circleSeen: CircleSeen[] = [
+    { id: did(), circleId: "circle-job-seekers", userId: danielle.id, seenAt: now - 8 * DAY },
+    { id: did(), circleId: "circle-new-in-recovery", userId: danielle.id, seenAt: now - 12 * DAY },
+    { id: did(), circleId: "circle-laveen-alumni", userId: danielle.id, seenAt: now - 14 * DAY },
+  ];
+  for (const cm of circleMemberships.slice(3, 10)) {
+    circleSeen.push({
+      id: did(),
+      circleId: cm.circleId,
+      userId: cm.memberId,
+      seenAt: now - int(4, 12) * DAY,
+    });
+  }
+
   return {
     seedVersion: SEED_VERSION,
     // v15 employers appended LAST so every pre-v15 user keeps its position.
@@ -4117,6 +4142,7 @@ function seed(): DB {
     centerPolicies,
     messageReads,
     spotlights,
+    circleSeen,
   };
 }
 

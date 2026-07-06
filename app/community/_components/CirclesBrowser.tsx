@@ -15,6 +15,21 @@ import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "./ui";
 
 const CARD = "rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
+/** GET /api/circles rows carry an unread-activity count (docs/13 Part B
+ *  activity signal). Optional so the browser degrades if the field is absent. */
+type CircleWithNew = CircleSummary & { newPosts?: number };
+
+/** Fire-and-forget "I looked at this circle" beacon - resets the viewer's
+ *  unread marker server-side while the row's navigation proceeds. */
+function beaconSeen(circleId: string) {
+  fetch("/api/circles/seen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ circleId }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 /* ── Kind tile - deterministic gradient + icon per circle kind ────── */
 
 const KIND_TILE: Record<
@@ -65,19 +80,29 @@ const TABS: { key: Tab; label: string }[] = [
 
 function CircleRow({
   circle,
+  showNew,
   onToggled,
   onNeedsSignIn,
 }: {
-  circle: CircleSummary;
-  onToggled: (next: CircleSummary) => void;
+  circle: CircleWithNew;
+  showNew: boolean; // "For you" + "Your circles" surface the unread pill
+  onToggled: (next: CircleWithNew) => void;
   onNeedsSignIn: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const newPosts = circle.newPosts ?? 0;
+
+  // Opening a joined circle counts as seeing it - zero the pill locally and
+  // let the server marker catch up while the row's navigation proceeds.
+  function markSeen() {
+    beaconSeen(circle.id);
+    if (newPosts > 0) onToggled({ ...circle, newPosts: 0 });
+  }
 
   async function toggle() {
     if (busy) return;
     setBusy(true);
-    const optimistic: CircleSummary = {
+    const optimistic: CircleWithNew = {
       ...circle,
       joined: !circle.joined,
       members: Math.max(0, circle.members + (circle.joined ? -1 : 1)),
@@ -94,7 +119,7 @@ function CircleRow({
       });
       const data = await res.json().catch(() => null);
       if (res.ok && data?.circle) {
-        onToggled(data.circle as CircleSummary);
+        onToggled(data.circle as CircleWithNew);
         // Keep LeftRail's circle list in sync with this join/leave.
         window.dispatchEvent(new Event(CIRCLES_CHANGED_EVENT));
       } else {
@@ -122,6 +147,7 @@ function CircleRow({
           // the target via a stretched link (the pill stays above it).
           <Link
             href={`/community?circle=${encodeURIComponent(circle.id)}`}
+            onClick={markSeen}
             className="text-[15px] font-extrabold text-ink-900 after:absolute after:inset-0 after:rounded-2xl hover:text-blue-primary"
           >
             {circle.name}
@@ -147,6 +173,15 @@ function CircleRow({
           </p>
         )}
       </div>
+
+      {showNew && newPosts > 0 && (
+        <span
+          className="tnum inline-flex h-6 flex-none items-center rounded-full bg-blue-primary px-2.5 text-[11px] font-extrabold text-white"
+          aria-label={`${newPosts} new ${newPosts === 1 ? "post" : "posts"} in ${circle.name}`}
+        >
+          {newPosts} new
+        </span>
+      )}
 
       {!circle.locked && (
         <button
@@ -193,7 +228,7 @@ function EmptyCard({ children }: { children: React.ReactNode }) {
 /* ── Browser ──────────────────────────────────────────────────────── */
 
 export default function CirclesBrowser() {
-  const [circles, setCircles] = useState<CircleSummary[] | null>(null);
+  const [circles, setCircles] = useState<CircleWithNew[] | null>(null);
   const [me, setMe] = useState<SafeUser | null | undefined>(undefined);
   const [tab, setTab] = useState<Tab>("for-you");
   const [query, setQuery] = useState("");
@@ -214,7 +249,7 @@ export default function CirclesBrowser() {
     };
   }, []);
 
-  function replaceCircle(next: CircleSummary) {
+  function replaceCircle(next: CircleWithNew) {
     setCircles((prev) =>
       prev ? prev.map((c) => (c.id === next.id ? next : c)) : prev
     );
@@ -223,7 +258,7 @@ export default function CirclesBrowser() {
   const visible = useMemo(() => {
     if (!circles) return null;
     const q = query.trim().toLowerCase();
-    const matches = (c: CircleSummary) =>
+    const matches = (c: CircleWithNew) =>
       !q ||
       c.name.toLowerCase().includes(q) ||
       c.description.toLowerCase().includes(q);
@@ -366,6 +401,7 @@ export default function CirclesBrowser() {
             <CircleRow
               key={c.id}
               circle={c}
+              showNew={tab !== "discover"}
               onToggled={replaceCircle}
               onNeedsSignIn={() => setNeedsSignIn(true)}
             />

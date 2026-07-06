@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { save, uid } from "@/app/lib/store";
+import { db, save, uid } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { Circle, User } from "@/app/lib/types";
 import {
@@ -8,7 +8,35 @@ import {
   circleMemberCount,
   findCircle,
   isCircleMember,
+  type CirclePost,
 } from "./_lib";
+
+const WEEK = 7 * 86400e3;
+
+/** Unread activity for the session viewer: approved, non-hidden posts in the
+ *  circle newer than the viewer's CircleSeen marker (no marker = the last
+ *  7 days). Signed-out and locked-circle viewers always see 0; the count is
+ *  capped at 99 so the badge never runs long. */
+function circleNewPosts(circle: Circle, user: User | null): number {
+  if (!user || !canReadCircle(circle, user)) return 0;
+  const seen = db().circleSeen.find(
+    (s) => s.circleId === circle.id && s.userId === user.id
+  );
+  const since = seen ? seen.seenAt : Date.now() - WEEK;
+  let count = 0;
+  for (const p of db().posts as CirclePost[]) {
+    if (
+      p.circleId === circle.id &&
+      p.status === "approved" &&
+      !p.hidden &&
+      p.createdAt > since
+    ) {
+      count++;
+      if (count >= 99) break;
+    }
+  }
+  return count;
+}
 
 /** Public-safe circle projection with viewer-relative fields. */
 function decorateCircle(circle: Circle, user: User | null) {
@@ -19,6 +47,7 @@ function decorateCircle(circle: Circle, user: User | null) {
     // Alumni circles of another center are visible in the directory but
     // their feed is private - the UI shows them locked.
     locked: !canReadCircle(circle, user),
+    newPosts: circleNewPosts(circle, user),
   };
 }
 

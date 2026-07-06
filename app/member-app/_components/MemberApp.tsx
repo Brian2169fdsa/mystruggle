@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Lock } from "lucide-react";
 import type {
   Course,
   Enrollment,
@@ -20,6 +21,40 @@ import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
 import { OPEN_CARE_CHANNEL_EVENT } from "./MyProgramPanel";
 
 export type Task = { id?: string; label: string; done: boolean };
+
+/** Center-policy flags for the signed-in member (GET /api/portal). */
+type PortalPolicy = { portalOnly: boolean; communityAllowed: boolean };
+
+/** Warm locked state shown in place of the Home community section while the
+ *  member's center policy keeps early residential/detox phases portal-only
+ *  (docs/16 - CenterPolicy.portalOnlyEarlyPhase). Same copy as the /community
+ *  page's locked card; the My Program panel at the top of Home stays the
+ *  focus, so the button walks the member back up to it. */
+function CommunityLockedCard() {
+  return (
+    <div className="flex flex-col gap-4 px-5 pb-5">
+      <span className="text-[12px] font-bold tracking-[.12em] text-blue-primary">
+        COMMUNITY
+      </span>
+      <div className="rounded-2xl bg-white px-5 py-[26px] text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-sky-tint text-indigo-brand">
+          <Lock size={18} />
+        </div>
+        <p className="mx-auto mt-3.5 max-w-[300px] text-[14.5px]/[1.65] font-semibold text-ink-900">
+          Your program comes first right now - the community unlocks as you
+          progress. Your center can tell you more.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="mt-4 inline-flex h-10 cursor-pointer items-center rounded-full bg-sky-tint px-5 text-[13px] font-bold text-blue-primary"
+        >
+          Back to My Program ↑
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /** Next incomplete lesson (1-based), or null when the course is done. */
 export function nextLesson(
@@ -58,6 +93,12 @@ export default function MemberApp() {
     user: SafeUser;
     requests: SupportRequest[];
   } | null>(null);
+  // Center-policy flags from /api/portal. Permissive defaults so signed-out
+  // demo mode and members without a policy/episode see everything as today.
+  const [policy, setPolicy] = useState<PortalPolicy>({
+    portalOnly: false,
+    communityAllowed: true,
+  });
   // Real Learn data (signed in only; null = signed out → demo courses).
   const [learn, setLearn] = useState<{
     courses: Course[];
@@ -81,6 +122,17 @@ export default function MemberApp() {
         const data = await res.json();
         if (cancelled || !data?.user) return;
         setMe({ user: data.user, requests: data.requests ?? [] });
+        // Center-policy flags for community gating (fire-and-forget).
+        fetch("/api/portal")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((p) => {
+            if (cancelled || !p?.policy) return;
+            setPolicy({
+              portalOnly: p.policy.portalOnly === true,
+              communityAllowed: p.policy.communityAllowed !== false,
+            });
+          })
+          .catch(() => {});
         // Recovery goals for the My Plan card + view (fire-and-forget).
         fetch("/api/recovery-goals")
           .then((r) => (r.ok ? r.json() : null))
@@ -118,6 +170,44 @@ export default function MemberApp() {
     };
     window.addEventListener(OPEN_CARE_CHANNEL_EVENT, onOpenCare);
     return () => window.removeEventListener(OPEN_CARE_CHANNEL_EVENT, onOpenCare);
+  }, []);
+
+  // KIOSK IDLE LOGOUT (docs/16 Part D) - when the member app was opened from
+  // a shared front-desk kiosk (readable ms_kiosk_ui cookie set by /api/kiosk),
+  // five quiet minutes end the session and return the device to /kiosk, so a
+  // member who walks away mid-app can't leak their account to the next person.
+  // Mirrors KioskShell's timer, which only covers the /kiosk screen itself.
+  useEffect(() => {
+    const onKiosk = document.cookie
+      .split("; ")
+      .some((c) => c === "ms_kiosk_ui=1");
+    if (!onKiosk) return;
+    const IDLE_MS = 5 * 60 * 1000;
+    const logout = async () => {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch {
+        // offline - still return the shared device to the kiosk screen
+      }
+      // Clear the readable kiosk marker (the httpOnly session is gone).
+      document.cookie = "ms_kiosk_ui=; path=/; max-age=0";
+      window.location.href = "/kiosk";
+    };
+    let timer = window.setTimeout(logout, IDLE_MS);
+    const reset = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(logout, IDLE_MS);
+    };
+    const events: Array<keyof WindowEventMap> = [
+      "pointerdown",
+      "keydown",
+      "touchstart",
+    ];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    return () => {
+      window.clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
   }, []);
 
   // Derive the Home one-tap tasks from the loaded recovery goals - active
@@ -284,17 +374,33 @@ export default function MemberApp() {
           />
         )}
         {!planOpen && tab === "home" && (
-          <HomeTab
-            tasks={tasks}
-            toggleTask={toggleTask}
-            trackerPct={trackerPct}
-            heart3={heart3}
-            toggleHeart3={() => setHeart3((v) => !v)}
-            sharedWin={sharedWin}
-            user={me?.user ?? null}
-            planGoals={planGoals}
-            openPlan={() => setPlanOpen(true)}
-          />
+          <div
+            className={
+              "contents" + (policy.portalOnly ? " ms-portal-only" : "")
+            }
+          >
+            {/* PORTAL-ONLY EARLY PHASE (docs/16): the community section lives
+                inside HomeTab (the "COMMUNITY" header + feed are everything
+                after the rings/tasks card in its gap-4/p-5 column). HomeTab
+                is owned elsewhere, so gate it structurally from here and
+                render the warm locked card in its place below. Core Home
+                content (program panel, rings, plan, tasks) is untouched. */}
+            {policy.portalOnly && (
+              <style>{`.ms-portal-only .gap-4.p-5 > :nth-child(n + 2) { display: none; }`}</style>
+            )}
+            <HomeTab
+              tasks={tasks}
+              toggleTask={toggleTask}
+              trackerPct={trackerPct}
+              heart3={heart3}
+              toggleHeart3={() => setHeart3((v) => !v)}
+              sharedWin={sharedWin}
+              user={me?.user ?? null}
+              planGoals={planGoals}
+              openPlan={() => setPlanOpen(true)}
+            />
+            {policy.portalOnly && <CommunityLockedCard />}
+          </div>
         )}
         {!planOpen && tab === "learn" && !lessonOpen && (
           <LearnTab

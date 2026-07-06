@@ -131,15 +131,14 @@ type GuideContext = ReturnType<typeof buildContext>;
 
 /**
  * GET /api/guide - the signed-in member's plan-aware Guide context.
- * Session-gated; members only (staff pass, but this is a member surface).
+ * Members (and staff) get their grounded plan snapshot. Everyone else -
+ * signed-out visitors and non-member sessions - gets an explicit anonymous
+ * marker so the site widget knows to run in visitor mode instead of erroring.
  */
 export async function GET() {
   const user = await getSessionUser();
-  if (!user) {
-    return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  }
-  if (user.role !== "member" && user.role !== "staff") {
-    return NextResponse.json({ error: "Members only." }, { status: 403 });
+  if (!user || (user.role !== "member" && user.role !== "staff")) {
+    return NextResponse.json({ context: null, anonymous: true });
   }
   return NextResponse.json({ context: buildContext(user) });
 }
@@ -272,24 +271,142 @@ function cannedReply(message: string, ctx: GuideContext): string {
   }
 }
 
+// ── Anonymous visitor engine ───────────────────────────────────────────
+// The floating site widget serves signed-out visitors and non-member
+// sessions. Same safety rule: crisis language short-circuits to 988 FIRST,
+// always. Otherwise a small rule-based intent set answers the questions a
+// visitor actually has - warm, short, one clear link per reply (plain URLs
+// like /signup; the widget linkifies them).
+
+const VISITOR_CRISIS_REPLY =
+  `Please reach the 988 Suicide & Crisis Lifeline right now - call or text 988, ` +
+  `or chat at 988lifeline.org. It's free, confidential, and open 24/7.\n\n` +
+  `If you're in immediate danger, call 911.\n\n` +
+  `Thank you for telling me - you are not a burden, and you don't have to ` +
+  `carry this alone. When you're ready, our community is here for you at /community.`;
+
+type VisitorIntent =
+  | "help"
+  | "giving"
+  | "join"
+  | "centers"
+  | "employers"
+  | "community"
+  | "what"
+  | "default";
+
+function detectVisitorIntent(message: string): VisitorIntent {
+  const t = message.toLowerCase();
+  // Support-seeking language that isn't explicit crisis text still deserves
+  // the 988 line first - checked before every other intent.
+  if (/\b(need help|help now|crisis|hotline|lifeline|emergency|desperate|can'?t (?:do this|go on|cope)|relaps\w*|using again)\b/.test(t))
+    return "help";
+  if (/\b(giv(?:e|es|ing)|donat(?:e|ion|ions|ing)|gift|reentry fund|50\/50|fifty.fifty|where does (?:the )?money|contribut\w*)\b/.test(t))
+    return "giving";
+  if (/\b(join|sign ?up|signup|become a member|get started|start(?:ing)? my|enroll|register|create an account|membership|i want in)\b/.test(t))
+    return "join";
+  if (/\b(center|centre|centers|treatment|facility|program director|our organization|clinic|dashboard)\b/.test(t))
+    return "centers";
+  if (/\b(employ\w*|hir(?:e|ing)|jobs?|second.chance|workforce|recruit\w*)\b/.test(t))
+    return "employers";
+  if (/\b(meeting|meetings|community|feed|circle|circles|events?|connect|peers?|people like me|group|not alone)\b/.test(t))
+    return "community";
+  if (/\b(what is|what'?s|who (?:are|is)|about|mission|my struggle|how does (?:this|it) work|tell me about)\b/.test(t))
+    return "what";
+  return "default";
+}
+
+function visitorReply(message: string): { crisis: boolean; reply: string } {
+  switch (detectVisitorIntent(message)) {
+    case "help":
+      return {
+        crisis: true,
+        reply:
+          `You reached out, and that matters. If you're in crisis, call or text 988 ` +
+          `right now - the Suicide & Crisis Lifeline is free, confidential, and open 24/7. ` +
+          `If you're in immediate danger, call 911.\n\n` +
+          `When you're ready, you don't have to walk this alone - our community is at /community.`,
+      };
+    case "giving":
+      return {
+        crisis: false,
+        reply:
+          `Every gift splits 50/50 - half reaches the member right away as cash at ` +
+          `their center, and half is held as their Reentry Fund, released when they ` +
+          `step back into society. See how it works at /giving.`,
+      };
+    case "join":
+      return {
+        crisis: false,
+        reply:
+          `We'd love to walk with you. Creating an account takes about a minute and ` +
+          `connects you with mentors and the community. Start at /signup.`,
+      };
+    case "centers":
+      return {
+        crisis: false,
+        reply:
+          `We give recovery centers the whole platform - messaging, programming, ` +
+          `learning, and a dashboard for their team. See what that looks like at /centers.`,
+      };
+    case "employers":
+      return {
+        crisis: false,
+        reply:
+          `Second-chance employers change lives. You can post jobs and opportunities ` +
+          `straight to our community - learn more at /employers.`,
+      };
+    case "community":
+      return {
+        crisis: false,
+        reply:
+          `You don't have to do this alone. The community feed is where members and ` +
+          `mentors share wins, ask for help, and hold each other up - come say hi at /community.`,
+      };
+    case "what":
+      return {
+        crisis: false,
+        reply:
+          `My Struggle is a nonprofit recovery community - peer mentors, outreach ` +
+          `centers, and giving that goes straight to the people doing the work of ` +
+          `recovery. Read our story at /about.`,
+      };
+    default:
+      return {
+        crisis: false,
+        reply:
+          `I can tell you what My Struggle is, how giving works, or how to join. ` +
+          `Ask me anything, or start with our story at /about.`,
+      };
+  }
+}
+
 /**
- * POST /api/guide - a warm, deterministic companion reply grounded in the
- * member's real plan context. Rule-based only. Crisis language returns 988 +
- * care-team resources and never generic advice.
+ * POST /api/guide - a warm, deterministic companion reply. Signed-in members
+ * (and staff) get replies grounded in their real plan context; signed-out
+ * visitors and non-member sessions get the rule-based visitor set. Crisis
+ * language ALWAYS short-circuits to 988 resources first, for everyone.
  */
 export async function POST(req: Request) {
   const user = await getSessionUser();
-  if (!user) {
-    return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  }
-  if (user.role !== "member" && user.role !== "staff") {
-    return NextResponse.json({ error: "Members only." }, { status: 403 });
-  }
 
   const body = await req.json().catch(() => null);
   const message = typeof body?.message === "string" ? body.message.trim() : "";
   if (!message) {
     return NextResponse.json({ error: "Say something and I'll help." }, { status: 400 });
+  }
+
+  // ── Anonymous / non-member path ──
+  if (!user || (user.role !== "member" && user.role !== "staff")) {
+    if (isCrisisText(message)) {
+      return NextResponse.json({
+        crisis: true,
+        reply: VISITOR_CRISIS_REPLY,
+        anonymous: true,
+      });
+    }
+    const { crisis, reply } = visitorReply(message);
+    return NextResponse.json({ crisis, reply, anonymous: true });
   }
 
   const name = firstName(user.name);

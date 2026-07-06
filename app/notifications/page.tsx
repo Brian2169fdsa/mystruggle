@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Check, ChevronRight } from "lucide-react";
+import { Bell, Check, ChevronRight, Moon } from "lucide-react";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import CommunityTabBar from "../community/_components/CommunityTabBar";
@@ -58,8 +58,16 @@ function Row({
         {n.body && (
           <p className="mt-1 text-[14px]/[1.6] text-ink-600">{n.body}</p>
         )}
-        <div className="mt-2 text-[13px] font-medium text-ink-400">
+        <div className="mt-2 flex items-center gap-2.5 text-[13px] font-medium text-ink-400">
           {relTime(n.createdAt)}
+          {/* Delivered during the center's quiet hours - the row renders
+              normally, it just doesn't ping the bell badge until morning. */}
+          {n.quiet && (
+            <span className="inline-flex items-center gap-1 font-semibold text-indigo-brand">
+              <Moon size={12} aria-hidden />
+              Quiet hours
+            </span>
+          )}
         </div>
       </div>
 

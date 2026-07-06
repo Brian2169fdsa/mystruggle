@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save } from "@/app/lib/store";
+import { db, save, centerPolicyFor } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { Notification } from "@/app/lib/types";
 
@@ -14,9 +14,42 @@ function notifStore() {
   return d as ReturnType<typeof db> & Required<EngagementStore>;
 }
 
-function unreadCount(userId: string): number {
+// ── quiet hours (docs/16) ──────────────────────────────────────────────
+// emitNotification stamps `quiet: true` on rows created inside the
+// recipient's center quiet window. Those rows are delivered (they render in
+// the bell and on /notifications) but stay OUT of the unread badge until the
+// window ends - a pure read-time rule, no data change when morning comes.
+
+/** True when hour `h` (0-23) falls inside the quiet window [start, end),
+ *  handling windows that wrap past midnight (e.g. 22 → 7). start === end is
+ *  treated as no window. (Mirrors the store's private inQuietWindow.) */
+function inQuietWindow(h: number, start: number, end: number): boolean {
+  if (start < end) return h >= start && h < end;
+  if (start > end) return h >= start || h < end;
+  return false;
+}
+
+/** Is the recipient's center quiet window active right now?
+ *  America/Phoenix wall clock: UTC-7 year-round (no DST). */
+function quietWindowActive(user: { centerId?: string }): boolean {
+  const policy = centerPolicyFor(user.centerId);
+  if (
+    !policy ||
+    policy.quietHoursStart === undefined ||
+    policy.quietHoursEnd === undefined
+  ) {
+    return false;
+  }
+  const phoenixHour = new Date(Date.now() - 7 * 3600e3).getUTCHours();
+  return inQuietWindow(phoenixHour, policy.quietHoursStart, policy.quietHoursEnd);
+}
+
+/** Unread rows that should light the badge - quiet rows are excluded while
+ *  the recipient's quiet window is still active, then count normally. */
+function unreadCount(user: { id: string; centerId?: string }): number {
+  const quietNow = quietWindowActive(user);
   return notifStore().notifications.filter(
-    (n) => n.userId === userId && !n.read
+    (n) => n.userId === user.id && !n.read && !(quietNow && n.quiet)
   ).length;
 }
 
@@ -31,7 +64,7 @@ export async function GET() {
     .sort((a, b) => b.createdAt - a.createdAt);
   return NextResponse.json({
     notifications,
-    unreadCount: notifications.filter((n) => !n.read).length,
+    unreadCount: unreadCount(user),
   });
 }
 
@@ -56,5 +89,5 @@ export async function POST(req: Request) {
     n.read = true;
   }
   save();
-  return NextResponse.json({ ok: true, unreadCount: unreadCount(user.id) });
+  return NextResponse.json({ ok: true, unreadCount: unreadCount(user) });
 }

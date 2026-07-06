@@ -235,11 +235,15 @@ function ChannelsCard() {
 
 const COLLAPSED_CIRCLES = 4;
 
+/** GET /api/circles rows carry an unread-activity count. Optional so the
+ *  rail degrades gracefully if the field is absent. */
+type CircleWithNew = CircleSummary & { newPosts?: number };
+
 function CirclesCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeCircle = searchParams.get("circle");
-  const [circles, setCircles] = useState<CircleSummary[] | null>(null);
+  const [circles, setCircles] = useState<CircleWithNew[] | null>(null);
   const [browseAll, setBrowseAll] = useState(false);
 
   useEffect(() => {
@@ -258,9 +262,26 @@ function CirclesCard() {
     };
   }, []);
 
-  function select(id: string) {
+  function select(c: CircleWithNew) {
+    // Opening a joined circle counts as seeing it - zero the badge locally
+    // and fire-and-forget the server marker while the lens switches.
+    if (c.joined) {
+      fetch("/api/circles/seen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ circleId: c.id }),
+        keepalive: true,
+      }).catch(() => {});
+      if (c.newPosts) {
+        setCircles((prev) =>
+          prev
+            ? prev.map((x) => (x.id === c.id ? { ...x, newPosts: 0 } : x))
+            : prev
+        );
+      }
+    }
     // Circles replace the topic view - one active lens at a time.
-    router.replace(`/community?circle=${encodeURIComponent(id)}`, {
+    router.replace(`/community?circle=${encodeURIComponent(c.id)}`, {
       scroll: false,
     });
   }
@@ -298,7 +319,7 @@ function CirclesCard() {
                 <li key={c.id}>
                   <button
                     type="button"
-                    onClick={() => select(c.id)}
+                    onClick={() => select(c)}
                     aria-current={on ? "page" : undefined}
                     className={
                       "flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl py-1.5 pl-2 pr-3 text-left text-[14px] transition-colors " +
@@ -328,6 +349,14 @@ function CirclesCard() {
                         {c.members === 1 ? "member" : "members"}
                       </span>
                     </span>
+                    {c.joined && (c.newPosts ?? 0) > 0 && (
+                      <span
+                        className="tnum inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full bg-blue-primary px-1.5 text-[10px] font-extrabold text-white"
+                        aria-label={`${c.newPosts} new ${c.newPosts === 1 ? "post" : "posts"}`}
+                      >
+                        {c.newPosts}
+                      </span>
+                    )}
                     {c.joined && (
                       <span className="inline-flex h-5 flex-none items-center rounded-full bg-sky-tint px-2 text-[10px] font-extrabold tracking-[.04em] text-blue-primary">
                         JOINED

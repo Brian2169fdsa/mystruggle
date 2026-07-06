@@ -14,6 +14,7 @@ import {
   Heart,
   Info,
   MessageCircle,
+  Moon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -41,6 +42,10 @@ export type NotificationItem = {
   refType?: string;
   refId?: string;
   read: boolean;
+  // Emitted inside the recipient's center quiet window (docs/16). The row
+  // renders normally but the server keeps it out of unreadCount until the
+  // quiet window ends - the "Quiet hours" chip explains the difference.
+  quiet?: boolean;
   createdAt: number;
 };
 
@@ -73,7 +78,9 @@ export function notificationHref(n: NotificationItem): string | null {
   const refType = n.refType ?? "";
   switch (refType) {
     case "post":
-      return n.refId ? `/community#post-${n.refId}` : "/community";
+      // Single-post permalink - works even when the post has scrolled off
+      // feed page 1 (the old /community#post-… anchor only found page one).
+      return n.refId ? `/community/p/${n.refId}` : "/community";
     case "event":
       return "/community/events";
     case "job":
@@ -320,8 +327,14 @@ export default function NotificationBell() {
                             {n.body}
                           </span>
                         )}
-                        <span className="mt-1 block text-[12px] font-medium text-ink-400">
+                        <span className="mt-1 flex items-center gap-2 text-[12px] font-medium text-ink-400">
                           {relTime(n.createdAt)}
+                          {n.quiet && (
+                            <span className="inline-flex items-center gap-1 text-indigo-brand">
+                              <Moon size={11} aria-hidden />
+                              Quiet hours
+                            </span>
+                          )}
                         </span>
                       </span>
                       {href && (

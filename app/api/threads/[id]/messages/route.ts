@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, addMessage } from "@/app/lib/store";
+import { db, addMessage, emitNotification } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { MessageKind } from "@/app/lib/types";
 
@@ -57,5 +57,28 @@ export async function POST(
   }
 
   const message = addMessage(thread, user, text, kind, mood);
+
+  // Bell notification for the OTHER participant (non-fatal). Kind
+  // "care_message" keeps the copy warm and the payload private - the
+  // message text itself never rides the notification.
+  try {
+    const otherId = thread.participantIds.find((p) => p !== user.id);
+    if (otherId) {
+      const first = user.name.split(/\s+/)[0];
+      emitNotification(
+        otherId,
+        "care_message",
+        kind === "cheer" ? `A cheer from ${first} 🎉` : `New message from ${first}`,
+        kind === "cheer"
+          ? `${first} is cheering you on. Open your chat to see it.`
+          : `${first} sent you a message.`,
+        "thread",
+        thread.id
+      );
+    }
+  } catch {
+    // never block the send
+  }
+
   return NextResponse.json({ message });
 }

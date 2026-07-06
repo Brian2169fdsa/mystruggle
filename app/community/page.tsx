@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
+import { Lock } from "lucide-react";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import PrototypeMap from "../components/PrototypeMap";
 import { getSessionUser } from "../lib/auth";
-import { toSafeUser } from "../lib/types";
+import { centerPolicyFor, db } from "../lib/store";
+import { toSafeUser, type CareEpisode, type User } from "../lib/types";
 import CommunityTabBar from "./_components/CommunityTabBar";
 import Feed from "./_components/Feed";
 import LeftRail from "./_components/rails/LeftRail";
@@ -40,6 +43,56 @@ function FeedFallback() {
   );
 }
 
+/** True when this member's center policy keeps them portal-only right now:
+ *  CenterPolicy.portalOnlyEarlyPhase is on AND their latest care episode is
+ *  in_program at a residential or detox level of care (docs/16). Mirrors the
+ *  /api/portal policy computation. Defensive: signed-out visitors, staff,
+ *  mentors, and members without a policy row or episode are never gated. */
+function isPortalOnly(user: User | null): boolean {
+  if (!user || user.role !== "member") return false;
+  const policy = centerPolicyFor(user.centerId);
+  if (policy?.portalOnlyEarlyPhase !== true) return false;
+  const d = db() as { careEpisodes?: CareEpisode[] };
+  const episodes = Array.isArray(d.careEpisodes) ? d.careEpisodes : [];
+  const latest = episodes
+    .filter((e) => e.memberId === user.id)
+    .sort((a, b) => b.startedAt - a.startedAt)[0];
+  return (
+    !!latest &&
+    latest.carePhase === "in_program" &&
+    (latest.levelOfCare === "residential" || latest.levelOfCare === "detox")
+  );
+}
+
+/** Warm locked state rendered instead of the feed for portal-only members -
+ *  the same card the member app shows in place of its community section. */
+function PortalOnlyLocked() {
+  return (
+    <div className="min-h-screen bg-canvas">
+      <Nav />
+      <main className="mx-auto flex max-w-[1240px] items-center justify-center px-4 py-16 lg:py-[110px]">
+        <div className="w-full max-w-[440px] rounded-2xl bg-white px-7 py-10 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-tint text-indigo-brand">
+            <Lock size={20} />
+          </div>
+          <p className="mx-auto mt-4 max-w-[340px] text-[15.5px]/[1.65] font-semibold text-ink-900">
+            Your program comes first right now - the community unlocks as you
+            progress. Your center can tell you more.
+          </p>
+          <Link
+            href="/member-app"
+            className="mt-6 inline-flex h-11 items-center rounded-full bg-blue-primary px-6 text-[14px] font-bold text-white hover:bg-blue-hover"
+          >
+            Go to My Program
+          </Link>
+        </div>
+      </main>
+      <Footer />
+      <PrototypeMap />
+    </div>
+  );
+}
+
 /**
  * /community - the desktop social recovery community.
  * Three columns on lg+: channel rail · feed · community rail. Below lg the
@@ -48,6 +101,8 @@ function FeedFallback() {
  */
 export default async function CommunityPage() {
   const sessionUser = await getSessionUser();
+  // Portal-only early-phase members get the warm locked card, not the feed.
+  if (isPortalOnly(sessionUser)) return <PortalOnlyLocked />;
   const viewer = sessionUser ? toSafeUser(sessionUser) : null;
   return (
     <div className="min-h-screen bg-canvas">

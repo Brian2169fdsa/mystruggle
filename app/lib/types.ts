@@ -975,6 +975,15 @@ export interface MessageRead { id:string; messageId:string; userId:string; readA
  *  postId is set once approved + published to the community feed. */
 export interface Spotlight { id:string; memberId:string; staffId:string; title:string; body:string; status:"pending_consent"|"approved"|"declined"; createdAt:number; decidedAt?:number; postId?:string; }
 
+// ── Circle activity signal ("N new posts") ─────────────────────────────
+// EXPANSION: additive only - nothing above this line changes. One row per
+// (user, circle): the last moment that user looked at that circle's feed.
+// GET /api/circles counts approved, non-hidden circle posts newer than
+// seenAt (no row = a 7-day default window) into a `newPosts` badge.
+
+/** A user's last-seen marker on one circle - powers unread post counts. */
+export interface CircleSeen { id:string; circleId:string; userId:string; seenAt:number; }
+
 /** What /api/auth/me returns - never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 

@@ -254,6 +254,39 @@ export default function MentorApp() {
     [rosterLive, threadFor]
   );
 
+  /** Ensure the DM thread with a mentee exists - the one we already have when
+   *  there is one, otherwise the mentor-side find-or-create (POST /api/threads
+   *  with { memberId }). Newly created threads are merged into the list so
+   *  threadFor sees them immediately. Returns null only when the API says no
+   *  (not our mentee) or the network fails - the honest fallback path. */
+  const ensureThread = useCallback(
+    async (m: MenteeAnalytics): Promise<ThreadSummary | null> => {
+      const existing = threadFor(m);
+      if (existing) return existing;
+      const memberId = menteeId(m);
+      if (!memberId) return null;
+      try {
+        const res = await fetch("/api/threads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId }),
+        });
+        const data = await res.json().catch(() => null);
+        if (res.ok && data?.thread) {
+          const t = data.thread as ThreadSummary;
+          setThreads((prev) =>
+            prev.some((p) => p.id === t.id) ? prev : [...prev, t]
+          );
+          return t;
+        }
+      } catch {
+        /* fall through to the honest fallback */
+      }
+      return null;
+    },
+    [threadFor, menteeId]
+  );
+
   const loadSessions = useCallback(async (memberId: string) => {
     try {
       const res = await fetch(`/api/sessions?memberId=${memberId}`);
@@ -373,18 +406,21 @@ export default function MentorApp() {
     })();
   };
 
-  /** Amber nudge banner - opens the mentee's thread when one exists. */
-  const openNudge = (m: MenteeAnalytics) => {
-    const t = threadFor(m);
-    if (signedIn && t) {
+  /** Amber nudge banner - ensure-thread-first, then open the conversation.
+   *  The mentor never has to wait for the mentee to open the app. */
+  const openNudge = async (m: MenteeAnalytics) => {
+    if (!signedIn) {
+      setActiveThread(null);
+      setView("thread"); // static demo conversation
+      return;
+    }
+    const t = await ensureThread(m);
+    if (t) {
       setCameFrom("roster");
       setActiveThread(t);
       setView("thread");
-    } else if (!signedIn) {
-      setActiveThread(null);
-      setView("thread"); // static demo conversation
     } else {
-      openDetail(m);
+      openDetail(m); // final fallback - detail still shows everything else
     }
   };
 
@@ -425,16 +461,17 @@ export default function MentorApp() {
     }
   };
 
-  /** Cheer from mentee detail - a real chat message when a thread exists;
-   *  an honest "no thread yet" note when it doesn't (threads are opened from
-   *  the mentee's side, so there's nothing to post into until then). */
-  const sendCheer = () => {
+  /** Cheer from mentee detail - ensure the thread exists first (mentors can
+   *  now open it themselves via POST /api/threads), then post the cheer as a
+   *  real chat message. The amber "couldn't reach chat" note is only the
+   *  final fallback when ensure-thread fails (offline, or not our mentee). */
+  const sendCheer = async () => {
     if (!activeMentee) return;
     if (!signedIn) {
       setCheerResult("sent"); // demo behavior, banner only
       return;
     }
-    const t = threadFor(activeMentee);
+    const t = await ensureThread(activeMentee);
     if (t) {
       setCheerResult("sent");
       fetch(`/api/threads/${t.id}/messages`, {
@@ -674,8 +711,9 @@ export default function MentorApp() {
               {cheerResult === "nothread" && (
                 <div className="flex justify-center">
                   <span className="inline-flex min-h-10 items-center gap-2 rounded-full bg-amber-bg px-5 py-2 text-center text-[13px] font-bold text-amber-ink">
-                    No chat with {firstName(activeMentee.name)} yet - cheers
-                    land there once they open the app
+                    Couldn&apos;t reach {firstName(activeMentee.name)}&apos;s
+                    chat just now - your cheer wasn&apos;t sent. Try again in a
+                    moment.
                   </span>
                 </div>
               )}

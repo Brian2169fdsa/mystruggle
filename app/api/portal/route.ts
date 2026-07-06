@@ -10,7 +10,7 @@
 // only (User.name is first-name-only by convention).
 
 import { NextResponse } from "next/server";
-import { db, findUserById } from "@/app/lib/store";
+import { db, findUserById, centerPolicyFor } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { CareChannel, User } from "@/app/lib/types";
 
@@ -118,6 +118,30 @@ function programChannelId(
   return byCenter?.id ?? null;
 }
 
+/** Center-policy enforcement flags for the session member (docs/16).
+ *  "Early phase" = the member's latest care episode is in_program at a
+ *  residential or detox level of care. portalOnly gates community-facing
+ *  affordances entirely (CenterPolicy.portalOnlyEarlyPhase); communityAllowed
+ *  reflects CenterPolicy.communityAccessDuringResidential for the same window.
+ *  Defensive: no policy row or no episode leaves both flags permissive. */
+function policyFor(d: PortalDB, user: User) {
+  const episodes = Array.isArray(d.careEpisodes) ? d.careEpisodes : [];
+  const latest = episodes
+    .filter((e) => e.memberId === user.id)
+    .sort((a, b) => toMs(b.startedAt) - toMs(a.startedAt))[0];
+  const earlyPhase =
+    !!latest &&
+    latest.carePhase === "in_program" &&
+    (latest.levelOfCare === "residential" || latest.levelOfCare === "detox");
+  const policy = centerPolicyFor(user.centerId);
+  return {
+    portalOnly: policy?.portalOnlyEarlyPhase === true && earlyPhase,
+    communityAllowed: !(
+      policy?.communityAccessDuringResidential === false && earlyPhase
+    ),
+  };
+}
+
 /* ── GET - the whole portal payload in one round trip ────────────────── */
 
 export async function GET() {
@@ -129,6 +153,7 @@ export async function GET() {
   const d = db() as PortalDB;
   const tasks = tasksFor(d, user);
   const kudos = kudosFor(d, user);
+  const policy = policyFor(d, user);
 
   // The member's active program enrollment (one active run at a time).
   const enrollment =
@@ -142,6 +167,7 @@ export async function GET() {
       program: null,
       today: { sessions: [], tasks },
       kudos,
+      policy,
     });
   }
 
@@ -220,5 +246,6 @@ export async function GET() {
     },
     today: { sessions, tasks },
     kudos,
+    policy,
   });
 }

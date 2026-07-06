@@ -17,6 +17,8 @@ import {
   Megaphone,
   Sparkles,
   Plus,
+  Upload,
+  X,
 } from "lucide-react";
 import { CARD, SKELETON } from "./types";
 
@@ -175,6 +177,38 @@ function localToMs(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Minimal CSV -> identifier list for the cohort importer. Takes the FIRST
+ *  column of each line (handling quoted cells with "" escapes and commas
+ *  inside quotes), skips a header row when its first cell is neither numeric
+ *  nor an email (no "@"), dedupes, and caps at 200 rows. */
+function parseCsvIdentifiers(text: string): string[] {
+  const firstCell = (line: string): string => {
+    const t = line.trim();
+    if (t.startsWith('"')) {
+      let out = "";
+      for (let i = 1; i < t.length; i++) {
+        if (t[i] === '"') {
+          if (t[i + 1] === '"') {
+            out += '"';
+            i++; // escaped quote
+          } else break; // closing quote
+        } else out += t[i];
+      }
+      return out.trim();
+    }
+    const comma = t.indexOf(",");
+    return (comma === -1 ? t : t.slice(0, comma)).trim();
+  };
+  const cells = text
+    .split(/\r?\n/)
+    .map(firstCell)
+    .filter(Boolean);
+  if (cells.length > 0 && !/^\d+$/.test(cells[0]) && !cells[0].includes("@")) {
+    cells.shift(); // header row ("member_number", "Email", ...)
+  }
+  return [...new Set(cells)].slice(0, 200);
+}
+
 // ── component ────────────────────────────────────────────────────────────
 
 export default function Programs() {
@@ -208,6 +242,21 @@ export default function Programs() {
   const [cohortLabel, setCohortLabel] = useState("");
   const [enrolling, setEnrolling] = useState(false);
   const [enrollMsg, setEnrollMsg] = useState<string | null>(null);
+
+  // CSV cohort import (identifiers = member numbers or emails).
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvPaste, setCsvPaste] = useState("");
+  const [csvIdentifiers, setCsvIdentifiers] = useState<string[]>([]);
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [csvError, setCsvError] = useState<string | null>(null);
+  const [csvResult, setCsvResult] = useState<{
+    enrolled: number;
+    already: number;
+    unmatched: string[];
+  } | null>(null);
+
+  // Preview-as-client modal (member-app-style view of this program).
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // Completion (memberId in flight - one graduation at a time per member).
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -274,6 +323,12 @@ export default function Programs() {
       setPickerOpen(false);
       setPicked(new Set());
       setAttSessionId(null);
+      setCsvOpen(false);
+      setCsvPaste("");
+      setCsvIdentifiers([]);
+      setCsvError(null);
+      setCsvResult(null);
+      setPreviewOpen(false);
       loadDetail(selectedId);
     }
   }, [selectedId, loadDetail]);
@@ -406,6 +461,45 @@ export default function Programs() {
       setEnrollMsg("Couldn't enroll right now.");
     } finally {
       setEnrolling(false);
+    }
+  }
+
+  /** CSV cohort import - POSTs the parsed identifiers; the server resolves
+   *  each against the roster by exact member number or email. */
+  async function importCsv() {
+    if (!detail || csvIdentifiers.length === 0 || csvImporting) return;
+    setCsvImporting(true);
+    setCsvError(null);
+    setCsvResult(null);
+    try {
+      const res = await fetch(`/api/programs/${detail.program.id}/enroll`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifiers: csvIdentifiers }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        enrollments?: unknown[];
+        skipped?: number;
+        unmatched?: string[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setCsvError(data.error ?? "Couldn't import right now.");
+        return;
+      }
+      setCsvResult({
+        enrolled: data.enrollments?.length ?? 0,
+        already: data.skipped ?? 0,
+        unmatched: data.unmatched ?? [],
+      });
+      setCsvPaste("");
+      setCsvIdentifiers([]);
+      await loadDetail(detail.program.id);
+      loadPrograms();
+    } catch {
+      setCsvError("Couldn't import right now.");
+    } finally {
+      setCsvImporting(false);
     }
   }
 
@@ -892,18 +986,27 @@ export default function Programs() {
                     </div>
                   </div>
 
-                  {!detail.program.isTemplate &&
-                    detail.program.status === "draft" && (
-                      <button
-                        type="button"
-                        onClick={publish}
-                        disabled={publishing}
-                        className={PRIMARY_BTN + " gap-1.5"}
-                      >
-                        <Megaphone size={15} strokeWidth={2.5} />
-                        {publishing ? "Publishing…" : "Publish program"}
-                      </button>
-                    )}
+                  <div className="flex flex-none flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewOpen(true)}
+                      className={GHOST_BTN}
+                    >
+                      Preview as client 👁
+                    </button>
+                    {!detail.program.isTemplate &&
+                      detail.program.status === "draft" && (
+                        <button
+                          type="button"
+                          onClick={publish}
+                          disabled={publishing}
+                          className={PRIMARY_BTN + " gap-1.5"}
+                        >
+                          <Megaphone size={15} strokeWidth={2.5} />
+                          {publishing ? "Publishing…" : "Publish program"}
+                        </button>
+                      )}
+                  </div>
                 </div>
 
                 {channelMsg && (
@@ -972,15 +1075,138 @@ export default function Programs() {
                           Everyone walking this program together.
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setPickerOpen((v) => !v)}
-                        className={GHOST_BTN + " gap-1.5"}
-                      >
-                        <Plus size={15} strokeWidth={2.5} />
-                        Enroll members
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCsvOpen((v) => !v)}
+                          className={GHOST_BTN + " gap-1.5"}
+                        >
+                          <Upload size={15} strokeWidth={2.5} />
+                          Import cohort (CSV)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPickerOpen((v) => !v)}
+                          className={GHOST_BTN + " gap-1.5"}
+                        >
+                          <Plus size={15} strokeWidth={2.5} />
+                          Enroll members
+                        </button>
+                      </div>
                     </div>
+
+                    {/* ── CSV cohort import panel ─────────────────────── */}
+                    {csvOpen && (
+                      <div className="mt-4 rounded-xl border-[1.5px] border-sky-tint p-4">
+                        <div className="text-[13px] font-bold text-ink-900">
+                          Import a cohort from CSV
+                        </div>
+                        <div className="mt-0.5 text-[12px] font-medium text-ink-600">
+                          One member per row - we read the first column (member
+                          # or email) and match it against your roster. Up to
+                          200 rows.
+                        </div>
+                        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <label className="flex flex-col gap-1.5">
+                            <span className={LABEL}>Upload a .csv file</span>
+                            <input
+                              type="file"
+                              accept=".csv,text/csv"
+                              onChange={async (e) => {
+                                const f = e.target.files?.[0];
+                                if (!f) return;
+                                const text = await f.text();
+                                setCsvPaste(text);
+                                setCsvIdentifiers(parseCsvIdentifiers(text));
+                                setCsvResult(null);
+                                setCsvError(null);
+                                e.target.value = "";
+                              }}
+                              className="w-full cursor-pointer rounded-xl border-[1.5px] border-sky-tint bg-white px-4 py-3 text-[13px] font-medium text-ink-600 file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-sky-tint file:px-4 file:py-1.5 file:text-[12px] file:font-bold file:text-blue-primary"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1.5">
+                            <span className={LABEL}>Or paste rows</span>
+                            <textarea
+                              className={INPUT + " min-h-[88px] resize-y"}
+                              value={csvPaste}
+                              onChange={(e) => {
+                                setCsvPaste(e.target.value);
+                                setCsvIdentifiers(
+                                  parseCsvIdentifiers(e.target.value)
+                                );
+                                setCsvResult(null);
+                                setCsvError(null);
+                              }}
+                              placeholder={
+                                "member_number\n039521464\ndanielle@themystruggles.com"
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        {csvIdentifiers.length > 0 && (
+                          <div className="mt-3">
+                            <div className={LABEL}>
+                              Preview · {csvIdentifiers.length} row
+                              {csvIdentifiers.length === 1 ? "" : "s"}
+                            </div>
+                            <div className="mt-2 flex max-h-[140px] flex-wrap gap-1.5 overflow-y-auto">
+                              {csvIdentifiers.map((idf) => (
+                                <span
+                                  key={idf}
+                                  className="inline-flex h-[24px] items-center rounded-full bg-sky-tint px-2.5 text-[11px] font-bold text-blue-primary"
+                                >
+                                  {idf}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {csvError && (
+                          <div className="mt-3 rounded-xl bg-amber-bg px-4 py-3 text-[13px] font-medium text-ink-900">
+                            {csvError}
+                          </div>
+                        )}
+
+                        {csvResult && (
+                          <div className="mt-3 rounded-xl bg-canvas px-4 py-3">
+                            <div className="text-[13px] font-bold text-ink-900">
+                              {csvResult.enrolled} enrolled ·{" "}
+                              {csvResult.already} already in ·{" "}
+                              {csvResult.unmatched.length} not found
+                              {csvResult.unmatched.length > 0 ? ":" : ""}
+                            </div>
+                            {csvResult.unmatched.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {csvResult.unmatched.map((idf) => (
+                                  <span
+                                    key={idf}
+                                    className="inline-flex h-[24px] items-center rounded-full bg-amber-bg px-2.5 text-[11px] font-bold text-amber-ink"
+                                  >
+                                    {idf}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={importCsv}
+                          disabled={csvIdentifiers.length === 0 || csvImporting}
+                          className={PRIMARY_BTN + " mt-3"}
+                        >
+                          {csvImporting
+                            ? "Importing…"
+                            : csvIdentifiers.length > 0
+                              ? `Enroll ${csvIdentifiers.length} from CSV`
+                              : "Enroll from CSV"}
+                        </button>
+                      </div>
+                    )}
 
                     {enrollMsg && (
                       <div className="mt-4 rounded-xl bg-[#E8F8F0] px-4 py-3 text-[13px] font-medium text-ink-900">
@@ -1345,6 +1571,164 @@ export default function Programs() {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* ── preview-as-client modal (member-app view) ────────── */}
+              {previewOpen && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B2545]/50 p-4"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Member view preview"
+                  onClick={() => setPreviewOpen(false)}
+                >
+                  {/* 430px phone frame - staff literally see the phone view */}
+                  <div
+                    className="flex max-h-[88vh] w-[430px] max-w-full flex-col overflow-hidden rounded-[36px] border-[6px] border-[#0B2545] bg-white shadow-[0_24px_60px_rgba(11,37,69,.45)]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex flex-none items-center justify-between px-5 pb-2 pt-4">
+                      <span className="text-[11px] font-bold uppercase tracking-[.12em] text-ink-400">
+                        Member view · preview
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewOpen(false)}
+                        aria-label="Close preview"
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink-600 hover:bg-canvas"
+                      >
+                        <X size={18} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                    <div className="overflow-y-auto px-5 pb-6">
+                      {/* My Program card - navy gradient, as the member app
+                          renders it (progress starts at 0%) */}
+                      <div className="rounded-2xl bg-gradient-to-br from-navy-deep to-indigo-brand p-5 text-white shadow-[0_6px_20px_rgba(11,37,69,.25)]">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold tracking-[.14em] text-white/60">
+                            MY PROGRAM
+                          </span>
+                          {(() => {
+                            const cohort = activeEnrollments.find(
+                              (e) => e.cohortLabel
+                            )?.cohortLabel;
+                            return cohort ? (
+                              <span className="inline-flex h-6 items-center rounded-full bg-white/15 px-2.5 text-[10px] font-extrabold tracking-[.04em] text-white">
+                                {cohort}
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          {detail.program.badge && (
+                            <span
+                              title={`Program badge: ${detail.program.badge}`}
+                              className="h-2.5 w-2.5 flex-none rounded-full bg-white/90 shadow-[0_0_8px_rgba(255,255,255,.7)]"
+                            />
+                          )}
+                          <span className="min-w-0 truncate text-[19px] font-extrabold tracking-[-0.01em]">
+                            {detail.program.title}
+                          </span>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-white/70">
+                              Curriculum progress
+                            </span>
+                            <span className="tnum text-white/85">0%</span>
+                          </div>
+                          <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/20">
+                            <div className="h-full w-0 rounded-full bg-white/80" />
+                          </div>
+                          {detail.curriculum.length > 0 && (
+                            <div className="mt-2 truncate text-[12.5px] font-semibold text-white/85">
+                              Next up: {detail.curriculum[0].label}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Curriculum as the member sees it */}
+                      <div className="mt-4">
+                        <div className={LABEL}>Your curriculum</div>
+                        {detail.curriculum.length === 0 && (
+                          <div className="mt-2 rounded-xl bg-canvas px-4 py-4 text-center text-[12px] font-semibold text-ink-400">
+                            No curriculum items yet.
+                          </div>
+                        )}
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          {detail.curriculum.map((item, i) => {
+                            const meta = KIND_META[item.kind] ?? KIND_META.course;
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-2.5 rounded-xl bg-canvas px-3.5 py-2.5"
+                              >
+                                <span className="tnum w-5 flex-none text-center text-[11px] font-extrabold text-ink-400">
+                                  {i + 1}
+                                </span>
+                                <span
+                                  className="flex h-8 w-8 flex-none items-center justify-center rounded-full"
+                                  style={{
+                                    background: meta.bg,
+                                    color: meta.color,
+                                  }}
+                                >
+                                  <meta.Icon size={14} strokeWidth={2.3} />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-ink-900">
+                                  {item.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Next 2 upcoming sessions */}
+                      <div className="mt-4">
+                        <div className={LABEL}>Coming up</div>
+                        {upcomingSessions.length === 0 && (
+                          <div className="mt-2 rounded-xl bg-canvas px-4 py-4 text-center text-[12px] font-semibold text-ink-400">
+                            No sessions scheduled yet.
+                          </div>
+                        )}
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          {upcomingSessions.slice(0, 2).map((s) => (
+                            <div
+                              key={s.id}
+                              className="rounded-xl bg-canvas px-3.5 py-2.5"
+                            >
+                              <div className="text-[13px] font-bold text-ink-900">
+                                {s.title}
+                              </div>
+                              <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-semibold text-ink-600">
+                                <span className="inline-flex items-center gap-1">
+                                  <CalendarClock
+                                    size={13}
+                                    strokeWidth={2.3}
+                                    className="text-blue-primary"
+                                  />
+                                  {fmtWhen(s.startsAt)} · {s.durationMin} min
+                                </span>
+                                {s.location && (
+                                  <span className="inline-flex items-center gap-1">
+                                    <MapPin
+                                      size={13}
+                                      strokeWidth={2.3}
+                                      className="text-blue-primary"
+                                    />
+                                    {s.location}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}

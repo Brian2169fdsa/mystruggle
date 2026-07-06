@@ -86,12 +86,16 @@ export default function PostCard({
   post,
   viewer,
   onChange,
+  initialCommentsOpen = false,
 }: {
   post: FeedPost;
   viewer: SafeUser | null;
   onChange: (next: FeedPost) => void;
+  /** Standalone surfaces (the /community/p/[id] permalink) open the comment
+   *  thread immediately - the feed keeps its collapsed default. */
+  initialCommentsOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialCommentsOpen);
   const [focusKey, setFocusKey] = useState(0);
   const [nudge, setNudge] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

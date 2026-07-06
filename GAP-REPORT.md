@@ -1,3 +1,35 @@
+# Gap Report - run 2026-07-06-18 (loop wave 1: Guide live, permalinks, portal-only, circles activity)
+
+## Run 18 summary
+Signed-out ad eligibility (pushed first so the rail ads demo without login),
+then six agents + a direct fix - all verified live on seed v20 (tsc clean,
+build green 96 pages):
+- The Guide is REAL site-wide: the floating widget answers from /api/guide -
+  visitor mode signed-out (what/giving 50-50+Reentry Fund/join/centers/
+  employers/meetings, crisis -> 988 FIRST), full plan-aware mode for members
+  (regression-verified byte-identical), linkified replies, graceful fallback.
+- Post permalinks /community/p/[id] (same consent/hidden/circle gates as the
+  feed, author-only for pending, comments open on arrival); notification post
+  links point there. Quiet-hours notifications excluded from the bell badge
+  until the window ends (verified DURING the real 22-7 window; moon chip).
+- Portal-only enforcement: /api/portal exposes {portalOnly, communityAllowed};
+  member-app hides its community section behind a warm locked card; /community
+  server-gates early-phase members. Kiosk 5-min idle logout now also runs
+  inside the member app. All verified with a temporary residential episode.
+- CSV cohort import (memberNumber OR email, resolved/unmatched chips) +
+  preview-as-client (430px phone-frame modal) in the Program Builder.
+- Circle activity: "N new" badges (7-day default window) + seen beacons in
+  the browser and left rail; /api/circles/seen. Seed v20.
+- Mentor thread creation: POST /api/threads {memberId} find-or-create for a
+  mentor's OWN mentees (403 others); cheer/message are ensure-thread-first.
+- DM bell notifications: thread messages now notify the other participant
+  (kind care_message, text never rides the payload) - verified interacting
+  correctly with quiet hours (delivered, badge-silent at Phoenix 2am).
+
+## Loop queue (next waves)
+Events promoted as sponsored placements; redemption records + member gift
+history depth; community search; employer promote-in-community + bell badge.
+
 # Gap Report - run 2026-07-06-17 (community rail ads + center-ops completion)
 
 ## Run 17 summary
