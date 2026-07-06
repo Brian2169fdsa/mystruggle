@@ -937,10 +937,10 @@ function SocialWall() {
       ),
     },
     {
-      tag: "FB",
+      tag: "MS",
       handle: "My Struggle",
       when: "4 days ago",
-      href: "https://www.facebook.com",
+      href: "/community",
       cap: "Pantry restock day",
       img: "/pantry-restock.png",
       video: false,
@@ -1035,7 +1035,7 @@ function SocialWall() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
-          {["Facebook", "Instagram", "TikTok", "YouTube", "LinkedIn"].map(
+          {["Instagram", "TikTok", "YouTube", "LinkedIn"].map(
             (p) => (
               <span
                 key={p}

@@ -90,7 +90,7 @@ const COMPOSER_KINDS: { value: PostKind; label: string; gold?: boolean }[] = [
 ];
 
 /**
- * Facebook-style community feed — fully self-contained.
+ * Social recovery community feed — fully self-contained.
  * Fetches its own auth + posts, polls every 10s, optimistic everywhere.
  */
 export default function CommunityFeed({ compact = false }: { compact?: boolean }) {

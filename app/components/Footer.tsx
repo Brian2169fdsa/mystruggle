@@ -3,11 +3,6 @@ import NewsletterForm from "./NewsletterForm";
 
 const SOCIALS = [
   {
-    tag: "FB",
-    label: "My Struggle social page",
-    href: "https://www.facebook.com/themystruggle",
-  },
-  {
     tag: "IG",
     label: "My Struggle on Instagram",
     href: "https://www.instagram.com/themystruggle",

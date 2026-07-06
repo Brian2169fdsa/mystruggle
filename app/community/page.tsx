@@ -40,7 +40,7 @@ function FeedFallback() {
 }
 
 /**
- * /community — the desktop Facebook-style recovery community.
+ * /community — the desktop social recovery community.
  * Three columns on lg+: channel rail · feed · community rail. Below lg the
  * rails collapse and the feed's horizontal topic chip row takes over.
  */
