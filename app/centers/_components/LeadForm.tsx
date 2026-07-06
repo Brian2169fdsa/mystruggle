@@ -112,7 +112,7 @@ export default function LeadForm() {
             name="orgName"
             type="text"
             autoComplete="organization"
-            placeholder="e.g. New Freedom Recovery"
+            placeholder="e.g. Desert Bloom Recovery"
             className={FIELD}
             aria-invalid={!!errors.orgName}
           />

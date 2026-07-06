@@ -38,7 +38,7 @@ Course → Modules → Lessons. Lesson `content` is a jsonb block array:
 
 - Courses carry a `program` category — **PON** (Position of Neutrality 12-step) · **VOC** (vocational) · **IOP** · **NAV** (navigation/case management) — powering the dashboard's per-program KPI cards and enrollment counts.
 - `delivery`: `self_paced` (default) or `group_facilitated` — group mode shows session schedule info and lets staff mark cohort attendance, mirroring the ISE's dual delivery model.
-- Standalone **video library** on the Learn tab with category chips (e.g., New Freedom, Motivational, Steps) — watchable outside course flow, counts toward daily streak activity.
+- Standalone **video library** on the Learn tab with category chips (e.g., published case-study, Motivational, Steps) — watchable outside course flow, counts toward daily streak activity.
 - **My Tracker / My Center** on the PWA Home: two progress rings over `journey_tasks` — personal + care-team tasks ("Job interview at ABC Painting") vs program tasks — with one-tap check-off. The Guide (docs/02 AI touchpoint 1) can add tasks conversationally.
 
 ## Participant Learn Tab

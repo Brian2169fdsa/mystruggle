@@ -17,6 +17,9 @@ import {
   CreditCard,
   Activity,
   GraduationCap,
+  Layers,
+  HeartHandshake,
+  Sparkles,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -34,6 +37,9 @@ import ProgramCockpit from "./_components/ProgramCockpit";
 import AlumniDashboard from "./_components/AlumniDashboard";
 import ReportsQueue from "./_components/ReportsQueue";
 import EventsManager from "./_components/EventsManager";
+import Programs from "./_components/Programs";
+import Caseload from "./_components/Caseload";
+import Engage from "./_components/Engage";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -60,23 +66,70 @@ type PageSection =
   | "cockpit"
   | "alumni"
   | "memberReports"
-  | "events";
+  | "events"
+  | "programs"
+  | "caseloads"
+  | "engage";
 
-const NAV = [
-  { key: "overview", label: "Overview", Icon: LayoutGrid },
-  { key: "participants", label: "Participants", Icon: Users },
-  { key: "cockpit", label: "Program cockpit", Icon: Activity },
-  { key: "alumni", label: "Alumni", Icon: GraduationCap },
-  { key: "applications", label: "Applications", Icon: ClipboardList },
-  { key: "giving", label: "Giving desk", Icon: Heart },
-  { key: "moderation", label: "Moderation", Icon: Flag },
-  { key: "memberReports", label: "Member reports", Icon: FlagTriangleRight },
-  { key: "events", label: "Events", Icon: CalendarDays },
-  { key: "ads", label: "Ad Manager", Icon: Megaphone },
-  { key: "adReview", label: "Ad Review", Icon: ShieldCheck },
-  { key: "leads", label: "Demo Leads", Icon: Inbox },
-  { key: "billing", label: "Billing", Icon: CreditCard },
-  { key: "reports", label: "Reports", Icon: BarChart3 },
+/** Final left-nav IA per docs/16: Overview · Programs · Participants ·
+ *  Caseloads · Mentorship · Community · Giving · Engage · Reports · Settings.
+ *  Grouped with small uppercase headers; every pre-existing section key stays
+ *  reachable exactly once. */
+const NAV_GROUPS = [
+  {
+    heading: null,
+    items: [
+      { key: "overview", label: "Overview", Icon: LayoutGrid },
+      { key: "programs", label: "Programs", Icon: Layers },
+      { key: "participants", label: "Participants", Icon: Users },
+      { key: "caseloads", label: "Caseloads", Icon: HeartHandshake },
+    ],
+  },
+  {
+    heading: "Mentorship",
+    items: [
+      { key: "applications", label: "Applications", Icon: ClipboardList },
+    ],
+  },
+  {
+    heading: "Community",
+    items: [
+      { key: "moderation", label: "Moderation", Icon: Flag },
+      {
+        key: "memberReports",
+        label: "Member reports",
+        Icon: FlagTriangleRight,
+      },
+      { key: "adReview", label: "Ad Review", Icon: ShieldCheck },
+      { key: "events", label: "Events", Icon: CalendarDays },
+    ],
+  },
+  {
+    heading: "Giving",
+    items: [
+      { key: "giving", label: "Giving desk", Icon: Heart },
+      { key: "billing", label: "Billing", Icon: CreditCard },
+    ],
+  },
+  {
+    heading: "Engage",
+    items: [{ key: "engage", label: "Engage", Icon: Sparkles }],
+  },
+  {
+    heading: "Reports",
+    items: [
+      { key: "reports", label: "Reports", Icon: BarChart3 },
+      { key: "cockpit", label: "Program cockpit", Icon: Activity },
+      { key: "alumni", label: "Alumni", Icon: GraduationCap },
+    ],
+  },
+  {
+    heading: "Settings",
+    items: [
+      { key: "ads", label: "Ad Manager", Icon: Megaphone },
+      { key: "leads", label: "Demo Leads", Icon: Inbox },
+    ],
+  },
 ] as const;
 
 /** Auth gate state - the dashboard renders nothing sensitive until /api/auth/me
@@ -356,46 +409,57 @@ export default function DashboardPage() {
           alt="My Struggle"
           className="mx-6 mb-[30px] h-[38px] w-auto self-start"
         />
-        {NAV.map(({ key, label, Icon }) => {
-          const on = activeKey === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setSection(key)}
-              className={
-                "flex w-full cursor-pointer items-center gap-3 border-l-[3px] px-6 py-3 text-left text-sm " +
-                (on
-                  ? "border-blue-primary bg-[rgba(46,124,214,.14)] font-bold text-sky-tint"
-                  : "border-transparent font-semibold text-white/65 hover:text-white/90")
-              }
-            >
-              <Icon size={15} strokeWidth={2.4} />
-              {label}
-              {key === "moderation" && pendingCount > 0 && (
-                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
-                  {pendingCount}
-                </span>
+        <nav className="min-h-0 flex-1 overflow-y-auto pb-4">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.heading ?? `group-${gi}`}>
+              {group.heading && (
+                <div className="mb-1 mt-4 px-6 text-[10px] font-bold uppercase tracking-[.14em] text-white/40">
+                  {group.heading}
+                </div>
               )}
-              {key === "adReview" && adReviewCount > 0 && (
-                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
-                  {adReviewCount}
-                </span>
-              )}
-              {key === "memberReports" && openReports > 0 && (
-                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
-                  {openReports}
-                </span>
-              )}
-              {key === "alumni" && alumniWatch > 0 && (
-                <span className="ml-auto inline-flex h-5 items-center rounded-full bg-gold-badge px-2 text-[11px] font-bold text-white">
-                  {alumniWatch}
-                </span>
-              )}
-            </button>
-          );
-        })}
-        <div className="mt-auto flex items-center gap-3 border-t border-white/10 px-6 pt-5">
+              {group.items.map(({ key, label, Icon }) => {
+                const on = activeKey === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSection(key)}
+                    className={
+                      "flex w-full cursor-pointer items-center gap-3 border-l-[3px] px-6 py-3 text-left text-sm " +
+                      (on
+                        ? "border-blue-primary bg-[rgba(46,124,214,.14)] font-bold text-sky-tint"
+                        : "border-transparent font-semibold text-white/65 hover:text-white/90")
+                    }
+                  >
+                    <Icon size={15} strokeWidth={2.4} />
+                    {label}
+                    {key === "moderation" && pendingCount > 0 && (
+                      <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                        {pendingCount}
+                      </span>
+                    )}
+                    {key === "adReview" && adReviewCount > 0 && (
+                      <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                        {adReviewCount}
+                      </span>
+                    )}
+                    {key === "memberReports" && openReports > 0 && (
+                      <span className="ml-auto inline-flex h-5 items-center rounded-full bg-blue-primary px-2 text-[11px] font-bold text-white">
+                        {openReports}
+                      </span>
+                    )}
+                    {key === "alumni" && alumniWatch > 0 && (
+                      <span className="ml-auto inline-flex h-5 items-center rounded-full bg-gold-badge px-2 text-[11px] font-bold text-white">
+                        {alumniWatch}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3 border-t border-white/10 px-6 pt-5">
           <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-sky-tint text-sm font-extrabold text-indigo-brand">
             {staff.name.charAt(0).toUpperCase()}
           </div>
@@ -483,6 +547,9 @@ export default function DashboardPage() {
           <ReportsQueue onOpenCount={setOpenReports} />
         )}
         {section === "events" && <EventsManager />}
+        {section === "programs" && <Programs />}
+        {section === "caseloads" && <Caseload />}
+        {section === "engage" && <Engage />}
       </main>
 
       <PrototypeMap />

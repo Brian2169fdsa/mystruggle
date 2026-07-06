@@ -133,7 +133,7 @@ journey_tasks                 -- guided goal tracking (REPrieve "My Tracker / My
   -- PWA Home shows two rings: My Tracker (self+care_team tasks) and My Center (program tasks)
 
 videos                        -- standalone motivational/educational video library
-  org_id → orgs, title text, url text, category text,                         -- e.g. 'New Freedom','Motivational','Steps'
+  org_id → orgs, title text, url text, category text,                         -- e.g. 'published case-study','Motivational','Steps'
   is_published boolean default true
 
 courses

@@ -64,7 +64,7 @@
 - [ ] Section/nav "For Recovery Centers"; hero "Treatment ends. The continuum doesn't." with animated before/during/after ribbon
 - [ ] Three-blind-spots explainer (before / after / engagement=efficacy)
 - [ ] Live-looking demo dashboard from seed (continuum ribbon + outcomes curves)
-- [ ] ROI/outcomes section with New Freedom benchmarks (40→65 / 50→65 / 30→80 / +20% / 2hrs)
+- [ ] ROI/outcomes section with published case-study benchmarks (40→65 / 50→65 / 30→80 / +20% / 2hrs)
 - [ ] "How the community follows them into the world" plain-language explainer tying community+goals+giving to center outcomes
 - [ ] Data & privacy/consent/licensing trust section
 - [ ] Request-a-demo / Partner CTA → lead capture

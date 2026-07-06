@@ -131,7 +131,7 @@ Centers are the buyer; the site must tell this story. New/expanded pages under a
 - Hero: *"Treatment ends. The continuum doesn't."* — the before/during/after ribbon as the hero visual (animated: a dot traveling pre-care → program → years of continuing engagement).
 - The three blind spots centers can't see today (before, after, and engagement-as-efficacy) and how the platform fills them.
 - Live-looking demo dashboard (seed data) — continuum ribbon + outcomes curves.
-- Outcomes/ROI section reusing the New Freedom benchmarks (engagement 40→65, completion 50→65, digital scale 30→80, +20% long-term sobriety, 2 hrs/day saved) as the proof points.
+- Outcomes/ROI section reusing the published case-study benchmarks (engagement 40→65, completion 50→65, digital scale 30→80, +20% long-term sobriety, 2 hrs/day saved) as the proof points.
 - "How the community follows them into the world" — plain-language explainer connecting the client's Facebook-style community life, goals, and giving to the outcomes the center gets.
 - Data & privacy section: how consent, de-identification, and licensing work (trust is the sale).
 - CTA: Request a demo / Partner with us.

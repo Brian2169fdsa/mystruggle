@@ -91,13 +91,16 @@ export interface JobPost {
 
 // ── LMS ────────────────────────────────────────────────────────────────
 
-export type Program = "PON" | "VOC" | "IOP" | "NAV";
+/** Course program category chips (PON/VOC/IOP/NAV). Renamed from `Program`
+ *  when the Center Operations suite (docs/16) introduced the Program ENTITY
+ *  below - same values, same `Course.program` field, new alias name. */
+export type ProgramCategory = "PON" | "VOC" | "IOP" | "NAV";
 
 /** A published course on the Learn tab. */
 export interface Course {
   id: string;
   title: string;
-  program: Program;
+  program: ProgramCategory;
   lessonCount: number;
 }
 
@@ -363,14 +366,17 @@ export type CarePhase =
   | "transition" // stepping down, discharge planning, aftercare
   | "continuing"; // post-discharge alumni, ongoing follow-up (indefinite)
 
-/** Clinical level of care during the in-program phase. */
+/** Clinical level of care during the in-program phase. "custom" was added
+ *  with the Center Operations suite (docs/16) for center-defined programs
+ *  that sit outside the clinical ladder. */
 export type LevelOfCare =
   | "detox"
   | "residential"
   | "php"
   | "iop"
   | "op"
-  | "recovery_maintenance";
+  | "recovery_maintenance"
+  | "custom";
 
 /** A person's relationship with ONE center over time (extends enrollments).
  *  centerId absent = unaffiliated (pre-care differentiator). */
@@ -661,6 +667,181 @@ export interface PostReport {
   reason: string;
   note?: string;
   status: "open" | "reviewed" | "actioned";
+  createdAt: number;
+}
+
+// ── Center Operations Suite (docs/16 + requirements/13) ───────────────
+// EXPANSION: additive only - nothing above this line changes. Programs sit
+// ABOVE existing courses: a Course (docs/07) is an ingredient, a Program is
+// the packaged, runnable meal (curriculum + schedule + people). The old
+// `Program` string union is `ProgramCategory` now (see the LMS section) so
+// this entity can own the name per docs/16. Care team + staff engagement,
+// challenges, pulse surveys, and the staff task queue complete the spine.
+
+/** Where a program is delivered. */
+export type ProgramDelivery = "in_facility" | "remote" | "hybrid";
+
+/** A packaged, runnable offering targeted at a level of care. My Struggle
+ *  publishes starter templates (isTemplate true, no centerId); centers clone
+ *  and customize them into live, enrollable programs. */
+export interface Program {
+  id: string;
+  centerId?: string; // absent on My Struggle shared templates
+  title: string;
+  description: string;
+  levelOfCare: LevelOfCare;
+  category?: "PON" | "VOC" | "IOP" | "NAV" | "other";
+  durationWeeks?: number;
+  delivery: ProgramDelivery;
+  isTemplate: boolean; // shareable starter (clone + customize)
+  status: "draft" | "published" | "archived";
+  badge?: string; // program badge (gamification, app-only gold)
+  createdAt: number;
+}
+
+/** One ordered building block of a program's curriculum. Courses are reused
+ *  by id; session series / task packs / milestones carry their shape in
+ *  `config` (e.g. { cadence: "weekly", weeks: 8 } for a session series). */
+export interface ProgramCurriculumItem {
+  id: string;
+  programId: string;
+  sort: number;
+  kind: "course" | "session_series" | "task_pack" | "milestone";
+  courseId?: string; // set when kind === "course" (existing Course.id)
+  label: string;
+  config?: Record<string, unknown>;
+}
+
+/** Cohort membership - one member's run through one program. */
+export interface ProgramEnrollment {
+  id: string;
+  programId: string;
+  memberId: string;
+  careEpisodeId?: string; // links the enrollment to the continuum spine
+  cohortLabel?: string; // e.g. "Summer 2026"
+  enrolledAt: number;
+  completedAt?: number;
+  status: "active" | "completed" | "withdrawn";
+}
+
+/** A scheduled group session on a program's calendar. */
+export interface ProgramSession {
+  id: string;
+  programId: string;
+  title: string;
+  startsAt: number;
+  durationMin: number;
+  location?: string;
+  facilitatorId?: string; // staff User.id
+  createdAt: number;
+}
+
+/** One member's attendance mark on one program session. */
+export interface SessionAttendance {
+  id: string;
+  sessionId: string;
+  memberId: string;
+  status: "present" | "remote" | "excused" | "absent";
+  markedBy: string; // staff User.id who marked it
+  markedAt: number;
+}
+
+/** Roles a staff member can hold on a member's care team. */
+export type CareTeamRole =
+  | "case_manager"
+  | "counselor"
+  | "peer_support"
+  | "tech"
+  | "facilitator";
+
+/** A staff member's assignment to a member's care team (per episode when
+ *  careEpisodeId is set). Drives the My Caseload view. */
+export interface CareTeamAssignment {
+  id: string;
+  memberId: string;
+  careEpisodeId?: string;
+  staffId: string;
+  role: CareTeamRole;
+  isPrimary: boolean;
+  assignedAt: number;
+  endedAt?: number;
+}
+
+/** Kinds of lightweight human touches staff log. "hallway" is a quick
+ *  in-person moment. Engagement comms only - never PHI/clinical notes. */
+export type StaffTouchKind =
+  | "kudos"
+  | "nudge"
+  | "checkin"
+  | "session_note"
+  | "call"
+  | "hallway";
+
+/** One logged staff touch with a member - human contact as a measured
+ *  engagement input (each live touch also emits a continuum_event). */
+export interface StaffEngagement {
+  id: string;
+  memberId: string;
+  staffId: string;
+  kind: StaffTouchKind;
+  body?: string;
+  mood?: number; // 1-5, captured on kind "checkin"
+  occurredAt: number;
+}
+
+/** A staff-created, time-boxed, opt-in cohort challenge ("Gratitude Week").
+ *  No public loser-boards - anti-toxicity rules from docs/07 hold. */
+export interface Challenge {
+  id: string;
+  centerId?: string;
+  title: string;
+  description: string;
+  startsAt: number;
+  endsAt: number;
+  badge?: string;
+  createdBy: string; // staff User.id
+  createdAt: number;
+}
+
+/** One member's opt-in to a challenge. */
+export interface ChallengeJoin {
+  id: string;
+  challengeId: string;
+  memberId: string;
+  joinedAt: number;
+}
+
+/** A short pulse check-in sent to a cohort ("How supported do you feel this
+ *  week?"). Anonymous to peers, trend visible to staff. */
+export interface PulseSurvey {
+  id: string;
+  centerId?: string;
+  programId?: string; // scoped to a program cohort when set
+  question: string;
+  createdBy: string; // staff User.id
+  createdAt: number;
+  closesAt?: number;
+}
+
+/** One member's response to a pulse survey. */
+export interface PulseResponse {
+  id: string;
+  surveyId: string;
+  memberId: string;
+  score: number; // 1-5
+  note?: string;
+  createdAt: number;
+}
+
+/** A follow-up in the staff task queue ("call Danielle re: housing"). */
+export interface StaffTask {
+  id: string;
+  staffId: string; // assignee
+  memberId?: string; // the member this follow-up is about, when applicable
+  title: string;
+  dueAt?: number;
+  done: boolean;
+  createdBy: string;
   createdAt: number;
 }
 

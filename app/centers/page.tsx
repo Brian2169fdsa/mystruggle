@@ -660,6 +660,192 @@ const TIERS = [
 ];
 
 /* ---------------------------------------------------------------- */
+/* Center Operations showcase (docs/16 Part G) - program builder,     */
+/* Client 360, care team, client portal, and the ROI calculator.      */
+/* ---------------------------------------------------------------- */
+
+/** Starter program templates centers clone + customize (docs/16 Part A). */
+const PROGRAM_TEMPLATES = [
+  {
+    tag: "ISE",
+    name: "ISE 12-Step",
+    desc: "Internal Self Evaluation - the flagship 12-step track, journals and quizzes included.",
+    meta: "12 weeks · residential / IOP",
+  },
+  {
+    tag: "IOP",
+    name: "IOP Core",
+    desc: "Intensive-outpatient curriculum with a weekly session series and daily check-ins.",
+    meta: "8 weeks · in-facility or hybrid",
+  },
+  {
+    tag: "VOC",
+    name: "Vocational Readiness",
+    desc: "Resume building, interview practice, and the fair-chance job pipeline.",
+    meta: "6 weeks · any level of care",
+  },
+  {
+    tag: "NAV",
+    name: "Reentry Navigation",
+    desc: "ID, documents, housing, benefits - the reentry task packs, pre-built.",
+    meta: "10 weeks · transition / continuing",
+  },
+];
+
+/** The composer story - what building a program actually feels like. */
+const COMPOSER_STEPS = [
+  "Pick a level of care and delivery - in-facility, remote, or hybrid",
+  "Drag in courses from your library, or start from a template above",
+  "Add a weekly session series - the schedule generates itself",
+  'Attach task packs and milestones ("Week 4: first family session")',
+  "Set the program badge and completion certificate, then publish to your cohort",
+];
+
+/** Client 360 tab rail - the one-screen promise. */
+const C360_TABS = [
+  "Engagement",
+  "Learning",
+  "Community",
+  "Goals & Reentry",
+  "Giving",
+  "Care & Support",
+];
+
+/** Care-team roles on every episode (docs/16 Part C). */
+const CARE_ROLES = ["Case manager", "Counselor", "Peer support", "Tech"];
+
+/* ---------------------------------------------------------------- */
+/* Interactive ROI calculator - server-rendered markup + a small     */
+/* vanilla script so the page keeps its metadata export (no "use     */
+/* client" needed). Same math shape as the dashboard ROI block:      */
+/* your inputs x published case-study deltas, honestly footnoted.    */
+/* ---------------------------------------------------------------- */
+
+const ROI_CALC_JS = `
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function fmt(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+  var ids = ["ms-roi-census", "ms-roi-rate", "ms-roi-rev", "ms-roi-hrs"];
+  function calc() {
+    var census = +$("ms-roi-census").value;
+    var rate = +$("ms-roi-rate").value;
+    var rev = +$("ms-roi-rev").value;
+    var hrs = +$("ms-roi-hrs").value;
+    // Case-study delta: completion 50% -> 65% (+15 pts), capped at 95%.
+    var improved = Math.min(rate + 15, 95);
+    // Assumes census turns over roughly once per year (footnoted).
+    var added = census * (improved - rate) / 100;
+    var completionImpact = added * rev;
+    // Case-study delta: ~2 hrs saved per 8-hr clinician day = 25% of hours.
+    var hoursSaved = hrs * 0.25 * 52;
+    var timeImpact = hoursSaved * 85; // clinician time valued at $85/hr
+    $("ms-roi-census-v").textContent = census + " clients";
+    $("ms-roi-rate-v").textContent = rate + "%";
+    $("ms-roi-rev-v").textContent = fmt(rev);
+    $("ms-roi-hrs-v").textContent = hrs + " hrs/week";
+    $("ms-roi-improved").textContent = rate + "% \\u2192 " + improved + "%";
+    $("ms-roi-added").textContent = String(Math.round(added));
+    $("ms-roi-completion").textContent = fmt(completionImpact);
+    $("ms-roi-hours-saved").textContent =
+      Math.round(hoursSaved).toLocaleString("en-US") + " hrs";
+    $("ms-roi-time").textContent = fmt(timeImpact);
+    $("ms-roi-total").textContent = fmt(completionImpact + timeImpact);
+  }
+  ids.forEach(function (id) {
+    var el = $(id);
+    if (el) el.addEventListener("input", calc);
+  });
+  calc();
+})();
+`;
+
+/** One slider row - label, live value, range input. */
+function RoiSlider({
+  id,
+  label,
+  min,
+  max,
+  step,
+  defaultValue,
+  defaultLabel,
+}: {
+  id: string;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  defaultValue: number;
+  defaultLabel: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <label
+          htmlFor={id}
+          className="text-[13px] font-bold text-ink-900"
+        >
+          {label}
+        </label>
+        <span
+          id={id + "-v"}
+          className="tnum text-[14px] font-extrabold text-blue-primary"
+        >
+          {defaultLabel}
+        </span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        defaultValue={defaultValue}
+        className="mt-2 h-11 w-full cursor-pointer"
+        style={{ accentColor: "#2E7CD6" }}
+      />
+    </div>
+  );
+}
+
+/** One result line in the calculator's "math shown" panel. */
+function RoiLine({
+  label,
+  id,
+  value,
+  strong = false,
+}: {
+  label: string;
+  id: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-t border-sky-tint py-2.5 first:border-t-0">
+      <span
+        className={
+          strong
+            ? "text-[14px] font-extrabold text-ink-900"
+            : "text-[13px] font-medium text-ink-600"
+        }
+      >
+        {label}
+      </span>
+      <span
+        id={id}
+        className={
+          "tnum flex-none " +
+          (strong
+            ? "text-[24px] font-extrabold text-blue-primary"
+            : "text-[15px] font-extrabold text-ink-900")
+        }
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
 
 export default function Centers() {
   return (
@@ -862,6 +1048,383 @@ export default function Centers() {
           </div>
           <div className="mt-10 lg:mt-[52px]">
             <ProgrammingVignettes />
+          </div>
+        </div>
+      </section>
+
+      {/* BUILD YOUR PROGRAMMING, YOUR WAY - program builder showcase */}
+      <section id="program-builder" className="scroll-mt-20 bg-white">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow>Build your programming, your way</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              From template to enrolled cohort in an{" "}
+              <span className="script text-[42px] lg:text-[56px]">
+                afternoon
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Programs sit above your courses: curriculum, session schedule,
+              task packs, milestones, and gamification, packaged for a level of
+              care. Start from a template or build your own - then publish and
+              enroll your cohort.
+            </p>
+          </div>
+
+          {/* template gallery */}
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4">
+            {PROGRAM_TEMPLATES.map((t) => (
+              <div
+                key={t.tag}
+                className="flex flex-col rounded-2xl border border-sky-tint bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-6 items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-extrabold text-blue-primary">
+                    {t.tag}
+                  </span>
+                  <span className="inline-flex h-6 items-center rounded-full bg-[#F0EDFB] px-2.5 text-[10px] font-extrabold text-indigo-brand">
+                    TEMPLATE
+                  </span>
+                </div>
+                <div className="mt-3 text-[16px] font-bold text-ink-900">
+                  {t.name}
+                </div>
+                <p className="mt-1.5 flex-1 text-[13px]/[1.6] text-ink-600">
+                  {t.desc}
+                </p>
+                <div className="mt-3 text-[11px] font-bold text-ink-400">
+                  {t.meta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* composer story */}
+          <div className="mx-auto mt-8 max-w-[760px] rounded-2xl border border-sky-tint bg-canvas p-6 lg:p-8">
+            <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+              The composer
+            </div>
+            <ol className="mt-4 flex flex-col gap-3">
+              {COMPOSER_STEPS.map((s, i) => (
+                <li key={s} className="flex items-start gap-3">
+                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-blue-primary text-[12px] font-extrabold text-white">
+                    {i + 1}
+                  </span>
+                  <span className="pt-1 text-[14px]/[1.6] text-ink-900">
+                    {s}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-5 text-[13px]/[1.6] text-ink-600">
+              Every program auto-creates its own group channel and dashboard
+              cockpit - and you can preview it exactly as a client will see it
+              before you publish.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SEE THE WHOLE PERSON - Client 360 showcase */}
+      <section id="client-360" className="scroll-mt-20 bg-canvas">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1fr_minmax(320px,480px)] lg:gap-[64px] lg:px-6 lg:py-[110px]">
+          <div className="flex flex-col gap-5">
+            <Eyebrow>See the whole person</Eyebrow>
+            <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              One screen, from first contact to year{" "}
+              <span className="script text-[42px] lg:text-[56px]">two</span>
+            </h2>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Client 360 is a single pane of glass per person: the recovery
+              capital they arrived with, everything they do in your building,
+              and the years of engagement after they leave - one connected
+              timeline, before, during, and after.
+            </p>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Engagement sparklines, program progress, session attendance,
+              goals and reentry tasks, giving, and the care team around them -
+              every widget deep-links to its module. Private journals and
+              mentor DMs stay private, always.
+            </p>
+          </div>
+
+          {/* Client 360 mini-mock */}
+          <div className="mx-auto w-full max-w-[440px] rounded-2xl bg-white p-6 shadow-[0_2px_10px_rgba(11,37,69,.08)]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-sky-tint text-[13px] font-extrabold text-indigo-brand">
+                DM
+              </span>
+              <div className="min-w-0">
+                <div className="text-[15px] font-bold text-ink-900">
+                  Danielle M.
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="inline-flex h-[18px] items-center rounded-full bg-sky-tint px-2 text-[9px] font-extrabold tracking-[.06em] text-blue-primary">
+                    IN-PROGRAM · IOP
+                  </span>
+                </div>
+              </div>
+              <div className="ml-auto text-right">
+                <div className="tnum text-[22px] font-extrabold text-blue-primary">
+                  78
+                </div>
+                <div className="text-[9px] font-extrabold tracking-[.06em] text-success">
+                  ▲ CONTINUUM SCORE
+                </div>
+              </div>
+            </div>
+
+            {/* before / during / after mini-ribbon */}
+            <div className="mt-5">
+              <div className="flex w-full overflow-hidden rounded-full">
+                <div className="h-2.5 flex-1 bg-[#DFEAF9]" />
+                <div className="h-2.5 flex-[1.4] bg-blue-primary" />
+                <div className="h-2.5 flex-1 bg-indigo-brand" />
+              </div>
+              <div className="mt-1.5 flex text-[9px] font-extrabold tracking-[.06em] text-ink-400">
+                <span className="flex-1">BEFORE</span>
+                <span className="flex-[1.4] text-center text-blue-primary">
+                  DURING
+                </span>
+                <span className="flex-1 text-right">AFTER</span>
+              </div>
+            </div>
+
+            {/* tab rail */}
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {C360_TABS.map((t, i) => (
+                <span
+                  key={t}
+                  className={
+                    "inline-flex h-6 items-center rounded-full px-2.5 text-[10px] font-extrabold " +
+                    (i === 0
+                      ? "bg-blue-primary text-white"
+                      : "bg-sky-tint text-blue-primary")
+                  }
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            {/* engagement rows */}
+            <div className="mt-4 flex flex-col gap-2.5 border-t border-sky-tint pt-4">
+              {[
+                { l: "IOP Core program", v: "Week 5 of 8 · 72%" },
+                { l: "Session attendance", v: "11 of 12 present" },
+                { l: "Reentry tasks", v: "4 done · 2 in motion" },
+              ].map((r) => (
+                <div
+                  key={r.l}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-[12px] font-semibold text-ink-600">
+                    {r.l}
+                  </span>
+                  <span className="tnum text-[12px] font-extrabold text-ink-900">
+                    {r.v}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* EVERY EMPLOYEE, ENGAGED - care team showcase */}
+      <section id="care-team" className="scroll-mt-20 bg-white">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[minmax(320px,460px)_1fr] lg:gap-[64px] lg:px-6 lg:py-[110px]">
+          {/* caseload + kudos mock */}
+          <div className="order-2 mx-auto w-full max-w-[440px] lg:order-1">
+            <div className="rounded-2xl border border-sky-tint bg-canvas p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                My caseload
+              </div>
+              <div className="mt-3 flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sky-tint text-[11px] font-extrabold text-indigo-brand">
+                  JR
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[13px] font-bold text-ink-900">
+                    James R.
+                  </div>
+                  <div className="text-[11px] font-medium text-ink-600">
+                    IOP Core · Week 3
+                  </div>
+                </div>
+                <span className="ml-auto inline-flex h-[20px] flex-none items-center rounded-full bg-amber-bg px-2 text-[9px] font-extrabold tracking-[.04em] text-amber-ink">
+                  NO TOUCH IN 3 DAYS
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_3px_rgba(11,37,69,.08)]">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sky-tint text-[11px] font-extrabold text-indigo-brand">
+                  DM
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[13px] font-bold text-ink-900">
+                    Danielle M.
+                  </div>
+                  <div className="text-[11px] font-medium text-ink-600">
+                    IOP Core · Week 5 · 14-day streak
+                  </div>
+                </div>
+                <span className="ml-auto inline-flex h-7 flex-none items-center rounded-full bg-blue-primary px-3 text-[10px] font-bold text-white">
+                  Send kudos
+                </span>
+              </div>
+            </div>
+
+            {/* kudos landing as the client sees it */}
+            <div className="mt-4 rounded-2xl border-[1.5px] border-blue-primary/40 bg-sky-tint p-4">
+              <div className="text-[10px] font-extrabold tracking-[.08em] text-blue-primary">
+                KUDOS · HOW IT LANDS
+              </div>
+              <p className="mt-1.5 text-[13px]/[1.6] font-medium text-ink-900">
+                &ldquo;Marcus noticed your streak - 14 days strong. The whole
+                team sees you showing up.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          <div className="order-1 flex flex-col gap-5 lg:order-2">
+            <Eyebrow>Every employee, engaged</Eyebrow>
+            <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Your whole team, part of the{" "}
+              <span className="script text-[42px] lg:text-[56px]">outcome</span>
+            </h2>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Every episode gets a care team - and every member of it works
+              from a My Caseload view sorted by risk and last-touch recency, so
+              nobody goes unnoticed for three days.
+            </p>
+            <p className="text-[17px]/[1.75] text-ink-600">
+              Kudos, nudges, and check-ins take one tap from anywhere - and
+              every touch is logged as an engagement signal. Your techs and
+              peer supports become measurable parts of the outcome, not
+              invisible ones.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CARE_ROLES.map((r) => (
+                <span
+                  key={r}
+                  className="inline-flex h-8 items-center rounded-full bg-sky-tint px-3.5 text-[12px] font-extrabold text-blue-primary"
+                >
+                  {r}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* A PORTAL YOUR CLIENTS ACTUALLY USE */}
+      <section id="client-portal" className="scroll-mt-20 bg-canvas">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow>A portal your clients actually use</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
+              Treatment that feels like{" "}
+              <span className="script text-[42px] lg:text-[56px]">
+                momentum
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+              Not a second app - the same member app they keep after discharge,
+              with a My Program panel while they&apos;re with you. Streaks,
+              points, and badges carry straight through, so the habit that
+              forms in your building follows them home.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:mt-[52px]">
+            {/* Today view */}
+            <div className="rounded-2xl border border-sky-tint bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                Today
+              </div>
+              <div className="mt-3 flex flex-col gap-2">
+                {[
+                  { t: "9:00a", l: "Group session · Room B · Marcus" },
+                  { t: "1:00p", l: "Lesson 6: Boundaries (journal)" },
+                  { t: "Task", l: "Call about the MVD appointment" },
+                ].map((r) => (
+                  <div
+                    key={r.l}
+                    className="flex items-start gap-2.5 rounded-xl bg-canvas px-3 py-2.5"
+                  >
+                    <span className="tnum flex-none pt-px text-[10px] font-extrabold text-blue-primary">
+                      {r.t}
+                    </span>
+                    <span className="text-[12px]/[1.5] font-semibold text-ink-900">
+                      {r.l}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-[11px]/[1.5] text-ink-400">
+                Sessions, assignments, and tasks - one glance.
+              </p>
+            </div>
+
+            {/* Reentry plan */}
+            <div className="rounded-2xl border border-sky-tint bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[.1em] text-indigo-brand">
+                My reentry plan
+              </div>
+              <div className="mt-3 flex flex-col gap-2">
+                {[
+                  { done: true, l: "Get my ID and Social Security card" },
+                  { done: true, l: "Start the GED track" },
+                  { done: false, l: "Find housing - 2 applications in" },
+                  { done: false, l: "Get my license back" },
+                ].map((r) => (
+                  <div key={r.l} className="flex items-start gap-2.5">
+                    <span
+                      className={
+                        "mt-px flex h-4.5 w-4.5 flex-none items-center justify-center rounded-full text-[9px] font-extrabold " +
+                        (r.done
+                          ? "bg-success text-white"
+                          : "border-[1.5px] border-sky-tint-2 text-transparent")
+                      }
+                    >
+                      ✓
+                    </span>
+                    <span
+                      className={
+                        "text-[12px]/[1.5] font-semibold " +
+                        (r.done ? "text-ink-400 line-through" : "text-ink-900")
+                      }
+                    >
+                      {r.l}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-[11px]/[1.5] text-ink-400">
+                Clients set their own goals; staff see and co-plan.
+              </p>
+            </div>
+
+            {/* Gamification continuity */}
+            <div className="rounded-2xl border border-sky-tint bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                Continuity
+              </div>
+              <div className="mt-3 flex flex-col items-start gap-2.5">
+                <span className="inline-flex h-9 items-center gap-2 rounded-full bg-sky-tint px-3.5 text-[13px] font-extrabold text-blue-primary">
+                  <span>🔥</span> 14-day streak
+                </span>
+                <span className="inline-flex h-9 items-center gap-2 rounded-full bg-[#F0EDFB] px-3.5 text-[13px] font-extrabold text-indigo-brand">
+                  <span>🏅</span> IOP Core badge · 72%
+                </span>
+              </div>
+              <p className="mt-3 text-[12px]/[1.6] text-ink-600">
+                The same streaks, points, and program badge run in-facility and
+                after discharge - continuity with the outside world is the
+                point. Shared facility devices get kiosk mode: PIN quick-login,
+                auto-logout.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -1275,6 +1838,130 @@ export default function Centers() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* INTERACTIVE ROI CALCULATOR - same math shape as the dashboard ROI
+          block: your inputs x published case-study deltas, honestly footnoted */}
+      <section id="roi-calculator" className="scroll-mt-20 bg-navy-deep">
+        <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
+          <div className="mx-auto max-w-[700px] text-center">
+            <Eyebrow light>Estimate your impact</Eyebrow>
+            <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-white lg:text-[44px]/[1.1]">
+              Run your own{" "}
+              <span className="script text-[42px] text-[#A9B4E8] lg:text-[56px]">
+                numbers
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-white/75 lg:text-[17px]">
+              Move the sliders to your center&apos;s reality. The math is the
+              same transparent model the dashboard uses - your inputs times
+              published case-study benchmarks.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 lg:mt-[52px] lg:grid-cols-[1fr_1.1fr] lg:gap-8">
+            {/* sliders */}
+            <div className="rounded-2xl bg-white p-6 shadow-[0_10px_30px_rgba(11,37,69,.25)] lg:p-8">
+              <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                Your inputs
+              </div>
+              <div className="mt-5 flex flex-col gap-5">
+                <RoiSlider
+                  id="ms-roi-census"
+                  label="Census"
+                  min={10}
+                  max={200}
+                  step={5}
+                  defaultValue={60}
+                  defaultLabel="60 clients"
+                />
+                <RoiSlider
+                  id="ms-roi-rate"
+                  label="Current completion rate"
+                  min={20}
+                  max={80}
+                  step={1}
+                  defaultValue={45}
+                  defaultLabel="45%"
+                />
+                <RoiSlider
+                  id="ms-roi-rev"
+                  label="Avg revenue per completed episode"
+                  min={3000}
+                  max={30000}
+                  step={500}
+                  defaultValue={9000}
+                  defaultLabel="$9,000"
+                />
+                <RoiSlider
+                  id="ms-roi-hrs"
+                  label="Clinician hours per week"
+                  min={10}
+                  max={60}
+                  step={1}
+                  defaultValue={40}
+                  defaultLabel="40 hrs/week"
+                />
+              </div>
+            </div>
+
+            {/* results - the math shown */}
+            <div className="flex flex-col rounded-2xl bg-white p-6 shadow-[0_10px_30px_rgba(11,37,69,.25)] lg:p-8">
+              <div className="text-[12px] font-extrabold uppercase tracking-[.1em] text-blue-primary">
+                Estimated annual impact
+              </div>
+              <div className="mt-4">
+                <RoiLine
+                  label="Completion rate with case-study delta (+15 pts)"
+                  id="ms-roi-improved"
+                  value="45% → 60%"
+                />
+                <RoiLine
+                  label="Additional completions per year"
+                  id="ms-roi-added"
+                  value="9"
+                />
+                <RoiLine
+                  label="Completion revenue impact"
+                  id="ms-roi-completion"
+                  value="$81,000"
+                />
+                <RoiLine
+                  label="Clinician hours saved per year (~2 hrs per 8-hr day)"
+                  id="ms-roi-hours-saved"
+                  value="520 hrs"
+                />
+                <RoiLine
+                  label="Staff time value at $85/hr"
+                  id="ms-roi-time"
+                  value="$44,200"
+                />
+                <RoiLine
+                  label="Estimated annual impact"
+                  id="ms-roi-total"
+                  value="$125,200"
+                  strong
+                />
+              </div>
+              <p className="mt-4 text-[11px]/[1.6] text-ink-400">
+                Estimate based on your inputs plus published case-study
+                benchmarks (published case study: completion 50% to 65%, about
+                2 hours
+                saved per clinician per 8-hour day) - not a guarantee. Assumes
+                your census turns over roughly once per year and clinician time
+                valued at $85/hr.
+              </p>
+              <a
+                href="#request-demo"
+                className="mt-5 inline-flex h-[52px] items-center justify-center rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover"
+              >
+                Get your full ROI analysis
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <script dangerouslySetInnerHTML={{ __html: ROI_CALC_JS }} />
       </section>
 
       {/* PRICING TIERS */}

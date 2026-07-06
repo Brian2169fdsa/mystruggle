@@ -21,8 +21,144 @@ const SESSION_MODE_LABEL: Record<SessionRow["mode"], string> = {
   video: "Video",
 };
 
-const TABS = ["Journey", "Courses", "Mentorship", "Balances", "Consent"] as const;
+// ── CLIENT 360 (docs/16 Part B) - the tab strip. Every existing card kept:
+// My Plan + Résumé live under Goals & Reentry; BARC trend, consent, recent
+// mentor sessions live under Care & Support; balances + support requests live
+// under Giving; the journey timeline lives under Engagement.
+const TABS = [
+  "Engagement",
+  "Learning",
+  "Community",
+  "Goals & Reentry",
+  "Giving",
+  "Care & Support",
+] as const;
 type Tab = (typeof TABS)[number];
+
+// ── GET /api/staff/client360?memberId=… response contract (defensive) ────
+// Staff-only whole-person read model. PRIVACY: the payload NEVER contains
+// journal entries, chat/DM content, BARC scores, or résumé content - see the
+// route's negative guarantees. Community items are feed-visible posts only.
+type C360Trend = "rising" | "steady" | "dipping";
+type C360TouchKind =
+  | "kudos"
+  | "nudge"
+  | "checkin"
+  | "session_note"
+  | "call"
+  | "hallway";
+type Client360 = {
+  header: {
+    name: string;
+    memberNumber: string;
+    avatarColor: string;
+    phase: string | null;
+    loc: string | null;
+    continuumScore: number;
+    trend: C360Trend;
+    risk: "ok" | "watch";
+  };
+  engagement: {
+    bySource: Record<string, number>;
+    daily: { day: string; count: number }[];
+    streak: number;
+  };
+  learning: {
+    programs: { title: string; status: string; progressPct: number }[];
+    attendance: {
+      present: number;
+      absent: number;
+      excused: number;
+      remote: number;
+    };
+    courses: { title: string; pct: number }[];
+  };
+  community: {
+    postCount: number;
+    circleCount: number;
+    recentPublicPosts: { id: string; excerpt: string; createdAt: number }[];
+  };
+  goalsReentry: {
+    goals: {
+      title: string;
+      domain: string;
+      milestonesDone: number;
+      milestonesTotal: number;
+    }[];
+    jobApps: number;
+    resumeExists: boolean;
+  };
+  giving: {
+    cash: number;
+    credits: number;
+    weeklyProgress: { raised: number; target: number; pct: number };
+  };
+  care: {
+    team: { staffName: string; role: string; isPrimary: boolean }[];
+    engagements: {
+      kind: C360TouchKind;
+      body?: string;
+      mood?: number;
+      occurredAt: number;
+      staffName: string;
+    }[];
+    sessionsCount: number;
+    followUps: { dueDay: number; status: string }[];
+  };
+};
+
+const C360_PHASE_LABEL: Record<string, string> = {
+  pre_care: "Pre-care",
+  intake: "Intake",
+  in_program: "In-program",
+  transition: "Transition",
+  continuing: "Continuing",
+};
+
+const C360_SOURCE_LABEL: Record<string, string> = {
+  community: "Community",
+  lms: "Learning",
+  goal: "Goals",
+  giving: "Giving",
+  mentorship: "Mentorship",
+  session: "Sessions",
+  checkin: "Check-ins",
+  phase: "Phase",
+};
+
+// Trend arrow next to the continuum score. A dip is amber - concern, never
+// red on a person.
+const C360_TREND: Record<C360Trend, { arrow: string; cls: string }> = {
+  rising: { arrow: "↑", cls: "text-success" },
+  steady: { arrow: "→", cls: "text-blue-primary" },
+  dipping: { arrow: "↓", cls: "text-[#B54708]" },
+};
+
+// Care-touch kind icons - kudos gets the warm heart.
+const TOUCH_ICON: Record<C360TouchKind, string> = {
+  kudos: "💛",
+  nudge: "🔔",
+  checkin: "📍",
+  session_note: "🗒",
+  call: "📞",
+  hallway: "👋",
+};
+const TOUCH_LABEL: Record<C360TouchKind, string> = {
+  kudos: "Kudos",
+  nudge: "Nudge",
+  checkin: "Check-in",
+  session_note: "Session note",
+  call: "Call",
+  hallway: "Hallway hello",
+};
+
+const CARE_ROLE_LABEL: Record<string, string> = {
+  case_manager: "Case manager",
+  counselor: "Counselor",
+  peer_support: "Peer support",
+  tech: "Tech",
+  facilitator: "Facilitator",
+};
 
 // ── MY PLAN (docs/14) - GET /api/recovery-goals?memberId=… is staff-readable.
 // Code the enriched response shape defensively.
@@ -574,6 +710,561 @@ function BarcCard({
   );
 }
 
+/** Shared pending/offline body for Client 360 cards. */
+function C360Pending({ state }: { state: null | "offline" }) {
+  if (state === "offline") {
+    return (
+      <div className="mt-3 flex items-center gap-3 text-[13px] text-ink-600">
+        <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-blue-primary/50" />
+        Client 360 coming online…
+      </div>
+    );
+  }
+  return (
+    <div className="mt-4 flex flex-col gap-2.5">
+      <div className={SKELETON + " h-9"} />
+      <div className={SKELETON + " h-16"} />
+    </div>
+  );
+}
+
+/** ENGAGEMENT - per-source count chips, a 28-day activity bar strip, streak.
+ *  Staff-only cohort comparison is a labeled placeholder until mv rollups
+ *  land; nothing comparative is ever member-facing (docs/07 anti-toxicity). */
+function EngagementCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  const daily = data?.engagement.daily ?? [];
+  const maxDay = daily.reduce((m, d) => Math.max(m, d.count), 0) || 1;
+  const sources = Object.entries(data?.engagement.bySource ?? {}).sort(
+    (a, b) => b[1] - a[1]
+  );
+  return (
+    <div className={CARD + " px-[30px] py-[26px]"}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[15px] font-bold text-ink-900">
+          Engagement · last 30 days
+        </div>
+        {data && (
+          <span className="inline-flex h-[22px] items-center rounded-full bg-sky-tint px-2.5 text-[11px] font-bold text-blue-primary">
+            {data.engagement.streak} day streak
+          </span>
+        )}
+      </div>
+
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : (
+        <>
+          {sources.length === 0 ? (
+            <div className="mt-3 text-[13px] text-ink-600">
+              No engagement signals in the last 30 days.
+            </div>
+          ) : (
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+              {sources.map(([s, n]) => (
+                <span
+                  key={s}
+                  className="inline-flex h-6 items-center gap-1.5 rounded-full bg-sky-tint px-2.5 text-[11px] font-bold text-blue-primary"
+                >
+                  {C360_SOURCE_LABEL[s] ?? s}
+                  <span className="tnum text-ink-600">{n}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* 28-day activity strip - one bar per day */}
+          <div className="mt-4">
+            <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-400">
+              Daily activity · last 28 days
+            </div>
+            <div className="mt-2 flex h-12 items-end gap-[3px] rounded-xl bg-sky-tint/50 px-2.5 py-2">
+              {daily.map((d) => (
+                <div
+                  key={d.day}
+                  title={`${d.day}: ${d.count} action${
+                    d.count === 1 ? "" : "s"
+                  }`}
+                  className="flex-1 rounded-sm"
+                  style={{
+                    height: `${Math.max(8, (d.count / maxDay) * 100)}%`,
+                    background: d.count > 0 ? "#2E7CD6" : "#DDEBFB",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Cohort comparison - STAFF-ONLY surface. Placeholder until the mv
+              rollups land; never shown to members. */}
+          <div className="mt-3 text-[11px] italic text-ink-400">
+            Cohort compare: staff-only, coming with mv rollups.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** LEARNING - program progress bars, session attendance summary, courses. */
+function LearningCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  const att = data?.learning.attendance;
+  const attTotal = att ? att.present + att.absent + att.excused + att.remote : 0;
+  return (
+    <div className={CARD + " px-[30px] py-[26px]"}>
+      <div className="text-[15px] font-bold text-ink-900">Learning</div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : (
+        <>
+          {/* Programs */}
+          {data.learning.programs.length === 0 ? (
+            <div className="mt-3 text-[13px] text-ink-600">
+              Not enrolled in a program yet.
+            </div>
+          ) : (
+            <div className="mt-3.5 flex flex-col gap-3">
+              {data.learning.programs.map((p, i) => (
+                <div key={p.title + i}>
+                  <div className="flex items-center justify-between text-[13px] font-semibold text-ink-900">
+                    <span className="flex items-center gap-2">
+                      {p.title}
+                      <span
+                        className={
+                          "inline-flex h-[20px] items-center rounded-full px-2 text-[10px] font-bold " +
+                          (p.status === "completed"
+                            ? "bg-[#E8F8F0] text-success"
+                            : p.status === "withdrawn"
+                            ? "bg-canvas text-ink-400"
+                            : "bg-sky-tint text-blue-primary")
+                        }
+                      >
+                        {p.status}
+                      </span>
+                    </span>
+                    <span className="tnum text-[11px] font-bold text-ink-600">
+                      {p.progressPct}%
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-2.5 rounded-full bg-sky-tint">
+                    <div
+                      className={
+                        "h-full rounded-full " +
+                        (p.status === "completed"
+                          ? "bg-success"
+                          : "bg-blue-primary")
+                      }
+                      style={{ width: `${p.progressPct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Attendance summary */}
+          {attTotal > 0 && att && (
+            <div className="mt-4">
+              <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-400">
+                Session attendance
+              </div>
+              <div className="mt-2 grid grid-cols-4 gap-2 text-center">
+                {(
+                  [
+                    ["Present", att.present, "text-success"],
+                    ["Remote", att.remote, "text-blue-primary"],
+                    ["Excused", att.excused, "text-ink-600"],
+                    ["Absent", att.absent, "text-[#B54708]"],
+                  ] as const
+                ).map(([label, n, cls]) => (
+                  <div key={label} className="rounded-xl bg-sky-tint/60 py-2">
+                    <div className={"tnum text-[18px] font-extrabold " + cls}>
+                      {n}
+                    </div>
+                    <div className="text-[10px] font-semibold text-ink-600">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Courses */}
+          {data.learning.courses.length > 0 && (
+            <div className="mt-4">
+              <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-400">
+                Courses
+              </div>
+              <div className="mt-2 flex flex-col gap-2.5">
+                {data.learning.courses.map((c, i) => (
+                  <div key={c.title + i}>
+                    <div className="flex items-center justify-between text-[12px] font-semibold text-ink-900">
+                      <span>{c.title}</span>
+                      <span className="tnum text-[11px] font-bold text-ink-600">
+                        {c.pct}%
+                      </span>
+                    </div>
+                    <div className="mt-1 h-2 rounded-full bg-sky-tint">
+                      <div
+                        className={
+                          "h-full rounded-full " +
+                          (c.pct >= 100 ? "bg-success" : "bg-indigo-brand")
+                        }
+                        style={{ width: `${c.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** COMMUNITY - activity counts + the member's FEED-VISIBLE posts only. The
+ *  API guarantees: approved AND not hidden - never journals, never chat or
+ *  mentor DMs, never crisis-held items. Staff see what peers already see. */
+function CommunityCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  return (
+    <div className={CARD + " px-[30px] py-[26px]"}>
+      <div className="text-[15px] font-bold text-ink-900">Community</div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : (
+        <>
+          <div className="mt-3.5 grid grid-cols-2 gap-2.5 text-center">
+            <div className="rounded-xl bg-sky-tint/60 py-3">
+              <div className="tnum text-[22px] font-extrabold text-blue-primary">
+                {data.community.postCount}
+              </div>
+              <div className="text-[11px] font-semibold text-ink-600">
+                public posts
+              </div>
+            </div>
+            <div className="rounded-xl bg-sky-tint/60 py-3">
+              <div className="tnum text-[22px] font-extrabold text-indigo-brand">
+                {data.community.circleCount}
+              </div>
+              <div className="text-[11px] font-semibold text-ink-600">
+                circles joined
+              </div>
+            </div>
+          </div>
+
+          {data.community.recentPublicPosts.length === 0 ? (
+            <div className="mt-3 text-[13px] text-ink-600">
+              No public posts yet.
+            </div>
+          ) : (
+            <div className="mt-3 flex flex-col">
+              {data.community.recentPublicPosts.map((p, i) => (
+                <div
+                  key={p.id}
+                  className={
+                    "py-2.5" + (i > 0 ? " border-t border-canvas" : "")
+                  }
+                >
+                  <div className="text-[13px]/[1.55] text-ink-900">
+                    {p.excerpt}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-ink-400">
+                    {relTime(p.createdAt)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-3 text-[11px]/[1.5] text-ink-400">
+            Feed-visible posts only - private journals, chats, and mentor
+            messages are never shown here.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** GOALS & REENTRY snapshot - goal progress rows + job applications + résumé
+ *  yes/no. résumé CONTENT stays on the consent-gated card below this one. */
+function GoalsSnapshotCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  return (
+    <div className={CARD + " px-[30px] py-[26px]"}>
+      <div className="text-[15px] font-bold text-ink-900">
+        Reentry snapshot
+      </div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : (
+        <>
+          {data.goalsReentry.goals.length === 0 ? (
+            <div className="mt-3 text-[13px] text-ink-600">
+              No recovery goals yet.
+            </div>
+          ) : (
+            <div className="mt-3.5 flex flex-col gap-2.5">
+              {data.goalsReentry.goals.map((g, i) => {
+                const pct = g.milestonesTotal
+                  ? Math.round((100 * g.milestonesDone) / g.milestonesTotal)
+                  : 0;
+                return (
+                  <div key={g.title + i}>
+                    <div className="flex items-center justify-between text-[13px] font-semibold text-ink-900">
+                      <span className="flex items-center gap-2">
+                        <span className="inline-flex h-[20px] items-center rounded-full bg-sky-tint px-2 text-[10px] font-bold uppercase text-blue-primary">
+                          {domainLabel(g.domain)}
+                        </span>
+                        {g.title}
+                      </span>
+                      <span className="tnum text-[11px] font-bold text-ink-600">
+                        {g.milestonesDone}/{g.milestonesTotal}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-2 rounded-full bg-sky-tint">
+                      <div
+                        className={
+                          "h-full rounded-full " +
+                          (pct >= 100 ? "bg-success" : "bg-blue-primary")
+                        }
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-2 gap-2.5 text-center">
+            <div className="rounded-xl bg-sky-tint/60 py-3">
+              <div className="tnum text-[22px] font-extrabold text-blue-primary">
+                {data.goalsReentry.jobApps}
+              </div>
+              <div className="text-[11px] font-semibold text-ink-600">
+                job applications
+              </div>
+            </div>
+            <div className="rounded-xl bg-sky-tint/60 py-3">
+              <div
+                className={
+                  "text-[22px] font-extrabold " +
+                  (data.goalsReentry.resumeExists
+                    ? "text-success"
+                    : "text-ink-400")
+                }
+              >
+                {data.goalsReentry.resumeExists ? "Yes" : "Not yet"}
+              </div>
+              <div className="text-[11px] font-semibold text-ink-600">
+                résumé on file
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** GIVING - weekly funding progress across active support requests. Balances
+ *  render in the existing (kept) Balances card next to this one. */
+function WeeklyGivingCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  const wp = data?.giving.weeklyProgress;
+  return (
+    <div className={CARD + " px-[26px] py-[22px]"}>
+      <div className="text-[15px] font-bold text-ink-900">
+        Weekly giving progress
+      </div>
+      {!data || !wp ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : wp.target === 0 ? (
+        <div className="mt-3 text-[13px] text-ink-600">
+          No active weekly funding goals.
+        </div>
+      ) : (
+        <>
+          <div className="mt-3 flex items-center justify-between text-[13px] font-semibold text-ink-900">
+            <span>
+              {fmtMoney(wp.raised)}{" "}
+              <span className="font-medium text-ink-600">
+                of {fmtMoney(wp.target)}/wk
+              </span>
+            </span>
+            <span className="tnum text-[11px] font-bold text-ink-600">
+              {wp.pct}%
+            </span>
+          </div>
+          <div className="mt-1.5 h-3 rounded-full bg-sky-tint">
+            <div
+              className={
+                "h-full rounded-full " +
+                (wp.pct >= 100 ? "bg-success" : "bg-blue-primary")
+              }
+              style={{ width: `${wp.pct}%` }}
+            />
+          </div>
+          <div className="mt-3 text-[11px] text-ink-400">
+            Cash {fmtMoney(data.giving.cash)} · Reentry Fund{" "}
+            {fmtMoney(data.giving.credits)}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** CARE TEAM - who's working with this member (docs/16 Part C). */
+function CareTeamCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  return (
+    <div className={CARD + " px-[26px] py-[22px]"}>
+      <div className="flex items-center justify-between">
+        <div className="text-[15px] font-bold text-ink-900">Care team</div>
+        {data && (
+          <span className="tnum text-[11px] font-semibold text-ink-400">
+            {data.care.sessionsCount} mentor session
+            {data.care.sessionsCount === 1 ? "" : "s"} logged
+          </span>
+        )}
+      </div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : data.care.team.length === 0 ? (
+        <div className="mt-3 text-[13px] text-ink-600">
+          No care team assigned yet.
+        </div>
+      ) : (
+        <div className="mt-2.5 flex flex-col">
+          {data.care.team.map((t, i) => (
+            <div
+              key={t.staffName + i}
+              className={
+                "flex items-center justify-between gap-3 py-2.5" +
+                (i > 0 ? " border-t border-canvas" : "")
+              }
+            >
+              <div className="text-[13px] font-semibold text-ink-900">
+                {t.staffName}
+                {t.isPrimary && (
+                  <span className="ml-2 inline-flex h-[20px] items-center rounded-full bg-[#DDEBFB] px-2 text-[10px] font-bold text-blue-primary">
+                    Primary
+                  </span>
+                )}
+              </div>
+              <span className="flex-none text-[11px] font-semibold text-ink-600">
+                {CARE_ROLE_LABEL[t.role] ?? t.role}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** LATEST TOUCHES - the staff-engagement timeline (kudos 💛, nudges, check-ins,
+ *  calls, hallway hellos). Engagement comms only - never clinical notes. */
+function TouchesCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  return (
+    <div className={CARD + " px-[26px] py-[22px]"}>
+      <div className="text-[15px] font-bold text-ink-900">Latest touches</div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : data.care.engagements.length === 0 ? (
+        <div className="mt-3 text-[13px] text-ink-600">
+          No staff touches logged yet.
+        </div>
+      ) : (
+        <div className="mt-2.5 flex flex-col">
+          {data.care.engagements.map((e, i) => (
+            <div
+              key={e.occurredAt + e.kind + i}
+              className={
+                "flex items-start gap-3 py-2.5" +
+                (i > 0 ? " border-t border-canvas" : "")
+              }
+            >
+              <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-sky-tint text-[15px]">
+                {TOUCH_ICON[e.kind] ?? "•"}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-semibold text-ink-900">
+                  {TOUCH_LABEL[e.kind] ?? e.kind}
+                  <span className="font-medium text-ink-600">
+                    {" "}
+                    · {e.staffName}
+                  </span>
+                  {typeof e.mood === "number" && (
+                    <span className="ml-2 text-[11px] font-bold text-blue-primary">
+                      mood {e.mood}/5
+                    </span>
+                  )}
+                </div>
+                {e.body && (
+                  <div className="mt-0.5 text-[12px]/[1.5] text-ink-600">
+                    {e.body}
+                  </div>
+                )}
+              </div>
+              <span className="tnum flex-none text-[11px] text-ink-400">
+                {relTime(e.occurredAt)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** FOLLOW-UP CADENCE - the 30/60/90/180/365d post-discharge touchpoints. A
+ *  missed touch is amber - concern, never red. */
+function FollowUpsCard({ c360 }: { c360: Client360 | null | "offline" }) {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  return (
+    <div className={CARD + " px-[26px] py-[22px]"}>
+      <div className="text-[15px] font-bold text-ink-900">
+        Follow-up cadence
+      </div>
+      {!data ? (
+        <C360Pending state={c360 === "offline" ? "offline" : null} />
+      ) : data.care.followUps.length === 0 ? (
+        <div className="mt-3 text-[13px] text-ink-600">
+          No follow-up cadence scheduled - starts at discharge.
+        </div>
+      ) : (
+        <div className="mt-3.5 flex flex-wrap gap-2">
+          {data.care.followUps.map((f) => (
+            <span
+              key={f.dueDay}
+              className={
+                "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold " +
+                (f.status === "done"
+                  ? "bg-[#E8F8F0] text-success"
+                  : f.status === "missed"
+                  ? "bg-[#FFF7EA] text-[#B54708]"
+                  : "bg-sky-tint text-blue-primary")
+              }
+            >
+              {f.status === "done" ? "✓" : f.status === "missed" ? "○" : "◷"}{" "}
+              {f.dueDay}d
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ParticipantDetail({
   member,
   goParticipants,
@@ -583,7 +1274,7 @@ export default function ParticipantDetail({
   goParticipants: () => void;
   goGiving: () => void;
 }) {
-  const [tab, setTab] = useState<Tab>("Journey");
+  const [tab, setTab] = useState<Tab>("Engagement");
   // "Public giving page" is LIVE - POST /api/admin/consent, optimistic flip
   // with revert on failure. Photo + milestone toggles stay local-only: there
   // is no data model for them yet (they still need the signed consent form).
@@ -669,6 +1360,32 @@ export default function ParticipantDetail({
     };
   }, [member.id]);
 
+  // CLIENT 360 - the whole-person read model, one staff-only fetch
+  // (GET /api/staff/client360). null = loading; "offline" = the API isn't
+  // reachable yet (concurrent modules still landing) - cards show a quiet
+  // coming-online state, never guessed data.
+  const [c360, setC360] = useState<Client360 | null | "offline">(null);
+  useEffect(() => {
+    let alive = true;
+    setC360(null);
+    fetch(`/api/staff/client360?memberId=${member.id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((d: Client360) => {
+        if (alive) setC360(d);
+      })
+      .catch(() => {
+        if (alive) setC360("offline");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [member.id]);
+
+  const h360 = c360 && c360 !== "offline" ? c360.header : null;
+
   const joined = new Date(member.joinedAt).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
@@ -706,6 +1423,24 @@ export default function ParticipantDetail({
             <span className="inline-flex h-[26px] items-center rounded-full bg-[#DDEBFB] px-3 text-[11px] font-bold text-blue-primary">
               {member.level}
             </span>
+            {/* CLIENT 360 band - phase + LOC chip and risk flag. The risk
+                flag is amber, never red on a person. */}
+            {h360?.phase && (
+              <span className="inline-flex h-[26px] items-center rounded-full bg-blue-primary px-3 text-[11px] font-bold uppercase tracking-[0.03em] text-white">
+                {C360_PHASE_LABEL[h360.phase] ?? h360.phase}
+                {h360.loc ? ` · ${h360.loc.toUpperCase()}` : ""}
+              </span>
+            )}
+            {h360 &&
+              (h360.risk === "watch" ? (
+                <span className="inline-flex h-[26px] items-center rounded-full bg-[#FFF7EA] px-3 text-[11px] font-bold text-[#B54708]">
+                  Extra support
+                </span>
+              ) : (
+                <span className="inline-flex h-[26px] items-center rounded-full bg-[#E8F8F0] px-3 text-[11px] font-bold text-success">
+                  On track
+                </span>
+              ))}
           </div>
           <div className="mt-1 text-[13px] font-medium text-ink-600">
             Joined {joined} ·{" "}
@@ -715,6 +1450,29 @@ export default function ParticipantDetail({
             · {member.points.toLocaleString("en-US")} pts
           </div>
         </div>
+        {/* Continuum score + 30-day trend arrow - same normalizer as the
+            ribbon, so the two numbers agree. */}
+        {h360 && (
+          <div className="flex-none text-center">
+            <div className="flex items-baseline justify-center gap-1.5">
+              <span className="tnum text-[34px] font-extrabold leading-none text-blue-primary">
+                {h360.continuumScore}
+              </span>
+              <span
+                className={
+                  "text-[20px] font-extrabold leading-none " +
+                  C360_TREND[h360.trend].cls
+                }
+                title={`30-day trend: ${h360.trend}`}
+              >
+                {C360_TREND[h360.trend].arrow}
+              </span>
+            </div>
+            <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-400">
+              Continuum · {h360.trend}
+            </div>
+          </div>
+        )}
         <button
           type="button"
           className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-blue-primary px-[22px] text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
@@ -734,20 +1492,10 @@ export default function ParticipantDetail({
           above balances. */}
       <ContinuumRibbon memberId={member.id} />
 
-      {/* MY PLAN (docs/14) - recovery goals, milestones, funding. LIVE. Sits
-          right under the journey ribbon, always visible above the tabs. */}
-      <MyPlanCard memberId={member.id} />
-
-      {/* RÉSUMÉ + BARC TREND (docs/13/14) - paired. Both are member-private
-          surfaces, now LIVE for staff via GET /api/staff/participant, gated on
-          an active continuum consent grant to this center. No consent → a
-          respectful "not shared" state, never the data. */}
-      <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
-        <ResumeCard data={participant} memberName={member.name} />
-        <BarcCard data={participant} memberName={member.name} />
-      </div>
-
-      {/* Tabs */}
+      {/* Tabs - the Client 360 strip (docs/16 Part B). Every pre-existing
+          card is KEPT and re-homed: journey timeline → Engagement; My Plan +
+          Résumé → Goals & Reentry; balances + support requests → Giving;
+          BARC + consent + recent mentor sessions → Care & Support. */}
       <div className="flex gap-2.5">
         {TABS.map((t) => (
           <button
@@ -766,19 +1514,14 @@ export default function ParticipantDetail({
         ))}
       </div>
 
-      {tab !== "Journey" ? (
-        <div className={CARD + " px-[30px] py-[26px]"}>
-          <div className="text-[15px] font-bold text-ink-900">{tab}</div>
-          <div className="mt-2 text-[13px] text-ink-600">
-            {tab} view is a stub in this prototype - the Journey tab shows the
-            working record, including balances and consent.
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-[1.4fr_1fr] gap-[18px]">
-          {/* Left column - journey timeline (demo) + real support requests */}
-          <div className="flex flex-col gap-[18px]">
-            <div className={CARD + " px-[30px] py-[26px]"}>
+      {tab === "Engagement" && (
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
+          {/* Engagement section - source chips + 28-day strip + streak */}
+          <EngagementCard c360={c360} />
+
+          {/* Journey timeline - kept (styled demo; journey stages aren't in
+              the data model yet). */}
+          <div className={CARD + " px-[30px] py-[26px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Journey timeline
               </div>
@@ -814,9 +1557,33 @@ export default function ParticipantDetail({
                   </div>
                 ))}
               </div>
-            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Support requests - LIVE */}
+      {tab === "Learning" && <LearningCard c360={c360} />}
+
+      {tab === "Community" && <CommunityCard c360={c360} />}
+
+      {tab === "Goals & Reentry" && (
+        <>
+          {/* Snapshot - goal rows + job apps + résumé yes/no (Client 360) */}
+          <GoalsSnapshotCard c360={c360} />
+
+          {/* MY PLAN (docs/14) - kept, re-homed to this tab. */}
+          <MyPlanCard memberId={member.id} />
+
+          {/* RÉSUMÉ (docs/13) - kept; full content stays consent-gated via
+              GET /api/staff/participant (the Client 360 payload only carries
+              a resumeExists boolean). */}
+          <ResumeCard data={participant} memberName={member.name} />
+        </>
+      )}
+
+      {tab === "Giving" && (
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
+          <div className="flex flex-col gap-[18px]">
+            {/* Support requests - LIVE (kept) */}
             <div className={CARD + " px-[30px] py-[26px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Support requests
@@ -884,7 +1651,7 @@ export default function ParticipantDetail({
                     {fmtMoney(member.balances.credits)}
                   </div>
                   <div className="text-[11px] font-semibold text-ink-600">
-                    reentry fund
+                    Reentry Fund
                   </div>
                 </div>
                 <div>
@@ -901,7 +1668,27 @@ export default function ParticipantDetail({
               </div>
             </div>
 
-            {/* Recent sessions - LIVE */}
+            {/* Weekly funding progress - Client 360 giving section */}
+            <WeeklyGivingCard c360={c360} />
+          </div>
+        </div>
+      )}
+
+      {tab === "Care & Support" && (
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
+          <div className="flex flex-col gap-[18px]">
+            {/* Care team + latest touches + follow-up cadence (docs/16 C) */}
+            <CareTeamCard c360={c360} />
+            <TouchesCard c360={c360} />
+            <FollowUpsCard c360={c360} />
+          </div>
+
+          <div className="flex flex-col gap-[18px]">
+            {/* BARC TREND (docs/14) - kept; consent-gated via
+                GET /api/staff/participant, never in the Client 360 payload. */}
+            <BarcCard data={participant} memberName={member.name} />
+
+            {/* Recent sessions - LIVE (kept) */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Recent sessions

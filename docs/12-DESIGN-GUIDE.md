@@ -105,7 +105,7 @@ Same skeleton, unmistakably different skin — a client comparing the two should
 
 ## 7. Dashboard Design Language (platform)
 
-`navy-deep` left sidebar (wordmark in white, icon+label nav, active item = `blue-primary` left bar + `sky-tint` text), `canvas` content area, white `rounded-2xl` cards. Top row: program KPI cards (PON · VOC · IOP · NAV) — the REPrieve pattern: small program chip top-left, giant blue tabular number, gray caption, date-range edit link. Charts: blues only, success-green for positive outcome lines, goal lines at New Freedom benchmarks (65/65/80). Tables: 15px Montserrat, `sky-tint` row hover, chips for journey stages. Participant/mentor PWA carries the identical tokens with bottom-tab navigation and celebratory confetti moments in blue + gold-badge.
+`navy-deep` left sidebar (wordmark in white, icon+label nav, active item = `blue-primary` left bar + `sky-tint` text), `canvas` content area, white `rounded-2xl` cards. Top row: program KPI cards (PON · VOC · IOP · NAV) — the REPrieve pattern: small program chip top-left, giant blue tabular number, gray caption, date-range edit link. Charts: blues only, success-green for positive outcome lines, goal lines at published case-study benchmarks (65/65/80). Tables: 15px Montserrat, `sky-tint` row hover, chips for journey stages. Participant/mentor PWA carries the identical tokens with bottom-tab navigation and celebratory confetti moments in blue + gold-badge.
 
 ## 8. Voice Rules for All UI Copy
 

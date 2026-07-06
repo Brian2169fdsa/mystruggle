@@ -45,7 +45,7 @@
 ## F. ROI & Executive Reporting
 - [ ] mv_roi_inputs (monthly per org: enrolled/completed/dropout/engaged-days/staff touches/alumni retained/sessions)
 - [ ] ROI dashboard (center_admin): assumptions panel × measured actuals → monthly + annualized ROI, math shown transparently
-- [ ] New Freedom benchmark lines labeled as case-study reference, not guarantee
+- [ ] published case-study benchmark lines labeled as case-study reference, not guarantee
 - [ ] Executive one-pager: branded PDF (outcomes + retention + RC deltas + ROI + Claude narrative)
 - [ ] Staff-touch → outcome correlation view (from staff_engagements × outcomes)
 

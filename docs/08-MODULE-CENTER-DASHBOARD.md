@@ -10,7 +10,7 @@ Overview · Participants · Mentorship · Learning · Community · Giving · Rep
 
 ## Overview (the wow screen)
 
-Top KPI card row (REPrieve pattern — big blue numbers with date-range edit): enrollment counts per program **PON · VOC · IOP · NAV**. Second row: Active Participants · Avg Engagement (7d) · Course Completion % · Active Mentorships · Funds Raised (30d) · At-Risk Count. Below: engagement trend chart (30/90d), journey-stage funnel (intake → in_program → transitional → independent → alumni), "Needs attention" task queue (at-risk flags, pending approvals, moderation items, mentor concerns), recent milestones ticker. North-star benchmarks from the New Freedom case study render as goal lines on charts: engagement 65%, completion 65%, digital scale 80%.
+Top KPI card row (REPrieve pattern — big blue numbers with date-range edit): enrollment counts per program **PON · VOC · IOP · NAV**. Second row: Active Participants · Avg Engagement (7d) · Course Completion % · Active Mentorships · Funds Raised (30d) · At-Risk Count. Below: engagement trend chart (30/90d), journey-stage funnel (intake → in_program → transitional → independent → alumni), "Needs attention" task queue (at-risk flags, pending approvals, moderation items, mentor concerns), recent milestones ticker. North-star benchmarks from the published case-study render as goal lines on charts: engagement 65%, completion 65%, digital scale 80%.
 
 ## Participants
 

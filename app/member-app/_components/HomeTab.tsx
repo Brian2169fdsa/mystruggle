@@ -5,6 +5,7 @@ import CommunityFeed from "@/app/components/feed/CommunityFeed";
 import type { SafeUser } from "@/app/lib/types";
 import type { Task } from "./MemberApp";
 import { DOMAIN_LABELS, type PlanGoal } from "./PlanView";
+import MyProgramPanel from "./MyProgramPanel";
 
 /** Heart-reaction pill: outline → red fill, count +1. */
 function HeartPill({
@@ -67,6 +68,10 @@ export default function HomeTab({
   const activeGoals = (planGoals ?? []).filter((g) => g.status === "active");
   return (
     <div className="flex flex-1 flex-col">
+      {/* My Program - client portal panel (docs/16 Part D). Fetches
+          /api/portal itself and renders nothing unless the member has an
+          active program enrollment. Additive: everything below is untouched. */}
+      <MyProgramPanel openPlan={openPlan} />
       {/* Header */}
       <div className="bg-white px-5 pb-3.5 pt-[18px]">
         <div className="flex items-center justify-between">

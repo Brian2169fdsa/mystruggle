@@ -111,7 +111,7 @@ mv_roi_inputs                         -- per org per month: enrolled, completed,
 ```
 
 - **ROI dashboard** (center_admin): configurable assumptions panel (avg revenue per completed episode, clinician hourly cost, admin hours saved/day, alumni program revenue) × platform-measured actuals (completion delta, dropout delta, engagement, staff touches, alumni retention) → monthly + annualized ROI figure with the math shown honestly ("your assumptions × our measurements")
-- **Benchmarks**: New Freedom reference lines (completion 50→65%, engagement 40→65%, 2 hrs/day saved, ROI 2x→5x) rendered as targets, clearly labeled as case-study reference not guarantee
+- **Benchmarks**: published case-study reference lines (completion 50→65%, engagement 40→65%, 2 hrs/day saved, ROI 2x→5x) rendered as targets, clearly labeled as case-study reference not guarantee
 - **Executive one-pager export**: branded PDF — outcomes, retention curves, RC deltas, ROI summary, Claude narrative — the thing a director hands their board or a funder
 - **Marketing-page ROI calculator** (Part G): same math, public, with sliders
 

@@ -80,7 +80,7 @@ function DomainBars({ avgs }: { avgs: CapitalAvgs }) {
   );
 }
 
-/* ── benchmarks (New Freedom case study): 65 / 65 / 80 ─────────────────── */
+/* ── benchmarks (published case-study reference): 65 / 65 / 80 ─────────── */
 
 const BENCH_3 = 65;
 const BENCH_6 = 65;
@@ -161,9 +161,86 @@ type OutcomesData = {
   mvEfficacy: { note: string; quartiles: Quartile[] };
 };
 
-/** Retention-in-recovery benchmark line (illustrative, New-Freedom framing:
+/** Retention-in-recovery benchmark line (illustrative, case-study framing:
  *  long-term recovery target). Not a clinical threshold. */
 const RETENTION_BENCH = 60;
+
+/* ── GET /api/roi shape (docs/16 Part F - ROI & Executive) ─────────────── */
+
+type RoiActuals = {
+  activeEnrollments: number;
+  completedEnrollments: number;
+  completionRatePct: number;
+  dropoutRatePct: number;
+  engagedDays30: number; // distinct member-days with a continuum event, 30d
+  staffTouches30: number;
+  sessionsDelivered30: number;
+  alumniRetained: number; // post-center members active in the last 30d
+};
+
+type RoiData = { actuals: RoiActuals };
+
+/** Editable assumptions - the center's numbers, never ours. Defaults are
+ *  deliberately middle-of-the-road; every input is a plain number field. */
+type RoiAssumptions = {
+  episodeRevenue: number; // avg revenue per completed episode ($)
+  hourlyCost: number; // clinician hourly cost ($/hr)
+  adminHoursPerDay: number; // admin hours saved per day
+  alumniMonthly: number; // alumni program revenue per retained alumnus / month
+};
+
+const ROI_DEFAULTS: RoiAssumptions = {
+  episodeRevenue: 9000,
+  hourlyCost: 85,
+  adminHoursPerDay: 2,
+  alumniMonthly: 150,
+};
+
+const ROI_INPUTS: {
+  key: keyof RoiAssumptions;
+  label: string;
+  suffix: string;
+}[] = [
+  { key: "episodeRevenue", label: "Avg revenue per completed episode", suffix: "$" },
+  { key: "hourlyCost", label: "Clinician hourly cost", suffix: "$/hr" },
+  { key: "adminHoursPerDay", label: "Admin hours saved per day", suffix: "hrs" },
+  { key: "alumniMonthly", label: "Alumni revenue per retained alumnus", suffix: "$/mo" },
+];
+
+/** Published case-study reference points - rendered as reference chips,
+ *  always labeled "case-study reference, not a guarantee". */
+const CASE_BENCHMARKS = [
+  { label: "Completion", value: "50% → 65%" },
+  { label: "Engagement", value: "40% → 65%" },
+  { label: "Staff time", value: "2 hrs/day saved" },
+  { label: "ROI", value: "2x → 5x" },
+];
+
+/** Rows for the measured-actuals strip in the ROI block + one-pager. */
+function roiActualRows(a: RoiActuals): { label: string; value: string }[] {
+  return [
+    { label: "Active enrollments", value: String(a.activeEnrollments) },
+    { label: "Completed enrollments", value: String(a.completedEnrollments) },
+    { label: "Completion rate", value: `${a.completionRatePct}%` },
+    { label: "Dropout rate", value: `${a.dropoutRatePct}%` },
+    { label: "Engaged member-days (30d)", value: String(a.engagedDays30) },
+    { label: "Staff touches (30d)", value: String(a.staffTouches30) },
+    { label: "Sessions delivered (30d)", value: String(a.sessionsDelivered30) },
+    { label: "Alumni retained (30d)", value: String(a.alumniRetained) },
+  ];
+}
+
+/** Print-only rules for the executive one-pager: hide everything else, show
+ *  the #roi-onepager section alone. A real branded PDF export is out of scope
+ *  for now - this uses the browser's print-to-PDF. */
+const ONE_PAGER_CSS = `
+@media screen { #roi-onepager { display: none; } }
+@media print {
+  body * { visibility: hidden; }
+  #roi-onepager, #roi-onepager * { visibility: visible; }
+  #roi-onepager { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 32px; }
+}
+`;
 
 /** pre → during → post recovery-capital bars - reuse the domain palette so the
  *  outcomes block reads as one system with the recovery-capital block above. */
@@ -219,11 +296,20 @@ export default function Reports() {
   // efficacy block never blocks the existing retention + recovery-capital cards.
   const [outcomes, setOutcomes] = useState<OutcomesData | null>(null);
   const [outcomesError, setOutcomesError] = useState(false);
+  // ROI actuals (docs/16 Part F) - independent load, same resilience rule.
+  const [roi, setRoi] = useState<RoiData | null>(null);
+  const [roiError, setRoiError] = useState(false);
+  const [assump, setAssump] = useState<RoiAssumptions>(ROI_DEFAULTS);
 
   const load = useCallback(async () => {
     setError(false);
     setAnalyticsError(false);
     setOutcomesError(false);
+    setRoiError(false);
+    fetch("/api/roi")
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((body) => setRoi(body as RoiData))
+      .catch(() => setRoiError(true));
     fetch("/api/admin/analytics")
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((body) => setAnalytics(body as AnalyticsData))
@@ -251,6 +337,37 @@ export default function Reports() {
   const maxGiving = data
     ? Math.max(1, ...data.givingByMonth.map((g) => g.total))
     : 1;
+
+  /* ── ROI math: your assumptions x our measurements (docs/16 Part F) ──
+     Every line below is rendered verbatim in the UI - no hidden factors. */
+  const act = roi?.actuals;
+  const staffMonthly = assump.adminHoursPerDay * 30 * assump.hourlyCost;
+  const alumniMonthlyTotal = (act?.alumniRetained ?? 0) * assump.alumniMonthly;
+  const monthlyValue = staffMonthly + alumniMonthlyTotal;
+  const completionValue =
+    (act?.completedEnrollments ?? 0) * assump.episodeRevenue;
+  const annualValue = monthlyValue * 12 + completionValue;
+
+  const roiMathLines: { label: string; formula: string; result: string }[] =
+    act
+      ? [
+          {
+            label: "Staff time saved",
+            formula: `${assump.adminHoursPerDay} hrs/day saved x 30 days x ${fmtMoney(assump.hourlyCost)}/hr`,
+            result: `${fmtMoney(staffMonthly)}/mo`,
+          },
+          {
+            label: "Alumni program revenue",
+            formula: `${act.alumniRetained} retained alumni (measured) x ${fmtMoney(assump.alumniMonthly)}/mo`,
+            result: `${fmtMoney(alumniMonthlyTotal)}/mo`,
+          },
+          {
+            label: "Completed-episode revenue",
+            formula: `${act.completedEnrollments} completions (measured) x ${fmtMoney(assump.episodeRevenue)}/episode`,
+            result: fmtMoney(completionValue),
+          },
+        ]
+      : [];
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -720,6 +837,237 @@ export default function Reports() {
               >
                 Export CSV
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── ROI & EXECUTIVE (docs/16 Part F - additive) ────────────────────
+          Your assumptions x our measurements, math shown line by line.
+          Case-study benchmarks are reference chips, never promises. Loads
+          independently of everything above. */}
+      <div className="mt-2 text-[26px] font-extrabold tracking-[-0.02em] text-ink-900">
+        ROI &amp; executive
+      </div>
+
+      {!roi && !roiError && <div className={SKELETON + " h-[320px]"} />}
+
+      {roiError && (
+        <div className="flex flex-col items-start gap-3 rounded-2xl bg-amber-bg px-8 py-7 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+          <div className="text-base font-bold text-amber-ink">
+            We couldn&apos;t load the ROI measurements
+          </div>
+          <div className="text-sm font-medium text-ink-600">
+            Your assumptions are safe - this is just a hiccup reaching the
+            server.
+          </div>
+          <button
+            type="button"
+            onClick={load}
+            className="inline-flex h-11 cursor-pointer items-center rounded-full bg-blue-primary px-[22px] text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {roi && act && (
+        <>
+          <style dangerouslySetInnerHTML={{ __html: ONE_PAGER_CSS }} />
+
+          <div className={CARD + " px-8 py-7"}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-base font-bold text-ink-900">
+                  Your assumptions x our measurements
+                </div>
+                <div className="mt-1 text-xs font-semibold text-ink-600">
+                  Edit the assumptions - they&apos;re your numbers, never ours.
+                  The measurements come live from the platform.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                title="Opens your browser's print dialog - save as PDF. A branded PDF export is on the roadmap."
+                className="inline-flex h-11 cursor-pointer items-center rounded-full bg-blue-primary px-[22px] text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+              >
+                Executive one-pager
+              </button>
+            </div>
+
+            {/* assumptions panel - editable number inputs */}
+            <div className="mt-6 grid grid-cols-4 gap-4 max-lg:grid-cols-2">
+              {ROI_INPUTS.map((f) => (
+                <label key={f.key} className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-bold tracking-[.04em] text-ink-600">
+                    {f.label}
+                  </span>
+                  <span className="flex items-center gap-2 rounded-xl border border-sky-tint bg-canvas px-3.5 py-2.5">
+                    <input
+                      type="number"
+                      min={0}
+                      value={assump[f.key]}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        setAssump({
+                          ...assump,
+                          [f.key]: Number.isFinite(v) && v >= 0 ? v : 0,
+                        });
+                      }}
+                      className="tnum w-full bg-transparent text-[16px] font-extrabold text-ink-900 outline-none"
+                    />
+                    <span className="flex-none text-[11px] font-bold text-ink-400">
+                      {f.suffix}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {/* measured actuals strip */}
+            <div className="mt-6 grid grid-cols-4 gap-3 border-t border-canvas pt-5 max-lg:grid-cols-2">
+              {roiActualRows(act).map((r) => (
+                <div key={r.label}>
+                  <div className="text-[11px] font-semibold text-ink-600">
+                    {r.label}
+                  </div>
+                  <div className="tnum text-[20px] font-extrabold text-blue-primary">
+                    {r.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* the math, line by line */}
+            <div className="mt-6 border-t border-canvas pt-5">
+              <div className="text-[13px] font-bold text-ink-900">
+                The math, line by line
+              </div>
+              {roiMathLines.map((l) => (
+                <div
+                  key={l.label}
+                  className="mt-3 grid grid-cols-[160px_1fr_auto] items-center gap-3 max-lg:grid-cols-1 max-lg:gap-1"
+                >
+                  <span className="text-[13px] font-bold text-ink-900">
+                    {l.label}
+                  </span>
+                  <span className="tnum text-[13px] font-medium text-ink-600">
+                    {l.formula}
+                  </span>
+                  <span className="tnum text-right text-[15px] font-extrabold text-ink-900 max-lg:text-left">
+                    = {l.result}
+                  </span>
+                </div>
+              ))}
+              <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-sky-tint px-6 py-5 max-lg:grid-cols-1">
+                <div>
+                  <div className="text-[12px] font-semibold text-ink-600">
+                    Monthly recurring value (staff time + alumni revenue)
+                  </div>
+                  <div className="tnum text-[32px] font-extrabold tracking-[-0.02em] text-blue-primary">
+                    {fmtMoney(monthlyValue)}
+                    <span className="text-[15px] font-bold text-ink-600">
+                      /mo
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[12px] font-semibold text-ink-600">
+                    Annualized (12 x monthly + completed-episode revenue)
+                  </div>
+                  <div className="tnum text-[32px] font-extrabold tracking-[-0.02em] text-success">
+                    {fmtMoney(annualValue)}
+                    <span className="text-[15px] font-bold text-ink-600">
+                      /yr
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* published case-study reference chips */}
+            <div className="mt-6 border-t border-canvas pt-5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {CASE_BENCHMARKS.map((b) => (
+                  <span
+                    key={b.label}
+                    title="Published case-study reference, not a guarantee"
+                    className="inline-flex h-8 items-center gap-2 rounded-full bg-[#F0EDFB] px-3.5 text-[12px] font-extrabold text-indigo-brand"
+                  >
+                    {b.label}
+                    <span className="tnum font-bold text-ink-900">
+                      {b.value}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              <div className="mt-2.5 text-[11px] font-semibold text-ink-600">
+                Published case-study benchmarks - a reference, not a guarantee.
+              </div>
+            </div>
+
+            {/* staff touch -> outcome, directional only */}
+            <div className="mt-5 flex flex-wrap items-start gap-3 rounded-2xl border border-sky-tint bg-canvas px-5 py-4">
+              <span className="inline-flex h-[22px] flex-none items-center rounded-full bg-sky-tint px-2.5 text-[10px] font-extrabold tracking-[.06em] text-blue-primary">
+                STAFF TOUCH → OUTCOME
+              </span>
+              <p className="min-w-[240px] flex-1 text-[13px]/[1.6] font-medium text-ink-600">
+                {act.staffTouches30 > 0
+                  ? `${act.staffTouches30} staff touches logged in the last 30 days alongside a ${act.completionRatePct}% completion rate - ` +
+                    (act.completionRatePct >= 50
+                      ? "engagement and completion are moving in the same direction here, the same pattern the case-study data points to."
+                      : "touch volume is building; completion has room to follow. Keep logging kudos, nudges, and check-ins.")
+                  : "No staff touches logged in the last 30 days yet - log kudos, nudges, and check-ins to start building this signal."}{" "}
+                <span className="font-bold text-ink-900">
+                  Directional only - a correlation from your live data, never
+                  causal proof.
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* print-only executive one-pager (browser print-to-PDF; a real
+              branded PDF export is out of scope for now) */}
+          <div id="roi-onepager">
+            <div style={{ fontWeight: 800, fontSize: 24 }}>
+              My Struggle - Executive one-pager
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, color: "#4A5568" }}>
+              Generated {new Date().toLocaleDateString("en-US")} - your
+              assumptions x our measurements
+            </div>
+            <table style={{ marginTop: 20, width: "100%", fontSize: 13 }}>
+              <tbody>
+                {roiActualRows(act).map((r) => (
+                  <tr key={r.label}>
+                    <td style={{ padding: "4px 0", color: "#4A5568" }}>
+                      {r.label}
+                    </td>
+                    <td style={{ padding: "4px 0", fontWeight: 800 }}>
+                      {r.value}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ marginTop: 20, fontSize: 13 }}>
+              {roiMathLines.map((l) => (
+                <div key={l.label} style={{ padding: "3px 0" }}>
+                  <strong>{l.label}:</strong> {l.formula} = {l.result}
+                </div>
+              ))}
+              <div style={{ marginTop: 12, fontWeight: 800, fontSize: 16 }}>
+                Monthly recurring value: {fmtMoney(monthlyValue)}/mo ·
+                Annualized: {fmtMoney(annualValue)}/yr
+              </div>
+            </div>
+            <div style={{ marginTop: 20, fontSize: 11, color: "#4A5568" }}>
+              Assumptions supplied by the center; measurements from the
+              platform. Published case-study benchmarks (completion 50% to 65%,
+              engagement 40% to 65%, 2 hrs/day saved, ROI 2x to 5x) are
+              case-study references, not guarantees. Staff-touch correlation is
+              directional, never causal proof.
             </div>
           </div>
         </>

@@ -27,7 +27,7 @@ Audit 2026-07-05: SSR grep of `/member-app` + API calls with danielle cookie jar
 ## Learn (client-tab)
 
 - [ ] MY COURSES ring cards: ISE Course 3 (PON 45%, "Due Sunday"), Forklift Cert (VOC 20%), Documents & ID Recovery (NAV complete) — renders from hardcoded consts; no course/enrollment data model or API
-- [ ] Video library: category filter chips (All/New Freedom/Motivational/Steps) + 2-col video cards with duration badges — hardcoded, filters are client-only
+- [ ] Video library: category filter chips (All/published case-study/Motivational/Steps) + 2-col video cards with duration badges — hardcoded, filters are client-only
 - [ ] Real course backend: Course→Module→Lesson content model, sequence locking, program categories powering dashboard KPIs (docs/07) — not built
 - [ ] Videos actually playable + watching counts toward streak — placeholder tiles only
 

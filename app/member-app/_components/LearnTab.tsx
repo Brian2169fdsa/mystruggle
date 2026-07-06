@@ -1,11 +1,11 @@
 "use client";
 
-import type { Course, Enrollment, Program } from "@/app/lib/types";
+import type { Course, Enrollment, ProgramCategory } from "@/app/lib/types";
 import { nextLesson } from "./MemberApp";
 
 /** Program chip + ring colors, following the demo cards' palette. */
 const PROGRAM_STYLE: Record<
-  Program,
+  ProgramCategory,
   { chipBg: string; chipText: string; ring: string; text: string }
 > = {
   PON: { chipBg: "#EAF2FC", chipText: "#2E7CD6", ring: "#2E7CD6", text: "#2E7CD6" },
@@ -95,14 +95,14 @@ function CourseCard({
 
 const VIDEOS = [
   { title: "Walking Through Step 4", cat: "STEPS", dur: "8:24" },
-  { title: "Your First 90 Days", cat: "NEW FREEDOM", dur: "12:03" },
+  { title: "Your First 90 Days", cat: "FOUNDATIONS", dur: "12:03" },
   { title: "Why Showing Up Works", cat: "MOTIVATIONAL", dur: "6:41" },
   { title: "Step 3 in Real Life", cat: "STEPS", dur: "9:17" },
 ];
 
 const CAT_MAP: Record<string, string | null> = {
   All: null,
-  "New Freedom": "NEW FREEDOM",
+  "Foundations": "FOUNDATIONS",
   Motivational: "MOTIVATIONAL",
   Steps: "STEPS",
 };

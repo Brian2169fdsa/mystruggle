@@ -132,7 +132,7 @@ A member working "get a halfway house" touches all three: they ask their circle 
 
 ## Dashboard additions (extend docs/08, do not rebuild)
 - Participant detail gains: My Plan (recovery goals + milestones + job applications), résumé view, BARC trend (staff-visible), Companion transcript pane (already spec'd, extend to show goal coaching)
-- New overview signal: recovery-capital domain averages + goals-achieved trend, added to existing outcomes reporting and the New Freedom benchmark lines
+- New overview signal: recovery-capital domain averages + goals-achieved trend, added to existing outcomes reporting and the published case-study benchmark lines
 - Circles moderation folds into the existing moderation queue
 
 ## Definition of Done (this module)

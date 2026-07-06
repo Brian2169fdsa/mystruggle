@@ -22,7 +22,7 @@
 - [ ] Lesson player (full-screen): video block, rich text, journal block (autosaves offline via IndexedDB, syncs on reconnect), quiz block with pass %, discussion block linking to feed thread
 - [ ] Sequence lock: next lesson gated until completion rules met
 - [ ] Course completion celebration (confetti, points, badge if earned)
-- [ ] Video library: category chips (New Freedom · Motivational · Steps), watch view, counts toward streak
+- [ ] Video library: category chips (published case-study · Motivational · Steps), watch view, counts toward streak
 
 ## Give
 - [ ] My QR code card (shareable image + link); printable card request

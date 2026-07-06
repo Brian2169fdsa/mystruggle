@@ -44,6 +44,6 @@
 
 ## Reports
 - [ ] Outcomes: stage-transition rates, 3/6/12-month post-discharge retention cohorts, engagement-vs-outcome view
-- [ ] New Freedom benchmark lines (65/65/80) on relevant charts
+- [ ] published case-study benchmark lines (65/65/80) on relevant charts
 - [ ] Branded PDF export + CSV; date range + cohort filters
 - [ ] "Narrative summary" button → Claude-drafted quarter story, editable before save

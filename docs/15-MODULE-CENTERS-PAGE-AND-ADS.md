@@ -22,7 +22,7 @@ Use these as the page's proof spine. Present as "what the research shows," never
 - **Over 80% of long-term relapses are preceded by a gradual drop in recovery-activity engagement** — meaning an engagement dip is an early, measurable warning the platform can surface. (Kelly et al., 2026.)
 - **Recovery capital growth — employment, social support, recovery-group involvement — predicts retention and better outcomes.** The platform is built to grow exactly these. (REC-CAP / BARC-10 longitudinal studies.)
 - **Structured goals and celebrated milestones matter**: people who set structured goals are meaningfully more likely to maintain sobriety at one year; milestone celebration is associated with lower relapse. (Multiple studies.)
-- Pair with the center-side ROI benchmarks already in the platform (New Freedom case study): engagement 40→65%, program completion 50→65%, digital reach 30→80%, +20% long-term sobriety, ~2 clinician hours/day saved.
+- Pair with the center-side ROI benchmarks already in the platform (published case-study): engagement 40→65%, program completion 50→65%, digital reach 30→80%, +20% long-term sobriety, ~2 clinician hours/day saved.
 
 **Headline stat treatment**: a hero animated stat — the relapse-risk curve dropping from ~50% (year 1) toward <15% (year 5) — with the caption "Every month of engagement moves someone down this curve. We keep them on it." An honest footnote: individual outcomes vary; recovery is not linear; these are population-level findings.
 
