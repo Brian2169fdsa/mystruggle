@@ -78,6 +78,13 @@ const SLOT_ICON = {
   job: Briefcase,
 } as const;
 
+/** Advertiser creative per slot - user-provided images in /public. */
+const SLOT_IMAGE: Record<RailAdSlot, string> = {
+  residential: "/ad-desert-bloom.png",
+  iop: "/ad-south-phoenix.png",
+  job: "/ad-sunvalley.png",
+};
+
 export default function RailAdCard({ slot }: { slot: RailAdSlot }) {
   const [ad, setAd] = useState<ServedPlacement | null>(null);
   const seenRef = useRef(false);
@@ -127,6 +134,14 @@ export default function RailAdCard({ slot }: { slot: RailAdSlot }) {
       <p className="mt-1.5 line-clamp-3 text-[12.5px]/[1.55] text-ink-600">
         {ad.body}
       </p>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={SLOT_IMAGE[slot]}
+        alt={`${ad.orgName} - sponsored`}
+        className="mt-3 h-32 w-full rounded-xl object-cover"
+        loading="lazy"
+      />
 
       <a
         href={ad.ctaUrl}
