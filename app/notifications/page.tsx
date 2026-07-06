@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, ChevronRight } from "lucide-react";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+import CommunityTabBar from "../community/_components/CommunityTabBar";
 import {
   KIND_META,
+  notificationHref,
   relTime,
   type NotificationItem,
 } from "../components/NotificationBell";
@@ -29,15 +31,9 @@ function Row({
 }) {
   const Icon = (KIND_META[n.kind] ?? KIND_META.system).icon;
   const meta = KIND_META[n.kind] ?? KIND_META.system;
-  return (
-    <li
-      className={
-        "flex items-start gap-4 rounded-2xl border p-4 lg:p-5 " +
-        (n.read
-          ? "border-sky-tint bg-white"
-          : "border-transparent bg-sky-tint shadow-[0_1px_3px_rgba(11,37,69,.06)]")
-      }
-    >
+  const href = notificationHref(n);
+  const inner = (
+    <>
       <span
         className={
           "grid h-11 w-11 flex-none place-items-center rounded-xl " +
@@ -66,6 +62,38 @@ function Row({
           {relTime(n.createdAt)}
         </div>
       </div>
+
+      {href && (
+        <ChevronRight
+          size={18}
+          className="mt-3 flex-none text-ink-400"
+          aria-hidden
+        />
+      )}
+    </>
+  );
+  return (
+    <li
+      className={
+        "flex items-start gap-4 rounded-2xl border p-4 lg:p-5 " +
+        (n.read
+          ? "border-sky-tint bg-white"
+          : "border-transparent bg-sky-tint shadow-[0_1px_3px_rgba(11,37,69,.06)]")
+      }
+    >
+      {href ? (
+        <Link
+          href={href}
+          onClick={() => {
+            if (!n.read) onMark(n.id);
+          }}
+          className="flex min-w-0 flex-1 items-start gap-4"
+        >
+          {inner}
+        </Link>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-start gap-4">{inner}</div>
+      )}
 
       {!n.read && (
         <button
@@ -144,7 +172,8 @@ export default function NotificationsPage() {
     <>
       <Nav />
 
-      <section className="min-h-[60vh] bg-canvas">
+      {/* pb-20 clears the fixed mobile tab bar (lg:hidden) */}
+      <section className="min-h-[60vh] bg-canvas pb-20 lg:pb-0">
         <div className="mx-auto max-w-[760px] px-5 py-12 lg:px-6 lg:py-16">
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -253,6 +282,7 @@ export default function NotificationsPage() {
       </section>
 
       <Footer />
+      <CommunityTabBar />
     </>
   );
 }

@@ -17,9 +17,9 @@ import MeTab from "./MeTab";
 import PlanView, { type PlanGoal } from "./PlanView";
 import CelebrationOverlay from "./CelebrationOverlay";
 import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
+import { OPEN_CARE_CHANNEL_EVENT } from "./MyProgramPanel";
 
 export type Task = { label: string; done: boolean };
-export type GuideState = "idle" | "asked" | "added";
 
 /** Next incomplete lesson (1-based), or null when the course is done. */
 export function nextLesson(
@@ -50,9 +50,10 @@ export default function MemberApp() {
   ]);
   const [heart3, setHeart3] = useState(false); // local fallback shared-win post
   const [vidCat, setVidCat] = useState("All");
-  const [guideState, setGuideState] = useState<GuideState>("idle");
-  const [askedLabel, setAskedLabel] = useState("");
   const [sharedWin, setSharedWin] = useState(false);
+  // Care channel ChatTab should auto-open (set by the "open cohort chat"
+  // CustomEvent from MyProgramPanel; cleared on any manual tab switch).
+  const [careChannelId, setCareChannelId] = useState<string | null>(null);
   // Signed-in session (null = signed out → styled demo everywhere).
   const [me, setMe] = useState<{
     user: SafeUser;
@@ -105,6 +106,21 @@ export default function MemberApp() {
     };
   }, []);
 
+  // "Open cohort chat" from MyProgramPanel (Home) - switch to the Chat tab
+  // and let ChatTab auto-open the requested care channel.
+  useEffect(() => {
+    const onOpenCare = (e: Event) => {
+      const id = (e as CustomEvent<{ channelId?: string }>).detail?.channelId;
+      if (!id) return;
+      setCareChannelId(id);
+      setTab("chat");
+      setLessonOpen(false);
+      setPlanOpen(false);
+    };
+    window.addEventListener(OPEN_CARE_CHANNEL_EVENT, onOpenCare);
+    return () => window.removeEventListener(OPEN_CARE_CHANNEL_EVENT, onOpenCare);
+  }, []);
+
   // My Tracker ring = % of completed one-tap tasks + the lesson itself.
   const doneCount = tasks.filter((t) => t.done).length + (lessonDone ? 1 : 0);
   const trackerPct = Math.round((doneCount / (tasks.length + 1)) * 100);
@@ -117,6 +133,7 @@ export default function MemberApp() {
     setTab(key);
     setLessonOpen(false);
     setPlanOpen(false);
+    setCareChannelId(null); // manual navigation drops any pending auto-open
   };
 
   const openCourse = (courseId: string | null) => {
@@ -217,25 +234,6 @@ export default function MemberApp() {
     setLessonOpen(false);
   };
 
-  const askGuide = (label: string) => {
-    setGuideState("asked");
-    setAskedLabel(label);
-  };
-  const addGuideTask = () => {
-    const taskLabel =
-      askedLabel === "I need my driver's license back"
-        ? "MVD reinstatement visit"
-        : askedLabel === "Help me find a job"
-          ? "Prep 3 interview answers"
-          : "Ask Sarah about halfway house openings";
-    setTasks((ts) => [...ts, { label: `From The Guide: ${taskLabel}`, done: false }]);
-    setGuideState("added");
-  };
-  const resetGuide = () => {
-    setGuideState("idle");
-    setAskedLabel("");
-  };
-
   return (
     <div className="flex min-h-screen justify-center bg-[#E8EDF4]">
       <div className="relative flex min-h-screen w-full max-w-[430px] flex-col bg-canvas shadow-[0_0_60px_rgba(11,37,69,.12)]">
@@ -286,15 +284,11 @@ export default function MemberApp() {
             lessonCount={activeCourse?.lessonCount}
           />
         )}
-        {!planOpen && tab === "give" && <GiveTab />}
+        {!planOpen && tab === "give" && (
+          <GiveTab openPlan={() => setPlanOpen(true)} />
+        )}
         {!planOpen && tab === "chat" && (
-          <ChatTab
-            guideState={guideState}
-            askedLabel={askedLabel}
-            askGuide={askGuide}
-            addGuideTask={addGuideTask}
-            resetGuide={resetGuide}
-          />
+          <ChatTab openChannelId={careChannelId} />
         )}
         {!planOpen && tab === "me" && (
           <MeTab

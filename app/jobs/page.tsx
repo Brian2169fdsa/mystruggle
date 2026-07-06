@@ -551,12 +551,18 @@ export default function JobsPage() {
                   <CheckCircle2 className="h-7 w-7 text-success" aria-hidden />
                 </span>
                 <p className="mt-3 text-[14.5px]/[1.65] font-medium text-ink-600">
-                  Application sent - you can track it in your plan.
+                  Application sent - track it in your plan.
                 </p>
+                <Link
+                  href="/member-app"
+                  className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-blue-primary px-5 text-[14px] font-extrabold text-white hover:bg-blue-hover"
+                >
+                  Open my plan
+                </Link>
                 <button
                   type="button"
                   onClick={closeApply}
-                  className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-blue-primary px-5 text-[14px] font-extrabold text-white hover:bg-blue-hover"
+                  className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-full text-[13.5px] font-extrabold text-blue-primary hover:bg-sky-tint"
                 >
                   Done
                 </button>

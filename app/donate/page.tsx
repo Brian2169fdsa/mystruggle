@@ -59,6 +59,7 @@ const TIERS = [
   {
     name: "Basic",
     price: "$25",
+    amount: 25,
     desc: "A week of essential services for one member, every month.",
     cta: "Choose Basic",
     featured: false,
@@ -66,6 +67,7 @@ const TIERS = [
   {
     name: "Advanced",
     price: "$39",
+    amount: 39,
     desc: "Essentials plus transportation to work and treatment.",
     cta: "Choose Advanced",
     featured: false,
@@ -73,6 +75,7 @@ const TIERS = [
   {
     name: "Elite",
     price: "$59",
+    amount: 59,
     desc: "A full week of services, transport, and program materials.",
     cta: "Choose Elite",
     featured: true,
@@ -80,6 +83,7 @@ const TIERS = [
   {
     name: "Pro",
     price: "$200",
+    amount: 200,
     desc: "Sponsors a member's full journey - housing goal included.",
     cta: "Choose Pro",
     featured: false,
@@ -292,19 +296,26 @@ export default function Donate() {
                 </div>
                 <div className="text-[14px]/[1.65] text-ink-600">{t.desc}</div>
                 {t.featured ? (
-                  <span className="mt-auto inline-flex h-12 cursor-pointer items-center justify-center gap-[7px] rounded-full bg-blue-primary text-[15px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover">
+                  <Link
+                    href={`/give?amount=${t.amount}&monthly=1`}
+                    className="mt-auto inline-flex h-12 cursor-pointer items-center justify-center gap-[7px] rounded-full bg-blue-primary text-[15px] font-bold text-white shadow-[0_4px_12px_rgba(46,124,214,.28)] hover:bg-blue-hover"
+                  >
                     {t.cta} <Heart size={13} fill="currentColor" />
-                  </span>
+                  </Link>
                 ) : (
-                  <span className="mt-auto inline-flex h-12 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-blue-primary text-[15px] font-bold text-blue-primary hover:bg-sky-tint">
+                  <Link
+                    href={`/give?amount=${t.amount}&monthly=1`}
+                    className="mt-auto inline-flex h-12 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-blue-primary text-[15px] font-bold text-blue-primary hover:bg-sky-tint"
+                  >
                     {t.cta}
-                  </span>
+                  </Link>
                 )}
               </div>
             ))}
           </div>
           <div className="mt-5 text-center text-[13px] font-medium text-ink-600">
-            Secure checkout via Stripe · cancel anytime
+            Demo checkout - Stripe payments and email receipts arrive with
+            launch · cancel anytime
           </div>
         </div>
       </section>

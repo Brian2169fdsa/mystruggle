@@ -41,18 +41,31 @@ export const DOMAIN_LABELS: Record<RecoveryDomain, string> = {
   other: "Other",
 };
 
-const JOB_STATUS_STYLE: Record<JobAppStatus, string> = {
+// "hired" arrives on JobAppStatus via the concurrent employer-platform data
+// workstream - the extra key is asserted so both orders of arrival compile,
+// and lookups below fall back defensively either way.
+const JOB_STATUS_STYLE = {
   applied: "bg-sky-tint text-blue-primary",
   interview: "bg-[#EDEFF7] text-indigo-brand",
   offer: "bg-[#E7F8F0] text-success",
+  hired: "bg-gold-bg text-gold-ink",
   closed: "bg-canvas text-ink-400",
-};
+} as Record<JobAppStatus | "hired", string>;
 
-const NEXT_STATUSES: Record<JobAppStatus, JobAppStatus[]> = {
+const NEXT_STATUSES = {
   applied: ["interview", "closed"],
   interview: ["offer", "closed"],
   offer: ["closed"],
+  hired: [],
   closed: [],
+} as Record<JobAppStatus | "hired", JobAppStatus[]>;
+
+/** A saved job as GET /api/jobs projects it (saved flag set for members). */
+type SavedBoardJob = {
+  id: string;
+  title: string;
+  company: string;
+  saved?: boolean;
 };
 
 function todayIso(): string {
@@ -173,9 +186,16 @@ export default function PlanView({
   const [appCompany, setAppCompany] = useState("");
   const [appRole, setAppRole] = useState("");
   const [appNext, setAppNext] = useState("");
+  // Saved jobs off the public board (heart toggle) + hired celebration
+  const [savedJobs, setSavedJobs] = useState<SavedBoardJob[]>([]);
+  const [hiredDismissed, setHiredDismissed] = useState(false);
 
   const visibleGoals = (goals ?? []).filter((g) => g.status !== "archived");
   const hasJobGoal = visibleGoals.some((g) => g.domain === "employment");
+  // The tracker is first-class whenever there is anything to track - an
+  // employment goal OR applications already in flight (e.g. board applies).
+  const showJobSearch = hasJobGoal || apps.length > 0;
+  const hiredApp = apps.find((a) => (a.status as string) === "hired");
 
   const loadApps = async () => {
     try {
@@ -189,8 +209,23 @@ export default function PlanView({
     }
   };
 
+  const loadSavedJobs = async () => {
+    try {
+      const res = await fetch("/api/jobs");
+      if (!res.ok) return;
+      const data = await res.json();
+      const jobs: SavedBoardJob[] = Array.isArray(data.jobs) ? data.jobs : [];
+      setSavedJobs(jobs.filter((j) => j.saved === true));
+    } catch {
+      // offline - keep whatever we have
+    }
+  };
+
   useEffect(() => {
-    if (user) void loadApps();
+    if (user) {
+      void loadApps();
+      void loadSavedJobs();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -682,19 +717,57 @@ export default function PlanView({
             </div>
           )}
 
-          {/* Job search - first-class when an employment goal exists */}
-          {hasJobGoal && (
+          {/* Job search - first-class when an employment goal exists OR any
+              applications are already in flight (e.g. board applies) */}
+          {showJobSearch && (
             <>
               <div className="mt-1 flex items-center justify-between">
                 <span className="text-[12px] font-bold tracking-[.12em] text-blue-primary">
                   JOB SEARCH
                 </span>
-                {staleCount > 0 && (
-                  <span className="inline-flex h-[24px] items-center rounded-full bg-amber-bg px-3 text-[11px] font-extrabold text-amber-ink">
-                    {staleCount} to follow up
-                  </span>
-                )}
+                <span className="flex items-center gap-2">
+                  {staleCount > 0 && (
+                    <span className="inline-flex h-[24px] items-center rounded-full bg-amber-bg px-3 text-[11px] font-extrabold text-amber-ink">
+                      {staleCount} to follow up
+                    </span>
+                  )}
+                  <Link
+                    href="/resume"
+                    className="inline-flex min-h-[24px] items-center text-[12px] font-bold text-blue-primary"
+                  >
+                    Resume →
+                  </Link>
+                </span>
               </div>
+
+              {/* HIRED celebration - gold, same warmth as goal achieved */}
+              {hiredApp && !hiredDismissed && (
+                <div className="rounded-2xl border-[1.5px] border-gold-border bg-gold-bg px-5 py-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-[15px] font-extrabold text-gold-ink">
+                      You did it - HIRED at {hiredApp.company}! 🎉
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setHiredDismissed(true)}
+                      aria-label="Dismiss"
+                      className="-mr-1 -mt-1 inline-flex h-[28px] w-[28px] flex-none cursor-pointer items-center justify-center rounded-full text-[13px] font-bold text-ink-400"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="mt-1 text-[13px]/[1.55] font-semibold text-ink-600">
+                    Share the win with the community?
+                  </div>
+                  <Link
+                    href="/community"
+                    className="mt-3 inline-flex h-[40px] items-center rounded-full bg-blue-primary px-5 text-[13px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.35)] hover:bg-blue-hover"
+                  >
+                    Share the win →
+                  </Link>
+                </div>
+              )}
+
               <div className="rounded-2xl bg-white px-5 py-2 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
                 {apps.length === 0 && (
                   <div className="py-4 text-center text-[13px] font-medium text-ink-600">
@@ -706,7 +779,8 @@ export default function PlanView({
                     a.nextActionDate &&
                     a.nextActionDate < today &&
                     a.status !== "closed" &&
-                    a.status !== "offer";
+                    a.status !== "offer" &&
+                    (a.status as string) !== "hired";
                   return (
                     <div
                       key={a.id}
@@ -745,7 +819,7 @@ export default function PlanView({
                             : ""}
                         </span>
                         <span className="flex flex-none gap-1.5">
-                          {NEXT_STATUSES[a.status].map((s) => (
+                          {(NEXT_STATUSES[a.status] ?? []).map((s) => (
                             <button
                               key={s}
                               type="button"
@@ -799,6 +873,45 @@ export default function PlanView({
                   </div>
                 </div>
               </div>
+
+              {/* Saved jobs off the public board - cap 3, link to /jobs */}
+              {savedJobs.length > 0 && (
+                <div className="rounded-2xl bg-white px-5 py-4 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold tracking-[.1em] text-blue-primary">
+                      SAVED JOBS
+                    </span>
+                    <Link
+                      href="/jobs"
+                      className="inline-flex min-h-[24px] items-center text-[12px] font-bold text-blue-primary"
+                    >
+                      Job board →
+                    </Link>
+                  </div>
+                  <div className="mt-1 flex flex-col">
+                    {savedJobs.slice(0, 3).map((j) => (
+                      <Link
+                        key={j.id}
+                        href="/jobs"
+                        className="flex min-h-[44px] items-center justify-between gap-2 border-b border-canvas py-2 last:border-b-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="text-[14px] font-bold text-ink-900">
+                            {j.company}
+                          </span>
+                          <span className="text-[13px] font-medium text-ink-600">
+                            {" "}
+                            · {j.title}
+                          </span>
+                        </span>
+                        <span className="flex-none text-[13px] font-bold text-heart-red">
+                          ♥
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

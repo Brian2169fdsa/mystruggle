@@ -1,3 +1,51 @@
+# Gap Report - run 2026-07-06-16 (whole-product audit + fix wave)
+
+## Run 16 summary
+Four read-only persona audits (visitor/donor, member, staff/mentor, employer +
+data coherence) walked the entire product, then an 8-agent fix wave closed every
+P0 and the high-value P1s. All fixes re-verified live on seed v17; tsc clean,
+build green (91 pages).
+
+### P0s found and FIXED (verified live)
+1. Seed clock one year stale (EPOCH 2025 vs 2026) - every 30d metric read dead.
+   Fixed + reseed: caseload untouched-days 387->5-34, ROI completion 0->75%,
+   community stats alive, events/challenge current. db() now discards stale-
+   version caches (no restart needed on seed bumps).
+2. Consent promise broken - signup hard-coded consentPublic:true with no
+   checkbox. Now opt-in (default OFF), honest private-page QR step, member
+   toggle in Me tab wired to /api/profile. Verified both directions.
+3. Notifications were dead text - now every notification navigates (refType ->
+   href map, employer/member disambiguation), both bell + page.
+4. Employer stage moves never reached the member tracker - pipeline PATCH now
+   syncs jobApplications forward-only; "hired" added to the status ladder;
+   HIRED celebration banner in the plan. Verified: live sync + seeded hire.
+5. /donate tier CTAs were dead spans; /give was a hard redirect - tiers now
+   link into /give, rebuilt as a consent-gated member picker.
+6. Mentor app fabricated a session note on every save - now a real textarea,
+   verbatim persistence verified; roster rebuilt from real data (66 mentees vs
+   3 hardcoded); care channels UI added; honest cheer failure states.
+
+### P1s FIXED
+Mobile tab bar on all community pages + notifications; home employer band +
+NavDrawer tell the truth (/employers, /jobs, /signup); honest demo-checkout
+copy everywhere; Reentry Fund named on /giving; gift history for signed-in
+members; cohort-chat real deep link; employer pledge at signup + verification-
+aware dashboard + full status pills + time-gated retention; apply-success links
+to the plan; saved jobs + resume links in the plan; seeded completions,
+employer-page leads, mentor applications; cohort LOC label fixed; stale
+CLAUDE.md auth bullet; wrong phone on /about; employer gate redirect.
+
+### Remaining (accepted/deferred - see prior run registers below)
+- Hardcoded demo panels flagged by audit but intentionally demo: member-app
+  Home date/center header, MeTab badges/timeline, Client 360 journey timeline
+  + consent card date, Billing plans, redeem PIN. Label-or-wire next pass.
+- Program cockpit still derives cohorts from careEpisodes (parallel math to
+  Programs) - fold into Programs analytics later.
+- Retention % weighs confirms not hires; uncited home/about stats; unknown
+  /p/[slug] slugs return 200; PrototypeMap on public pages (intentional demo).
+- Supabase cutover still blocked on session egress (SQL already applied by
+  user); Stripe keys; counsel items.
+
 # Gap Report - run 2026-07-06-14 (Center Operations Suite + mock ads + employer page)
 
 ## Run 14 summary

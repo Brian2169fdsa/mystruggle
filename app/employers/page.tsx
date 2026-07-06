@@ -346,6 +346,16 @@ function ApplyForm() {
           We&apos;ll reach out within two business days to verify your company
           and get your first role posted.
         </p>
+        <p className="mt-2 max-w-[460px] text-[14px]/[1.6] font-semibold text-ink-900">
+          Want to move faster? Create your employer account now - your pledge
+          carries over.
+        </p>
+        <Link
+          href="/employer"
+          className="mt-1 inline-flex h-[48px] items-center justify-center rounded-full bg-blue-primary px-8 text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover"
+        >
+          Create your employer account
+        </Link>
       </div>
 
       <form id="ms-emp-form" noValidate className="flex flex-col gap-4">
@@ -481,6 +491,13 @@ function ApplyForm() {
             </a>
           </span>
         </div>
+
+        <p className="text-[13px] font-medium text-ink-600">
+          Already applied?{" "}
+          <Link href="/employer" className="font-bold text-blue-primary">
+            Sign in
+          </Link>
+        </p>
       </form>
     </>
   );

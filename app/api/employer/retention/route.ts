@@ -46,6 +46,12 @@ interface PostingCandidate {
 
 type RetentionDay = 30 | 90 | 180;
 const RETENTION_DAYS: RetentionDay[] = [30, 90, 180];
+const DAY_MS = 86_400_000;
+
+/** When a day-N check-in becomes confirmable: hiredAt + N days. */
+function dueAt(hiredAt: number, day: RetentionDay): number {
+  return hiredAt + day * DAY_MS;
+}
 
 interface RetentionConfirm {
   id: string;
@@ -93,14 +99,26 @@ function hireView(c: PostingCandidate, posting: JobPost) {
       confirmedAt: rc.confirmedAt,
     }));
   const confirmedDays = new Set(confirms.map((rc) => rc.day));
-  const nextDue = RETENTION_DAYS.find((day) => !confirmedDays.has(day)) ?? null;
+  const now = Date.now();
+  const hiredAt = c.stageChangedAt;
+  const unconfirmed = RETENTION_DAYS.filter((day) => !confirmedDays.has(day));
+  // nextDue = the first unconfirmed checkpoint that is actually DUE (its
+  // day-N date has passed). If nothing is due yet, nextDue is null and
+  // `upcoming` carries the earliest unconfirmed checkpoint still ahead.
+  const nextDue =
+    unconfirmed.find((day) => now >= dueAt(hiredAt, day)) ?? null;
+  const upcomingDay =
+    unconfirmed.find((day) => now < dueAt(hiredAt, day)) ?? null;
   return {
     candidateId: c.id,
     chosenName: firstNameOnly(findUserById(c.memberId)?.name ?? "Member"),
     postingTitle: posting.title,
-    hiredAt: c.stageChangedAt,
+    hiredAt,
     confirms,
     nextDue,
+    upcoming: upcomingDay
+      ? { day: upcomingDay, dueAt: dueAt(hiredAt, upcomingDay) }
+      : null,
   };
 }
 
@@ -175,6 +193,22 @@ export async function POST(req: Request) {
         confirmedAt: existing.confirmedAt,
       },
     });
+  }
+
+  // Time gate: a day-N check-in only opens once N days have passed since the
+  // hire. Confirming early would inflate the retention story we publish.
+  const openAt = dueAt(candidate.stageChangedAt, day);
+  if (Date.now() < openAt) {
+    const openDate = new Date(openAt).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+    });
+    return NextResponse.json(
+      {
+        error: `Not just yet - the ${day}-day check-in opens on day ${day} (${openDate}). Check back then and tell us how it's going.`,
+      },
+      { status: 400 }
+    );
   }
 
   const confirm: RetentionConfirm = {

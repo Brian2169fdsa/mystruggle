@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { GuideState } from "./MemberApp";
 import ChatThread, {
   previewText,
   timeAgo,
@@ -14,12 +13,12 @@ import {
 } from "./ProgramSurface";
 import GuideCompanion from "./GuideCompanion";
 
-export default function ChatTab(_props: {
-  guideState: GuideState;
-  askedLabel: string;
-  askGuide: (label: string) => void;
-  addGuideTask: () => void;
-  resetGuide: () => void;
+export default function ChatTab({
+  openChannelId = null,
+}: {
+  /** Care channel to auto-open on mount (MyProgramPanel's "open cohort
+   *  chat" → MemberApp → here). Null = normal tab behavior. */
+  openChannelId?: string | null;
 }) {
   // undefined = still checking the session; null = signed out.
   const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
@@ -60,6 +59,34 @@ export default function ChatTab(_props: {
       alive = false;
     };
   }, []);
+
+  // Auto-open a requested care channel (same source of truth ProgramCard
+  // uses: /api/care-channels). Runs once per requested id; backing out of
+  // the thread does not re-trigger it.
+  useEffect(() => {
+    if (!openChannelId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/care-channels");
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null);
+        if (!alive) return;
+        const channels: CareChannelSummary[] = Array.isArray(data?.channels)
+          ? data.channels
+          : [];
+        const channel = channels.find((c) => c.id === openChannelId);
+        if (channel) {
+          setOpenCare({ channel, viewerId: data?.viewerId ?? "" });
+        }
+      } catch {
+        // signed out / offline - fall back to the normal channel list
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [openChannelId]);
 
   // ── Open care channel - full height within the tab ──
   if (openCare) {

@@ -14,11 +14,14 @@ function appStore() {
   return d as ReturnType<typeof db> & Required<ExpansionStore>;
 }
 
-/** Forward-only status ladder: applied → interview → offer, closed anytime. */
+/** Forward-only status ladder: applied → interview → offer → hired; closed
+ *  anytime before hired. "hired" is terminal (set by the employer pipeline
+ *  sync or by the member celebrating the win themselves). */
 const NEXT_STATUSES: Record<JobAppStatus, JobAppStatus[]> = {
   applied: ["interview", "closed"],
   interview: ["offer", "closed"],
-  offer: ["closed"],
+  offer: ["hired", "closed"],
+  hired: [],
   closed: [],
 };
 

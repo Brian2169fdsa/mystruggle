@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Lock } from "lucide-react";
 import type { Role, SafeUser } from "../lib/types";
 
 const WORDMARK_INDIGO =
@@ -22,6 +23,8 @@ export default function SignupPage() {
   const [story, setStory] = useState("");
   const [goalLabel, setGoalLabel] = useState("");
   const [goalAmount, setGoalAmount] = useState("");
+  // Public giving page is OPT-IN - consent must be explicit, default off.
+  const [consentPublic, setConsentPublic] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<SafeUser | null>(null);
@@ -44,6 +47,7 @@ export default function SignupPage() {
           email: email.trim(),
           password,
           role,
+          ...(role === "member" ? { consentPublic } : {}),
           ...(role === "member" && story.trim() ? { story: story.trim() } : {}),
           ...(role === "member" && goalLabel.trim() && goal > 0
             ? { goalLabel: goalLabel.trim(), goalAmount: goal }
@@ -101,19 +105,38 @@ export default function SignupPage() {
                 )}
               </div>
 
-              <div className="w-full max-w-[320px] rounded-2xl bg-white p-6 shadow-[0_2px_12px_rgba(11,37,69,.1)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/qr/${created.slug}`}
-                  alt={`QR code for ${created.name}'s giving page`}
-                  className="mx-auto block h-auto w-full max-w-[220px]"
-                />
-              </div>
+              {created.consentPublic ? (
+                <>
+                  <div className="w-full max-w-[320px] rounded-2xl bg-white p-6 shadow-[0_2px_12px_rgba(11,37,69,.1)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/qr/${created.slug}`}
+                      alt={`QR code for ${created.name}'s giving page`}
+                      className="mx-auto block h-auto w-full max-w-[220px]"
+                    />
+                  </div>
 
-              <p className="max-w-[320px] text-[15px]/[1.7] font-medium text-ink-600">
-                This code is yours. Anyone who scans it lands on your giving
-                page.
-              </p>
+                  <p className="max-w-[320px] text-[15px]/[1.7] font-medium text-ink-600">
+                    This code is yours. Anyone who scans it lands on your
+                    giving page.
+                  </p>
+                </>
+              ) : (
+                /* No consent yet - the page stays private, no QR to show */
+                <div className="w-full max-w-[320px] rounded-2xl bg-white p-6 text-center shadow-[0_2px_12px_rgba(11,37,69,.1)]">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-tint text-blue-primary">
+                    <Lock size={22} strokeWidth={2} />
+                  </div>
+                  <div className="mt-3 text-[16px] font-bold text-ink-900">
+                    Your page is private
+                  </div>
+                  <p className="mt-1.5 text-[14px]/[1.7] font-medium text-ink-600">
+                    Nothing about you is shared. Turn on sharing anytime from
+                    your profile and your giving page and QR code will be
+                    ready.
+                  </p>
+                </div>
+              )}
 
               <Link
                 href="/member-app"
@@ -121,12 +144,14 @@ export default function SignupPage() {
               >
                 Open my member app
               </Link>
-              <Link
-                href={`/p/${created.slug}`}
-                className="text-[14px] font-semibold text-blue-primary"
-              >
-                See my public giving page →
-              </Link>
+              {created.consentPublic && (
+                <Link
+                  href={`/p/${created.slug}`}
+                  className="text-[14px] font-semibold text-blue-primary"
+                >
+                  See my public giving page →
+                </Link>
+              )}
             </div>
           ) : (
             /* ── MENTOR SUCCESS ────────────────────────────────────── */
@@ -268,6 +293,23 @@ export default function SignupPage() {
                     <span className="text-[12px]/[1.6] font-medium text-ink-600">
                       Shared publicly only with your consent - you control this
                       anytime.
+                    </span>
+                  </label>
+
+                  {/* CONSENT - explicit opt-in for the public giving page */}
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-[1.5px] border-sky-tint-2 bg-white px-4 py-3.5">
+                    <input
+                      type="checkbox"
+                      checked={consentPublic}
+                      onChange={(e) => setConsentPublic(e.target.checked)}
+                      className="mt-0.5 h-5 w-5 flex-none accent-[#2E7CD6]"
+                    />
+                    <span className="text-[13.5px]/[1.6] font-medium text-ink-900">
+                      Create my public giving page and share my first name and
+                      story so supporters can give to my journey.{" "}
+                      <span className="text-ink-600">
+                        You can change this anytime.
+                      </span>
                     </span>
                   </label>
 

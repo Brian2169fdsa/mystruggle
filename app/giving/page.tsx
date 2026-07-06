@@ -25,7 +25,7 @@ const STEPS = [
   {
     n: "03",
     title: "Half waits for reentry",
-    desc: "50% is held safely for their return, released directly to them when they re-enter society - or right away if they already are.",
+    desc: "50% goes into their Reentry Fund - held safely for their return and released directly to them when they re-enter society, or right away if they already are.",
   },
 ];
 
@@ -51,10 +51,10 @@ const FAQ = [
       <>
         Straight to one person. 50% of every gift goes to the member
         immediately - cash they collect at their outreach center. The other
-        50% is held safely for their reentry and released directly to them
-        when they step back into society: first month&apos;s rent, a deposit,
-        work boots, a fresh start. If they&apos;re already re-entering, the
-        held half releases to them now.
+        50% becomes their Reentry Fund - held safely and released directly to
+        them when they step back into society: first month&apos;s rent, a
+        deposit, work boots, a fresh start. If they&apos;re already
+        re-entering, the held half releases to them now.
       </>
     ),
   },
@@ -84,9 +84,9 @@ const FAQ = [
     q: "Is my gift tax-deductible?",
     a: (
       <>
-        My Struggle is a 501(c)(3) nonprofit. You&apos;ll receive a receipt
-        by email for every gift; deductibility details for member-directed
-        gifts are included on the receipt.
+        My Struggle is a 501(c)(3) nonprofit. This is a demo checkout for now
+        - Stripe payments and email receipts, with deductibility details for
+        member-directed gifts, arrive with launch.
       </>
     ),
   },
@@ -201,7 +201,7 @@ export default function Giving() {
                   REENTRY
                 </div>
                 <div className="mt-0.5 text-[13px] font-medium text-ink-600 lg:text-[14px]">
-                  held for their fresh start
+                  Reentry Fund, held for their fresh start
                 </div>
               </div>
             </div>

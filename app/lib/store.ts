@@ -148,7 +148,7 @@ interface DB {
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 15;
+const SEED_VERSION = 17;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -221,7 +221,7 @@ export function uid(): string {
 // Fixed PRNG seed + fixed epoch → the same rich dataset every boot.
 // Never use Date.now() inside seed(); everything hangs off EPOCH.
 
-const EPOCH = 1751500000000; // ~2026-07-03 - fixed so output is stable
+const EPOCH = 1783036000000; // 2026-07-02 - fixed so output is stable
 const DAY = 86400e3;
 
 /** mulberry32 - tiny deterministic PRNG, returns floats in [0, 1). */
@@ -1784,6 +1784,38 @@ function seed(): DB {
         occurredAt:
           episodeStart + Math.floor(rnd() * (now - episodeStart)),
       });
+    }
+  }
+
+  // Laveen's seeded program_group channel is the IOP cohort
+  // ("cohort-iop-laveen", titled "IOP Cohort · Tuesdays"), and the program
+  // cockpit attaches that channel to the FIRST level-of-care group in
+  // clinical order - so Laveen in-program members randomly drawn as "detox"/
+  // "residential"/"php" made the IOP-titled cohort read the wrong LOC.
+  // Laveen is the demo outreach center and its flagship group IS the IOP
+  // cohort, so normalize those higher-intensity draws to "iop": IOP then
+  // sorts first and the channel lands on it. Post-hoc mutation only - no
+  // PRNG draws, no new ids, everything else stays byte-identical.
+  const laveenIopFix = new Set<LevelOfCare>(["detox", "residential", "php"]);
+  const laveenIopFixIds = new Set<string>();
+  for (const ep of careEpisodes) {
+    if (
+      ep.centerId === laveen.id &&
+      ep.carePhase === "in_program" &&
+      ep.levelOfCare !== undefined &&
+      laveenIopFix.has(ep.levelOfCare)
+    ) {
+      ep.levelOfCare = "iop";
+      laveenIopFixIds.add(ep.id);
+    }
+  }
+  for (const t of phaseTransitions) {
+    if (
+      laveenIopFixIds.has(t.episodeId) &&
+      t.toLoc !== undefined &&
+      laveenIopFix.has(t.toLoc)
+    ) {
+      t.toLoc = "iop";
     }
   }
 
@@ -3651,11 +3683,13 @@ function seed(): DB {
       company: posting.company,
       role: posting.title,
       status:
-        stage === "hired" || stage === "offer"
-          ? "offer"
-          : stage === "interview"
-            ? "interview"
-            : "applied",
+        stage === "hired"
+          ? "hired"
+          : stage === "offer"
+            ? "offer"
+            : stage === "interview"
+              ? "interview"
+              : "applied",
       notes,
       postingId: posting.id,
       createdAt: now - appliedDaysAgo * DAY,
@@ -3823,6 +3857,103 @@ function seed(): DB {
     },
   ];
 
+  // ── v16 additions (appended AFTER every existing draw so all prior seed-*
+  //    ids and PRNG output stay byte-identical) ───────────────────────────
+
+  // (a) Program completions so the ROI completion stat is non-zero: six
+  // Spring 2026 alumni across the three live Laveen programs. New rows only -
+  // non-Danielle members not already enrolled, so the Summer 2026 cohort
+  // (30+ active) is untouched.
+  const v16EnrolledIds = new Set(programEnrollments.map((e) => e.memberId));
+  const v16CompletionPool = laveenGenerated.filter(
+    (m) => !v16EnrolledIds.has(m.id)
+  );
+  const v16CompletionPrograms = [liveIse, liveIop, liveVoc];
+  for (let i = 0; i < 6; i++) {
+    const m = v16CompletionPool[i];
+    const program = v16CompletionPrograms[i % 3];
+    const completedAt = now - (18 + i * 9) * DAY;
+    programEnrollments.push({
+      id: did(),
+      programId: program.id,
+      memberId: m.id,
+      careEpisodeId: episodeByMember.get(m.id)?.id,
+      cohortLabel: "Spring 2026",
+      enrolledAt: completedAt - (program.durationWeeks ?? 8) * 7 * DAY,
+      completedAt,
+      status: "completed",
+    });
+  }
+
+  // (b) Employer-application leads from the employers marketing page - the
+  // same contact-sales queue, employer flavor (message prefix is the marker).
+  demoLeads.push(
+    {
+      id: did(),
+      orgName: "Canyon Gate Logistics",
+      contactName: "Priya Shah",
+      email: "priya@canyongatelogistics.example.com",
+      phone: "(602) 555-0188",
+      message:
+        "EMPLOYER APPLICATION - We run a 40-person warehouse team in Laveen and want to post second-chance roles and hire directly from the platform.",
+      source: "employers-page",
+      status: "new",
+      createdAt: now - 1 * DAY - 4 * 3600e3,
+    },
+    {
+      id: did(),
+      orgName: "Fourth Street Kitchen",
+      contactName: "Tomas Rivera",
+      email: "tomas@fourthstreetkitchen.example.com",
+      message:
+        "EMPLOYER APPLICATION - Family restaurant hiring prep and line cooks. We have hired people in recovery before and want to do it through My Struggle.",
+      source: "employers-page",
+      status: "contacted",
+      createdAt: now - 6 * DAY - 2 * 3600e3,
+    }
+  );
+
+  // (c) Website mentor applications in mixed statuses so the dashboard
+  // Applications queue demos. Shape matches the public intake route
+  // (app/api/mentor-applications): area chips + availability labels come
+  // from the marketing form's fixed lists.
+  const mentorApplications: MentorApplication[] = [
+    {
+      id: did(),
+      name: "Rochelle Baptiste",
+      phone: "(602) 555-0114",
+      email: "rochelle.baptiste@example.com",
+      areas: ["Addiction & recovery", "Housing"],
+      availability: "Weekly",
+      story:
+        "Six years in recovery. A mentor sat with me through my first ninety days and I want to be that person for someone else.",
+      status: "new",
+      createdAt: now - 2 * DAY - 5 * 3600e3,
+    },
+    {
+      id: did(),
+      name: "Gus Alvarado",
+      phone: "(480) 555-0167",
+      email: "gus.alvarado@example.com",
+      areas: ["Incarceration & reentry", "Employment"],
+      availability: "Every other week",
+      story:
+        "Came home in 2019, got steady work in 2020, and kept every promise since. I know the paperwork season and I can walk it with someone.",
+      status: "contacted",
+      createdAt: now - 9 * DAY - 3 * 3600e3,
+    },
+    {
+      id: did(),
+      name: "Denise Okafor",
+      phone: "(623) 555-0139",
+      email: "denise.okafor@example.com",
+      areas: ["Homelessness", "Addiction & recovery"],
+      availability: "Flexible",
+      status: "approved",
+      createdAt: now - 23 * DAY - 6 * 3600e3,
+    },
+  ];
+
   return {
     seedVersion: SEED_VERSION,
     // v15 employers appended LAST so every pre-v15 user keeps its position.
@@ -3844,7 +3975,7 @@ function seed(): DB {
     courses,
     enrollments,
     concerns: [],
-    applications: [],
+    applications: mentorApplications,
     profileDetails,
     barcChecks,
     circles,
@@ -3903,7 +4034,10 @@ function load(): DB {
 }
 
 export function db(): DB {
-  if (!globalThis.__msdb) {
+  // A cached store from an older seed (dev-server HMR keeps globalThis alive
+  // across recompiles) is discarded too, so a SEED_VERSION bump takes effect
+  // without a server restart.
+  if (!globalThis.__msdb || globalThis.__msdb.seedVersion !== SEED_VERSION) {
     globalThis.__msdb = load();
     save();
   }

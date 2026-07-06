@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import PrototypeMap from "../../components/PrototypeMap";
 import LeftRail from "../_components/rails/LeftRail";
 import DirectoryGrid from "../_components/DirectoryGrid";
+import CommunityTabBar from "../_components/CommunityTabBar";
 
 export const metadata: Metadata = {
   title: "Discover people - My Struggle Community",
@@ -22,7 +23,9 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-canvas">
       <Nav />
 
-      <main className="mx-auto grid max-w-[1240px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_1fr] lg:px-6">
+      {/* pb-20 keeps the mobile community tab bar from overlapping the
+          last rows (lg:pb-6 once the bar hides). */}
+      <main className="mx-auto grid max-w-[1240px] grid-cols-1 gap-6 px-4 py-6 pb-20 lg:grid-cols-[260px_1fr] lg:px-6 lg:pb-6">
         <aside className="hidden lg:block">
           <Suspense fallback={null}>
             <LeftRail />
@@ -45,6 +48,7 @@ export default function DiscoverPage() {
         </div>
       </main>
 
+      <CommunityTabBar />
       <Footer />
       <PrototypeMap />
     </div>

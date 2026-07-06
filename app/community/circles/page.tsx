@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import PrototypeMap from "../../components/PrototypeMap";
 import LeftRail from "../_components/rails/LeftRail";
 import CirclesBrowser from "../_components/CirclesBrowser";
+import CommunityTabBar from "../_components/CommunityTabBar";
 
 export const metadata: Metadata = {
   title: "Circles - My Struggle Community",
@@ -23,8 +24,8 @@ export default function CirclesPage() {
     <div className="min-h-screen bg-canvas">
       <Nav />
 
-      {/* pb-20 lg:pb-0 keeps the mobile community tab bar (if present
-          globally) from overlapping the last rows. */}
+      {/* pb-20 keeps the mobile community tab bar from overlapping the
+          last rows (lg:pb-6 once the bar hides). */}
       <main className="mx-auto grid max-w-[1240px] grid-cols-1 gap-6 px-4 py-6 pb-20 lg:grid-cols-[260px_1fr] lg:px-6 lg:pb-6">
         <aside className="hidden lg:block">
           <Suspense fallback={null}>
@@ -48,6 +49,7 @@ export default function CirclesPage() {
         </div>
       </main>
 
+      <CommunityTabBar />
       <Footer />
       <PrototypeMap />
     </div>

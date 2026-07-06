@@ -408,9 +408,9 @@ const FAQ = [
     q: "Is my donation tax-deductible?",
     a: (
       <>
-        My Struggle is a 501(c)(3) nonprofit. You&apos;ll receive a receipt by
-        email for every gift; deductibility details for member-directed gifts
-        are included on the receipt.
+        My Struggle is a 501(c)(3) nonprofit. This is a demo checkout for now -
+        Stripe payments and email receipts, with deductibility details for
+        member-directed gifts, arrive with launch.
       </>
     ),
   },
@@ -722,20 +722,20 @@ function EmployerBand() {
           their next chapter, ready to work.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-          <a
-            href="mailto:info@themystruggles.com?subject=Posting%20jobs%20to%20the%20community"
+          <Link
+            href="/employers"
             className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
             style={{ color: "#fff" }}
           >
-            Contact us to post jobs
-          </a>
-          <span
-            title="Employer accounts are on our roadmap"
-            className="inline-flex h-[52px] w-full cursor-default items-center justify-center rounded-full border-[1.5px] border-white/70 px-[34px] text-base font-bold text-white/90 sm:w-auto"
+            Hire fair-chance talent
+          </Link>
+          <Link
+            href="/employer"
+            className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/70 px-[34px] text-base font-bold text-white/90 hover:bg-white/[.12] sm:w-auto"
             style={{ color: "rgba(255,255,255,.9)", borderColor: "rgba(255,255,255,.7)" }}
           >
-            Employer dashboard - coming soon
-          </span>
+            Employer sign in
+          </Link>
         </div>
       </div>
     </section>
@@ -925,7 +925,7 @@ function SocialWall() {
       tag: "IG",
       handle: "@themystruggle",
       when: "2 days ago",
-      href: "https://www.instagram.com",
+      href: "https://www.instagram.com/themystruggle",
       cap: "GED celebration",
       img: "/ged-celebration.png",
       video: false,
@@ -950,7 +950,7 @@ function SocialWall() {
       tag: "TT",
       handle: "@themystruggle",
       when: "1 week ago",
-      href: "https://www.tiktok.com",
+      href: "https://www.tiktok.com/@themystruggle",
       cap: "video: a day at Laveen Center",
       img: null,
       video: "dark",
@@ -960,7 +960,7 @@ function SocialWall() {
       tag: "YT",
       handle: "My Struggle",
       when: "2 weeks ago",
-      href: "https://www.youtube.com",
+      href: "https://www.youtube.com/@themystruggle",
       cap: "video: Joe McDonald on PON",
       img: null,
       video: "blue",
@@ -1035,16 +1035,31 @@ function SocialWall() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
-          {["Instagram", "TikTok", "YouTube", "LinkedIn"].map(
-            (p) => (
-              <span
-                key={p}
-                className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-blue-primary px-[22px] text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
-              >
-                {p}
-              </span>
-            )
-          )}
+          {[
+            {
+              label: "Instagram",
+              href: "https://www.instagram.com/themystruggle",
+            },
+            { label: "TikTok", href: "https://www.tiktok.com/@themystruggle" },
+            {
+              label: "YouTube",
+              href: "https://www.youtube.com/@themystruggle",
+            },
+            {
+              label: "LinkedIn",
+              href: "https://www.linkedin.com/company/themystruggle",
+            },
+          ].map((p) => (
+            <a
+              key={p.label}
+              href={p.href}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-blue-primary px-[22px] text-[13px] font-bold text-blue-primary hover:bg-sky-tint"
+            >
+              {p.label}
+            </a>
+          ))}
         </div>
       </div>
     </section>

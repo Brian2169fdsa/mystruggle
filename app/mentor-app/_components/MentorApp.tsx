@@ -1,13 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   Check,
   Diamond,
+  Heart,
+  Megaphone,
   Pencil,
+  Users,
 } from "lucide-react";
 import TabBar, { type MentorView } from "./TabBar";
 import LogSheet, {
@@ -22,8 +25,17 @@ import ChatThread, {
   timeAgo,
   type ThreadSummary,
 } from "@/app/components/chat/ChatThread";
+import {
+  CareThread,
+  type CareChannelSummary,
+  type CareKind,
+} from "@/app/member-app/_components/ProgramSurface";
 import CommunityFeed from "@/app/components/feed/CommunityFeed";
-import MeTab from "./MeTab";
+import MeTab, {
+  DEMO_MENTEES,
+  SESSION_LOGGED_EVENT,
+  type MenteeAnalytics,
+} from "./MeTab";
 
 const MOOD_WORDS: Record<number, string> = {
   1: "rough",
@@ -32,10 +44,6 @@ const MOOD_WORDS: Record<number, string> = {
   4: "good",
   5: "great",
 };
-
-// Real session-log wiring - Danielle's flagship member number (roster demo).
-const DANIELLE_MEMBER_NUMBER = "039521464";
-const DEMO_NOTE = "Prepped for Thursday's interview. Confidence way up.";
 
 type ApiSessionMode = "in-person" | "phone" | "video";
 
@@ -73,7 +81,34 @@ function dayLabel(ts: number): string {
   });
 }
 
+const firstName = (name: string) => name.split(" ")[0];
+
 const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
+
+/** Care-channel list presentation - icon + kind chip per channel kind. */
+const CHANNEL_META: Record<
+  CareKind,
+  { chip: string; Icon: typeof Users; tint: string; ink: string }
+> = {
+  program_group: {
+    chip: "Group",
+    Icon: Users,
+    tint: "bg-sky-tint",
+    ink: "text-indigo-brand",
+  },
+  one_to_one: {
+    chip: "1:1",
+    Icon: Heart,
+    tint: "bg-[#F0EDFB]",
+    ink: "text-indigo-brand",
+  },
+  announcement: {
+    chip: "Read-only",
+    Icon: Megaphone,
+    tint: "bg-amber-bg",
+    ink: "text-amber-ink",
+  },
+};
 
 /** Mentor phone app: roster → mentee detail / live chat + session-log sheet. */
 export default function MentorApp() {
@@ -81,8 +116,12 @@ export default function MentorApp() {
   const [logOpen, setLogOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("inperson");
   const [duration, setDuration] = useState<Duration>("45");
+  const [note, setNote] = useState("");
+  const [savedNote, setSavedNote] = useState("");
   const [sessionSaved, setSessionSaved] = useState(false);
-  const [cheerSent, setCheerSent] = useState(false);
+  const [cheerResult, setCheerResult] = useState<"sent" | "nothread" | null>(
+    null
+  );
   const [mood, setMood] = useState<number | null>(null);
 
   // "I'm concerned" - quiet escalation to the care team.
@@ -99,12 +138,24 @@ export default function MentorApp() {
   const [meRole, setMeRole] = useState<string | null>(null);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
 
-  // Real logged sessions for the mentee detail (Danielle) when signed in.
+  // Roster - real mentees from /api/mentor/analytics when signed in as a
+  // mentor; the three flagship demo mentees otherwise.
+  const [mentees, setMentees] = useState<MenteeAnalytics[] | null>(null);
+  const [rosterLive, setRosterLive] = useState(false);
+  const [activeMentee, setActiveMentee] = useState<MenteeAnalytics | null>(
+    null
+  );
+
+  // Care channels the mentor belongs to (center group + announcements).
+  const [channels, setChannels] = useState<CareChannelSummary[]>([]);
+  const [activeChannel, setActiveChannel] =
+    useState<CareChannelSummary | null>(null);
+
+  // Real logged sessions for the open mentee detail when signed in.
   const [sessionInfo, setSessionInfo] = useState<{
     count: number;
     latest: ApiSession | null;
   } | null>(null);
-  const danielleIdRef = useRef<string | null>(null);
   const [viewerId, setViewerId] = useState("");
   const [activeThread, setActiveThread] = useState<ThreadSummary | null>(null);
   const [cameFrom, setCameFrom] = useState<"roster" | "chatlist">("roster");
@@ -124,6 +175,36 @@ export default function MentorApp() {
     return [];
   }, []);
 
+  /** Real mentee roster from analytics; demo mentees when it isn't available. */
+  const loadRoster = useCallback(async () => {
+    try {
+      const res = await fetch("/api/mentor/analytics");
+      const data = await res.json().catch(() => null);
+      if (res.ok && Array.isArray(data?.mentees) && data.mentees.length > 0) {
+        setMentees(data.mentees as MenteeAnalytics[]);
+        setRosterLive(true);
+        return;
+      }
+    } catch {
+      /* stays on demo content */
+    }
+    setMentees(DEMO_MENTEES);
+    setRosterLive(false);
+  }, []);
+
+  const loadChannels = useCallback(async () => {
+    try {
+      const res = await fetch("/api/care-channels");
+      const data = await res.json().catch(() => null);
+      if (res.ok && Array.isArray(data?.channels)) {
+        setChannels(data.channels as CareChannelSummary[]);
+        if (data.viewerId) setViewerId((v) => v || data.viewerId);
+      }
+    } catch {
+      /* channels section simply stays hidden */
+    }
+  }, []);
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -134,50 +215,44 @@ export default function MentorApp() {
         if (data?.user) {
           setSignedIn(true);
           setMeRole(data.user.role ?? null);
-          await loadThreads();
+          await Promise.all([loadThreads(), loadRoster(), loadChannels()]);
         } else {
           setSignedIn(false);
+          setMentees(DEMO_MENTEES);
         }
       } catch {
-        if (alive) setSignedIn(false);
+        if (alive) {
+          setSignedIn(false);
+          setMentees(DEMO_MENTEES);
+        }
       }
     })();
     return () => {
       alive = false;
     };
-  }, [loadThreads]);
+  }, [loadThreads, loadRoster, loadChannels]);
 
-  const findThread = (firstName: string) =>
-    threads.find((t) =>
-      (t.other?.name ?? "").toLowerCase().startsWith(firstName.toLowerCase())
-    ) ?? null;
+  /** The DM thread with a mentee - matched by id (live roster) with a
+   *  first-name fallback for the demo mentees. */
+  const threadFor = useCallback(
+    (m: MenteeAnalytics): ThreadSummary | null =>
+      threads.find((t) => t.other?.id === m.id) ??
+      threads.find((t) =>
+        (t.other?.name ?? "")
+          .toLowerCase()
+          .startsWith(firstName(m.name).toLowerCase())
+      ) ??
+      null,
+    [threads]
+  );
 
-  /** Danielle's real member id - from the loaded threads when possible,
-   *  otherwise resolved once via the roster API by member number. */
-  const resolveDanielleId = useCallback(async (): Promise<string | null> => {
-    if (danielleIdRef.current) return danielleIdRef.current;
-    const t = threads.find((t) =>
-      (t.other?.name ?? "").toLowerCase().startsWith("danielle")
-    );
-    if (t?.other?.id) {
-      danielleIdRef.current = t.other.id;
-      return t.other.id;
-    }
-    try {
-      const res = await fetch("/api/admin/members");
-      const data = await res.json().catch(() => null);
-      const m = (data?.members as { id: string; memberNumber?: string }[] | undefined)?.find(
-        (x) => x.memberNumber === DANIELLE_MEMBER_NUMBER
-      );
-      if (m?.id) {
-        danielleIdRef.current = m.id;
-        return m.id;
-      }
-    } catch {
-      /* stays on demo content */
-    }
-    return null;
-  }, [threads]);
+  /** A mentee's real member id. The live roster IS the analytics payload, so
+   *  the id is already real; demo entries resolve through the thread list. */
+  const menteeId = useCallback(
+    (m: MenteeAnalytics): string | null =>
+      rosterLive ? m.id : threadFor(m)?.other?.id ?? null,
+    [rosterLive, threadFor]
+  );
 
   const loadSessions = useCallback(async (memberId: string) => {
     try {
@@ -194,23 +269,24 @@ export default function MentorApp() {
     }
   }, []);
 
-  // Refresh Danielle's real session summary whenever the detail view opens.
+  // Refresh the open mentee's real session summary when the detail opens.
   useEffect(() => {
-    if (view !== "detail" || !signedIn) return;
+    if (view !== "detail" || !signedIn || !activeMentee) return;
     let alive = true;
-    (async () => {
-      const id = await resolveDanielleId();
-      if (alive && id) await loadSessions(id);
-    })();
+    const id = menteeId(activeMentee);
+    if (alive && id) loadSessions(id);
     return () => {
       alive = false;
     };
-  }, [view, signedIn, resolveDanielleId, loadSessions]);
+  }, [view, signedIn, activeMentee, menteeId, loadSessions]);
 
-  const openDetail = () => {
+  const openDetail = (m: MenteeAnalytics) => {
+    setActiveMentee(m);
     setView("detail");
     setSessionSaved(false);
-    setCheerSent(false);
+    setSavedNote("");
+    setSessionInfo(null);
+    setCheerResult(null);
     setConcernOpen(false);
     setConcernNeedSignIn(false);
     setConcernResult(null);
@@ -231,7 +307,7 @@ export default function MentorApp() {
     }
     setConcernSending(true);
     try {
-      const memberId = await resolveDanielleId();
+      const memberId = activeMentee ? menteeId(activeMentee) : null;
       if (!memberId) {
         setConcernNeedSignIn(true);
         return;
@@ -262,14 +338,19 @@ export default function MentorApp() {
   };
 
   /** Save from the log sheet - optimistic banner always; real POST when
-   *  signed in as a mentor (401/signed-out keeps the local demo behavior). */
+   *  signed in as a mentor. Sends exactly what the mentor typed (or no note
+   *  at all) - never a canned string. */
   const saveSession = () => {
+    const typed = note.trim();
     setLogOpen(false);
     setSessionSaved(true);
-    if (!signedIn || meRole !== "mentor") return;
+    setSavedNote(typed);
+    setNote("");
+    setMood(null);
+    if (!signedIn || (meRole !== "mentor" && meRole !== "staff")) return;
+    const memberId = activeMentee ? menteeId(activeMentee) : null;
+    if (!memberId) return;
     (async () => {
-      const memberId = await resolveDanielleId();
-      if (!memberId) return;
       try {
         const res = await fetch("/api/sessions", {
           method: "POST",
@@ -278,21 +359,33 @@ export default function MentorApp() {
             memberId,
             mode: API_MODE[mode],
             minutes: Number(duration),
-            note: DEMO_NOTE,
+            ...(typed ? { note: typed } : {}),
           }),
         });
-        if (res.ok) loadSessions(memberId);
+        if (res.ok) {
+          loadSessions(memberId);
+          // Me tab listens and refetches its analytics.
+          window.dispatchEvent(new Event(SESSION_LOGGED_EVENT));
+        }
       } catch {
         /* banner already shown - demo-grade */
       }
     })();
   };
 
-  /** Tyrell - roster card + amber nudge: real thread when signed in. */
-  const openTyrell = () => {
-    setCameFrom("roster");
-    setActiveThread(signedIn ? findThread("Tyrell") : null);
-    setView("thread");
+  /** Amber nudge banner - opens the mentee's thread when one exists. */
+  const openNudge = (m: MenteeAnalytics) => {
+    const t = threadFor(m);
+    if (signedIn && t) {
+      setCameFrom("roster");
+      setActiveThread(t);
+      setView("thread");
+    } else if (!signedIn) {
+      setActiveThread(null);
+      setView("thread"); // static demo conversation
+    } else {
+      openDetail(m);
+    }
   };
 
   /** Chat tab: real thread list when signed in, demo thread otherwise. */
@@ -300,6 +393,7 @@ export default function MentorApp() {
     if (signedIn) {
       setView("chatlist");
       loadThreads();
+      loadChannels();
     } else {
       setActiveThread(null);
       setView("thread");
@@ -310,6 +404,11 @@ export default function MentorApp() {
     setCameFrom("chatlist");
     setActiveThread(t);
     setView("thread");
+  };
+
+  const openChannel = (c: CareChannelSummary) => {
+    setActiveChannel(c);
+    setView("channel");
   };
 
   const backToRoster = () => {
@@ -326,11 +425,18 @@ export default function MentorApp() {
     }
   };
 
-  /** Cheer from mentee detail - banner always; real message when signed in. */
+  /** Cheer from mentee detail - a real chat message when a thread exists;
+   *  an honest "no thread yet" note when it doesn't (threads are opened from
+   *  the mentee's side, so there's nothing to post into until then). */
   const sendCheer = () => {
-    setCheerSent(true);
-    const t = findThread("Danielle");
-    if (signedIn && t) {
+    if (!activeMentee) return;
+    if (!signedIn) {
+      setCheerResult("sent"); // demo behavior, banner only
+      return;
+    }
+    const t = threadFor(activeMentee);
+    if (t) {
+      setCheerResult("sent");
       fetch(`/api/threads/${t.id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -339,25 +445,46 @@ export default function MentorApp() {
           body: "Keep going - proud of you!",
         }),
       }).catch(() => {});
+    } else {
+      setCheerResult("nothread");
     }
   };
 
+  /** Mood check-in: there's no mentor mood API, so a tap prefills the session
+   *  note draft with "Mood: X/5" instead of pretending to send anything. */
+  const pickMood = (n: number) => {
+    setMood(n);
+    setNote((prev) => {
+      const base = prev.replace(/\n?Mood: [1-5]\/5\s*$/, "").trimEnd();
+      return base ? `${base}\nMood: ${n}/5` : `Mood: ${n}/5`;
+    });
+  };
+
   // Real data when signed in; the just-saved optimistic copy wins right
-  // after a save; static demo copy when signed out.
-  const latest = signedIn ? sessionInfo?.latest ?? null : null;
+  // after a save; honest demo copy otherwise.
+  const latest = signedIn && rosterLive ? sessionInfo?.latest ?? null : null;
   const lastSession = sessionSaved
     ? `Last session: today · ${MODE_LABEL[mode]} · ${durationLabel(duration)}`
     : latest
       ? `Last session: ${dayLabel(latest.createdAt)} · ${API_MODE_LABEL[latest.mode]} · ${latest.minutes} min`
-      : "Last session: Tuesday · in person · 45 min";
+      : signedIn && rosterLive
+        ? sessionInfo
+          ? "No sessions logged yet."
+          : "Loading sessions…"
+        : activeMentee?.lastSession
+          ? `Last session: ${dayLabel(activeMentee.lastSession)}`
+          : "No sessions logged yet.";
   const lastSessionNote = sessionSaved
-    ? "“Prepped for Thursday’s interview. Confidence way up.”"
-    : latest
-      ? latest.note
-        ? `“${latest.note}”`
-        : ""
-      : "“Talked through the ABC Painting interview. She’s ready.”";
-  const sessionCount = signedIn && sessionInfo ? sessionInfo.count : null;
+    ? savedNote
+      ? `“${savedNote}”`
+      : ""
+    : latest?.note
+      ? `“${latest.note}”`
+      : "";
+  const sessionCount =
+    signedIn && rosterLive && sessionInfo ? sessionInfo.count : null;
+
+  const attention = (mentees ?? []).find((m) => m.needsAttention) ?? null;
 
   return (
     <div className="flex min-h-screen justify-center bg-[#E8EDF4]">
@@ -371,7 +498,9 @@ export default function MentorApp() {
                   Good morning, Marcus
                 </div>
                 <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-                  3 mentees · Laveen Center
+                  {mentees
+                    ? `${mentees.length} mentee${mentees.length === 1 ? "" : "s"} · Laveen Center`
+                    : "Laveen Center"}
                 </div>
               </div>
               <span className="inline-flex h-7 items-center rounded-full bg-[#F0EDFB] px-3 text-[11px] font-extrabold text-indigo-brand">
@@ -382,130 +511,122 @@ export default function MentorApp() {
 
             <div className="flex flex-1 flex-col gap-3.5 p-5">
               {/* Amber nudge banner - soft signal, opens thread */}
-              <div
-                onClick={openTyrell}
-                className="flex cursor-pointer items-center gap-3 rounded-2xl border-[1.5px] border-gold-border bg-amber-bg px-[18px] py-3.5"
-              >
-                <span className="h-2.5 w-2.5 flex-none rounded-full bg-gold-badge" />
-                <div className="flex-1 text-[13px]/[1.5] font-semibold text-ink-900">
-                  Tyrell hasn&apos;t checked in for 6 days. A quick hello goes
-                  a long way.
+              {attention && (
+                <div
+                  onClick={() => openNudge(attention)}
+                  className="flex cursor-pointer items-center gap-3 rounded-2xl border-[1.5px] border-gold-border bg-amber-bg px-[18px] py-3.5"
+                >
+                  <span className="h-2.5 w-2.5 flex-none rounded-full bg-gold-badge" />
+                  <div className="flex-1 text-[13px]/[1.5] font-semibold text-ink-900">
+                    {firstName(attention.name)} could use a little extra
+                    attention. A quick hello goes a long way.
+                  </div>
+                  <span className="inline-flex flex-none items-center gap-1 text-[13px] font-bold text-blue-primary">
+                    Message <ArrowRight size={14} strokeWidth={2.75} />
+                  </span>
                 </div>
-                <span className="inline-flex flex-none items-center gap-1 text-[13px] font-bold text-blue-primary">
-                  Message <ArrowRight size={14} strokeWidth={2.75} />
-                </span>
-              </div>
+              )}
 
-              {/* Danielle */}
-              <div
-                onClick={openDetail}
-                className={`cursor-pointer rounded-2xl bg-white p-5 hover:bg-sky-tint ${CARD_SHADOW}`}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-sky-tint text-[20px] font-extrabold text-indigo-brand">
-                    D
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-base font-bold text-ink-900">
-                      Danielle
-                    </div>
-                    <div className="text-xs font-medium text-success">
-                      Active today · mood good
-                    </div>
-                  </div>
-                  <ArrowRight
-                    size={18}
-                    strokeWidth={2.5}
-                    className="flex-none text-blue-primary"
-                  />
-                </div>
-                <div className="mt-3.5 flex flex-wrap gap-2">
-                  <span className="inline-flex h-7 items-center gap-[5px] rounded-full bg-gold-bg px-3 text-[11px] font-extrabold text-gold-ink">
-                    <Diamond size={10} fill="currentColor" /> 12-day streak
-                  </span>
-                  <span className="inline-flex h-7 items-center rounded-full bg-sky-tint px-3 text-[11px] font-bold text-blue-primary">
-                    Course 45%
-                  </span>
-                  <span className="inline-flex h-7 items-center rounded-full bg-[#E8F8F0] px-3 text-[11px] font-bold text-success">
-                    Mood 4/5
-                  </span>
-                </div>
-              </div>
+              {/* Loading skeletons while the roster resolves */}
+              {!mentees && (
+                <>
+                  <div className="h-[132px] animate-pulse rounded-2xl bg-sky-tint" />
+                  <div className="h-[132px] animate-pulse rounded-2xl bg-sky-tint" />
+                  <div className="h-[132px] animate-pulse rounded-2xl bg-sky-tint" />
+                </>
+              )}
 
-              {/* Tyrell - amber border, never red on a person */}
-              <div
-                onClick={openTyrell}
-                className={`cursor-pointer rounded-2xl border-[1.5px] border-gold-border bg-white p-5 hover:bg-amber-bg ${CARD_SHADOW}`}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-sky-tint text-[20px] font-extrabold text-indigo-brand">
-                    T
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-base font-bold text-ink-900">
-                      Tyrell
+              {/* One card per mentee - amber border for a quiet attention
+                  signal, never red on a person. Every card opens detail. */}
+              {(mentees ?? []).map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => openDetail(m)}
+                  className={
+                    "cursor-pointer rounded-2xl bg-white p-5 " +
+                    (m.needsAttention
+                      ? "border-[1.5px] border-gold-border hover:bg-amber-bg "
+                      : "hover:bg-sky-tint ") +
+                    CARD_SHADOW
+                  }
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-sky-tint text-[20px] font-extrabold"
+                      style={{ color: m.avatarColor || "#4E5B9B" }}
+                    >
+                      {m.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="text-xs font-medium text-amber-ink">
-                      Last active 6 days ago
+                    <div className="flex-1">
+                      <div className="text-base font-bold text-ink-900">
+                        {firstName(m.name)}
+                      </div>
+                      <div
+                        className={
+                          "text-xs font-medium " +
+                          (m.needsAttention ? "text-amber-ink" : "text-ink-600")
+                        }
+                      >
+                        {m.lastSession
+                          ? `Last session ${dayLabel(m.lastSession)} · ${m.sessionsThisQuarter} this quarter`
+                          : "No sessions logged yet"}
+                      </div>
                     </div>
+                    <ArrowRight
+                      size={18}
+                      strokeWidth={2.5}
+                      className="flex-none text-blue-primary"
+                    />
                   </div>
-                  <ArrowRight
-                    size={18}
-                    strokeWidth={2.5}
-                    className="flex-none text-blue-primary"
-                  />
-                </div>
-                <div className="mt-3.5 flex flex-wrap gap-2">
-                  <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
-                    Streak paused
-                  </span>
-                  <span className="inline-flex h-7 items-center rounded-full bg-sky-tint px-3 text-[11px] font-bold text-blue-primary">
-                    Course 15%
-                  </span>
-                  <span className="inline-flex h-7 items-center rounded-full bg-amber-bg px-3 text-[11px] font-bold text-amber-ink">
-                    Mood 2/5 · Mon
-                  </span>
-                </div>
-              </div>
-
-              {/* Andre */}
-              <div className={`rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-sky-tint text-[20px] font-extrabold text-indigo-brand">
-                    A
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-base font-bold text-ink-900">
-                      Andre{" "}
-                      <span className="ml-1 inline-flex h-5 items-center rounded-full bg-sky-tint px-2 text-[10px] font-extrabold text-blue-primary">
-                        NEW
+                  <div className="mt-3.5 flex flex-wrap gap-2">
+                    {m.streak > 0 ? (
+                      <span className="inline-flex h-7 items-center gap-[5px] rounded-full bg-gold-bg px-3 text-[11px] font-extrabold text-gold-ink">
+                        <Diamond size={10} fill="currentColor" /> {m.streak}
+                        -day streak
                       </span>
-                    </div>
-                    <div className="text-xs font-medium text-ink-600">
-                      Joined today · first meeting Friday
-                    </div>
+                    ) : (
+                      <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
+                        Streak paused
+                      </span>
+                    )}
+                    {m.courseProgress !== null ? (
+                      <span className="inline-flex h-7 items-center rounded-full bg-sky-tint px-3 text-[11px] font-bold text-blue-primary">
+                        Course {m.courseProgress}%
+                      </span>
+                    ) : (
+                      <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
+                        Course not started
+                      </span>
+                    )}
+                    {m.barcTrend === "up" && (
+                      <span className="inline-flex h-7 items-center rounded-full bg-[#E8F8F0] px-3 text-[11px] font-bold text-success">
+                        Check-in rising
+                      </span>
+                    )}
+                    {m.barcTrend === "flat" && (
+                      <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
+                        Check-in steady
+                      </span>
+                    )}
+                    {m.barcTrend === "down" && (
+                      <span className="inline-flex h-7 items-center rounded-full bg-amber-bg px-3 text-[11px] font-bold text-amber-ink">
+                        Check-in dipping
+                      </span>
+                    )}
+                    {m.openConcern && (
+                      <span className="inline-flex h-7 items-center rounded-full bg-amber-bg px-3 text-[11px] font-bold text-amber-ink">
+                        Concern raised
+                      </span>
+                    )}
                   </div>
-                  <ArrowRight
-                    size={18}
-                    strokeWidth={2.5}
-                    className="flex-none text-blue-primary"
-                  />
                 </div>
-                <div className="mt-3.5 flex gap-2">
-                  <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
-                    Day 1
-                  </span>
-                  <span className="inline-flex h-7 items-center rounded-full bg-[#F1F5F9] px-3 text-[11px] font-bold text-ink-600">
-                    No check-ins yet
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}
 
         {/* ============ MENTEE DETAIL ============ */}
-        {view === "detail" && (
+        {view === "detail" && activeMentee && (
           <div className="flex flex-1 flex-col">
             <div className="flex items-center gap-3.5 bg-white px-5 py-3.5">
               <button
@@ -514,13 +635,20 @@ export default function MentorApp() {
               >
                 <ArrowLeft size={22} strokeWidth={2.5} />
               </button>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-tint text-[17px] font-extrabold text-indigo-brand">
-                D
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-tint text-[17px] font-extrabold"
+                style={{ color: activeMentee.avatarColor || "#4E5B9B" }}
+              >
+                {activeMentee.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <div className="text-base font-bold text-ink-900">Danielle</div>
+                <div className="text-base font-bold text-ink-900">
+                  {firstName(activeMentee.name)}
+                </div>
                 <div className="text-xs font-medium text-ink-600">
-                  Member #039521464 · Transitional
+                  {activeMentee.memberNumber
+                    ? `Member #${activeMentee.memberNumber}`
+                    : "Mentee"}
                 </div>
               </div>
             </div>
@@ -531,20 +659,28 @@ export default function MentorApp() {
                 <div className="flex justify-center">
                   <span className="inline-flex h-10 items-center gap-2 rounded-full bg-[#E8F8F0] px-5 text-[13px] font-bold text-success">
                     <Check size={14} strokeWidth={3} /> Session saved · +15
-                    points for Danielle
+                    points for {firstName(activeMentee.name)}
                   </span>
                 </div>
               )}
-              {cheerSent && (
+              {cheerResult === "sent" && (
                 <div className="flex justify-center">
                   <span className="inline-flex h-10 items-center gap-2 rounded-full bg-gold-bg px-5 text-[13px] font-bold text-gold-ink">
-                    <Diamond size={12} fill="currentColor" /> Cheer sent -
-                    Danielle will see it on her Home
+                    <Diamond size={12} fill="currentColor" /> Cheer sent -{" "}
+                    {firstName(activeMentee.name)} will see it in chat
+                  </span>
+                </div>
+              )}
+              {cheerResult === "nothread" && (
+                <div className="flex justify-center">
+                  <span className="inline-flex min-h-10 items-center gap-2 rounded-full bg-amber-bg px-5 py-2 text-center text-[13px] font-bold text-amber-ink">
+                    No chat with {firstName(activeMentee.name)} yet - cheers
+                    land there once they open the app
                   </span>
                 </div>
               )}
 
-              {/* Journey snapshot */}
+              {/* Journey snapshot - real analytics signals */}
               <div className={`rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
                 <div className="text-xs font-bold tracking-[.12em] text-blue-primary">
                   JOURNEY SNAPSHOT
@@ -552,15 +688,18 @@ export default function MentorApp() {
                 <div className="mt-3.5 grid grid-cols-3 gap-3 text-center">
                   <div>
                     <div className="tnum text-[22px] font-extrabold text-blue-primary">
-                      45%
+                      {activeMentee.courseProgress !== null
+                        ? `${activeMentee.courseProgress}%`
+                        : "—"}
                     </div>
                     <div className="text-[11px] font-semibold text-ink-600">
-                      ISE Course 3
+                      course
                     </div>
                   </div>
                   <div>
                     <div className="tnum text-[22px] font-extrabold text-gold-ink">
-                      12<span className="text-sm">d</span>
+                      {activeMentee.streak}
+                      <span className="text-sm">d</span>
                     </div>
                     <div className="text-[11px] font-semibold text-ink-600">
                       streak
@@ -568,20 +707,40 @@ export default function MentorApp() {
                   </div>
                   <div>
                     <div className="tnum text-[22px] font-extrabold text-success">
-                      4/5
+                      {activeMentee.lastBarcTotal !== null
+                        ? `${activeMentee.lastBarcTotal}/50`
+                        : "—"}
                     </div>
                     <div className="text-[11px] font-semibold text-ink-600">
-                      mood · today
+                      self-check
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 border-t border-sky-tint pt-3.5">
                   <div className="flex justify-between text-[13px] font-semibold text-ink-900">
-                    <span>Hallway house · $175/week</span>
-                    <span className="text-blue-primary">$105</span>
+                    <span>Goals</span>
+                    <span className="tnum text-blue-primary">
+                      {activeMentee.goalsActive} active ·{" "}
+                      {activeMentee.goalsAchieved} achieved
+                    </span>
                   </div>
                   <div className="mt-2 h-2 overflow-hidden rounded-full bg-sky-tint">
-                    <div className="h-full w-[60%] rounded-full bg-[linear-gradient(90deg,#4E5B9B,#2E7CD6)]" />
+                    <div
+                      className="h-full rounded-full bg-[linear-gradient(90deg,#4E5B9B,#2E7CD6)]"
+                      style={{
+                        width:
+                          activeMentee.goalsActive +
+                            activeMentee.goalsAchieved >
+                          0
+                            ? `${Math.round(
+                                (activeMentee.goalsAchieved /
+                                  (activeMentee.goalsActive +
+                                    activeMentee.goalsAchieved)) *
+                                  100
+                              )}%`
+                            : "0%",
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -602,51 +761,57 @@ export default function MentorApp() {
                 </button>
               </div>
 
-              <div className="text-xs font-bold tracking-[.12em] text-blue-primary">
-                RECENT
-              </div>
-              <div className={`rounded-2xl bg-white ${CARD_SHADOW}`}>
-                <div className="flex items-center gap-3.5 border-b border-canvas px-5 py-4">
-                  <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-[#E8F8F0] text-success">
-                    <Check size={15} strokeWidth={3} />
-                  </span>
-                  <div>
-                    <div className="text-[13px] font-bold text-ink-900">
-                      Completed ISE 3 · Lesson 1
+              {/* RECENT is demo-only content - there's no per-mentee activity
+                  feed API yet, and we never fabricate one for real people. */}
+              {!rosterLive && (
+                <>
+                  <div className="text-xs font-bold tracking-[.12em] text-blue-primary">
+                    RECENT
+                  </div>
+                  <div className={`rounded-2xl bg-white ${CARD_SHADOW}`}>
+                    <div className="flex items-center gap-3.5 border-b border-canvas px-5 py-4">
+                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-[#E8F8F0] text-success">
+                        <Check size={15} strokeWidth={3} />
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-bold text-ink-900">
+                          Completed ISE 3 · Lesson 1
+                        </div>
+                        <div className="text-[11px] font-normal text-ink-600">
+                          yesterday
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-[11px] font-normal text-ink-600">
-                      yesterday
+                    {/* Journal: privacy note only - content is never visible to mentors */}
+                    <div className="flex items-center gap-3.5 border-b border-canvas px-5 py-4">
+                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-sky-tint text-blue-primary">
+                        <Pencil size={14} strokeWidth={2.5} />
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-bold text-ink-900">
+                          Journal entry · private
+                        </div>
+                        <div className="text-[11px] font-normal text-ink-600">
+                          yesterday · visible to assigned staff only
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3.5 px-5 py-4">
+                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-gold-bg text-gold-ink">
+                        <Diamond size={13} fill="currentColor" />
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-bold text-ink-900">
+                          Earned 30-Day Streak badge
+                        </div>
+                        <div className="text-[11px] font-normal text-ink-600">
+                          last week
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                {/* Journal: privacy note only - content is never visible to mentors */}
-                <div className="flex items-center gap-3.5 border-b border-canvas px-5 py-4">
-                  <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-sky-tint text-blue-primary">
-                    <Pencil size={14} strokeWidth={2.5} />
-                  </span>
-                  <div>
-                    <div className="text-[13px] font-bold text-ink-900">
-                      Journal entry · private
-                    </div>
-                    <div className="text-[11px] font-normal text-ink-600">
-                      yesterday · visible to assigned staff only
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3.5 px-5 py-4">
-                  <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-gold-bg text-gold-ink">
-                    <Diamond size={13} fill="currentColor" />
-                  </span>
-                  <div>
-                    <div className="text-[13px] font-bold text-ink-900">
-                      Earned 30-Day Streak badge
-                    </div>
-                    <div className="text-[11px] font-normal text-ink-600">
-                      last week
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </>
+              )}
 
               {/* Sessions summary - updates after a save */}
               <div
@@ -659,14 +824,14 @@ export default function MentorApp() {
                   {lastSession}
                 </div>
                 {lastSessionNote && (
-                  <div className="mt-1.5 text-[13px]/[1.6] font-normal text-ink-600">
+                  <div className="mt-1.5 whitespace-pre-line text-[13px]/[1.6] font-normal text-ink-600">
                     {lastSessionNote}
                   </div>
                 )}
                 {sessionCount !== null && (
                   <div className="mt-2 text-[11px] font-semibold text-ink-400">
                     {sessionCount} session{sessionCount === 1 ? "" : "s"} logged
-                    with Danielle
+                    with {firstName(activeMentee.name)}
                   </div>
                 )}
               </div>
@@ -687,7 +852,7 @@ export default function MentorApp() {
                     onClick={openConcern}
                     className="cursor-pointer border-b border-[#E2E8F0] pb-0.5 text-[13px] font-semibold text-ink-400"
                   >
-                    I&apos;m concerned about Danielle
+                    I&apos;m concerned about {firstName(activeMentee.name)}
                   </span>
                 )}
               </div>
@@ -742,8 +907,69 @@ export default function MentorApp() {
                   )}
                 </button>
               ))}
+
+              {/* Care channels - center group + announcements, real API */}
+              {channels.length > 0 && (
+                <>
+                  <div className="mt-1 text-xs font-bold tracking-[.12em] text-blue-primary">
+                    CARE CHANNELS
+                  </div>
+                  {channels.map((c) => {
+                    const meta = CHANNEL_META[c.kind];
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => openChannel(c)}
+                        className={`flex min-h-[44px] cursor-pointer items-center gap-3.5 rounded-2xl bg-white px-5 py-[18px] text-left hover:bg-sky-tint ${CARD_SHADOW}`}
+                      >
+                        <div
+                          className={`flex h-12 w-12 flex-none items-center justify-center rounded-full ${meta.tint} ${meta.ink}`}
+                        >
+                          <meta.Icon size={20} strokeWidth={2.2} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-[15px] font-bold text-ink-900">
+                              {c.title}
+                            </span>
+                            <span
+                              className={`inline-flex h-5 flex-none items-center rounded-full px-2 text-[10px] font-extrabold ${meta.tint} ${meta.ink}`}
+                            >
+                              {meta.chip}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 truncate text-[13px] font-medium text-ink-600">
+                            {c.lastMessage
+                              ? `${firstName(c.lastMessage.senderName)}: ${c.lastMessage.body}`
+                              : "No messages yet"}
+                          </div>
+                        </div>
+                        {c.unreadCount > 0 && (
+                          <span className="inline-flex h-5 min-w-[20px] flex-none items-center justify-center rounded-full bg-blue-primary px-1.5 text-[11px] font-bold text-white">
+                            {c.unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
+        )}
+
+        {/* ============ CARE CHANNEL - messages + composer, crisis-safe ==== */}
+        {view === "channel" && activeChannel && viewerId && (
+          <CareThread
+            channel={activeChannel}
+            viewerId={viewerId}
+            onBack={() => {
+              setActiveChannel(null);
+              setView("chatlist");
+              loadChannels();
+            }}
+          />
         )}
 
         {/* ============ THREAD - real conversation when signed in ============ */}
@@ -800,10 +1026,10 @@ export default function MentorApp() {
                 </div>
               </div>
 
-              {/* Mood check-in card */}
+              {/* Mood check-in card - prefills the session-note draft */}
               <div className="rounded-2xl border-[1.5px] border-sky-tint bg-white p-5 shadow-[0_2px_10px_rgba(11,37,69,.08)]">
                 <div className="text-xs font-bold tracking-[.12em] text-indigo-brand">
-                  QUICK CHECK-IN · SENT WITH YOUR MESSAGE
+                  QUICK CHECK-IN · FOR YOUR SESSION NOTE
                 </div>
                 <div className="mt-2 text-[15px] font-semibold text-ink-900">
                   How&apos;s today feeling, Tyrell?
@@ -814,7 +1040,7 @@ export default function MentorApp() {
                     return (
                       <button
                         key={n}
-                        onClick={() => setMood(n)}
+                        onClick={() => pickMood(n)}
                         className="flex cursor-pointer flex-col items-center gap-1.5"
                       >
                         <span
@@ -840,24 +1066,41 @@ export default function MentorApp() {
                   })}
                 </div>
                 <div className="mt-3.5 text-center text-[11px] font-normal text-ink-400">
-                  Shared with Marcus and the care team only.
+                  {mood
+                    ? `Added "Mood: ${mood}/5" to your session-note draft.`
+                    : "Tap a number to prefill your next session note."}
                 </div>
               </div>
 
               <div className="mt-auto text-center text-xs font-normal text-ink-400">
-                Tyrell will see your message and check-in the next time he
-                opens the app.
+                This is a preview conversation - nothing here is sent.
               </div>
             </div>
 
-            {/* Composer */}
-            <div className="flex items-center gap-2.5 border-t border-sky-tint bg-white px-4 pb-6 pt-3">
-              <div className="flex h-12 flex-1 items-center rounded-full border-[1.5px] border-sky-tint bg-canvas px-5 text-sm font-normal text-ink-400">
-                Message Tyrell…
+            {/* Composer - visual only in the preview; sending needs a session */}
+            <div className="border-t border-sky-tint bg-white px-4 pb-6 pt-3">
+              <div className="flex items-center gap-2.5">
+                {signedIn === false ? (
+                  <a
+                    href="/login"
+                    className="flex h-12 flex-1 items-center rounded-full border-[1.5px] border-sky-tint bg-canvas px-5 text-sm font-bold text-blue-primary hover:border-blue-primary"
+                  >
+                    Sign in to reply
+                  </a>
+                ) : (
+                  <div className="flex h-12 flex-1 items-center rounded-full border-[1.5px] border-sky-tint bg-canvas px-5 text-sm font-normal text-ink-400">
+                    Message Tyrell…
+                  </div>
+                )}
+                <button
+                  disabled
+                  aria-disabled="true"
+                  title="Sign in to reply"
+                  className="flex h-12 w-12 flex-none cursor-default items-center justify-center rounded-full bg-blue-primary text-white opacity-40"
+                >
+                  <ArrowUp size={20} strokeWidth={2.5} />
+                </button>
               </div>
-              <button className="flex h-12 w-12 flex-none cursor-pointer items-center justify-center rounded-full bg-blue-primary text-white">
-                <ArrowUp size={20} strokeWidth={2.5} />
-              </button>
             </div>
           </div>
         )}
@@ -895,9 +1138,9 @@ export default function MentorApp() {
         )}
 
         {/* ============ CONCERN SHEET - quiet escalation ============ */}
-        {concernOpen && (
+        {concernOpen && activeMentee && (
           <ConcernSheet
-            name="Danielle"
+            name={firstName(activeMentee.name)}
             note={concernNote}
             onNote={setConcernNote}
             onSend={sendConcern}
@@ -908,12 +1151,15 @@ export default function MentorApp() {
         )}
 
         {/* ============ LOG SHEET ============ */}
-        {logOpen && (
+        {logOpen && activeMentee && (
           <LogSheet
+            name={firstName(activeMentee.name)}
             mode={mode}
             duration={duration}
+            note={note}
             onMode={setMode}
             onDuration={setDuration}
+            onNote={setNote}
             onSave={saveSession}
             onClose={() => setLogOpen(false)}
           />

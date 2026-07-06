@@ -246,6 +246,50 @@ function stageNotification(
   }
 }
 
+// ── pipeline stage → member tracker status sync ────────────────────────
+// The member's own JobApplication row is the tracker the member app renders;
+// without this sync an employer stage move never reaches the member's plan.
+// JobAppStatus has no "screening" stage, so screening maps to the closest
+// existing value ("applied" - still pre-interview). "hired" lands in the
+// union via the concurrent data workstream; the map is typed as strings and
+// the assignment cast so both orders of arrival compile.
+const STAGE_TO_APP_STATUS: Record<CandidateStage, string> = {
+  applied: "applied",
+  screening: "applied",
+  interview: "interview",
+  offer: "offer",
+  hired: "hired",
+  closed: "closed",
+};
+
+/** Forward-only rank. "hired" outranks "closed" so a hired member is never
+ *  demoted; "closed" outranks the open statuses so a rejection still lands. */
+const APP_STATUS_RANK: Record<string, number> = {
+  applied: 0,
+  interview: 1,
+  offer: 2,
+  closed: 3,
+  hired: 4,
+};
+
+/** Sync the linked member-owned jobApplications row with a stage move.
+ *  FORWARD-ONLY updates to `status` alone - member-entered data (notes,
+ *  nextActionDate, company, role) is never touched or deleted. */
+function syncLinkedApplication(
+  candidate: PostingCandidate,
+  stage: CandidateStage
+) {
+  const d = store();
+  const app = d.jobApplications.find(
+    (a) => a.id === candidate.jobApplicationId
+  );
+  if (!app) return;
+  const next = STAGE_TO_APP_STATUS[stage];
+  if ((APP_STATUS_RANK[next] ?? 0) > (APP_STATUS_RANK[app.status] ?? 0)) {
+    app.status = next as JobApplication["status"];
+  }
+}
+
 /** Hired = community capital. Advance the member's active employment-domain
  *  recovery goal by marking its next unfinished milestone done. Defensive:
  *  the goal tables belong to a concurrent workstream and may be empty. */
@@ -309,6 +353,9 @@ export async function PATCH(req: Request) {
     if (stage !== candidate.stage) {
       candidate.stage = stage;
       candidate.stageChangedAt = Date.now();
+
+      // P0: reflect the move on the member's own tracker row (forward-only).
+      syncLinkedApplication(candidate, stage);
 
       // Every stage change tells the member where they stand (kind "job").
       const note = stageNotification(stage, posting);

@@ -439,6 +439,8 @@ export default function MeTab({
   // ── profile details + BARC trend (signed in only) ────────────────────
   const [details, setDetails] = useState<OwnDetails | null>(null);
   const [checks, setChecks] = useState<CheckPoint[]>([]);
+  // Public giving page consent - null until the fresh server copy arrives.
+  const [consentOn, setConsentOn] = useState<boolean | null>(null);
   const userId = user?.id;
 
   useEffect(() => {
@@ -450,6 +452,7 @@ export default function MeTab({
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled || !data?.details) return;
+        setConsentOn(!!data.user?.consentPublic);
         setDetails({
           tagline: data.details.tagline ?? "",
           journeySince: data.details.journeySince ?? "",
@@ -483,6 +486,27 @@ export default function MeTab({
           if (!res.ok) throw new Error(String(res.status));
         } catch {
           setDetails(before);
+        }
+      })();
+      return next;
+    });
+  };
+
+  /** Optimistic consent flip - revert on failure. */
+  const toggleConsent = () => {
+    setConsentOn((prev) => {
+      if (prev === null) return prev;
+      const next = !prev;
+      (async () => {
+        try {
+          const res = await fetch("/api/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ consentPublic: next }),
+          });
+          if (!res.ok) throw new Error(String(res.status));
+        } catch {
+          setConsentOn(prev);
         }
       })();
       return next;
@@ -655,6 +679,35 @@ export default function MeTab({
               )}
             </div>
 
+            {/* My public giving page - the member's own consent switch */}
+            {consentOn !== null && (
+              <>
+                <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
+                  MY PUBLIC GIVING PAGE
+                </div>
+                <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+                  <ToggleRow
+                    label="My public giving page"
+                    hint={
+                      consentOn
+                        ? "Your page is live - supporters can find you."
+                        : "Your page is private - turn it on when you are ready."
+                    }
+                    on={consentOn}
+                    onToggle={toggleConsent}
+                  />
+                  {consentOn && user.slug && (
+                    <Link
+                      href={`/p/${user.slug}`}
+                      className="mt-1 inline-flex min-h-[44px] items-center text-[13px] font-bold text-blue-primary"
+                    >
+                      See your page → /p/{user.slug}
+                    </Link>
+                  )}
+                </div>
+              </>
+            )}
+
             {/* QR share card */}
             {user.slug && (
               <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
@@ -681,6 +734,24 @@ export default function MeTab({
                 </div>
               </div>
             )}
+
+            {/* Resume builder - turn the journey into something employers see */}
+            <Link
+              href="/resume"
+              className="flex min-h-[44px] items-center justify-between gap-3 rounded-2xl bg-white px-5 py-4 shadow-[0_1px_3px_rgba(11,37,69,.06)] hover:bg-sky-tint"
+            >
+              <span>
+                <span className="block text-[14px] font-bold text-ink-900">
+                  Resume builder
+                </span>
+                <span className="block text-[12px] text-ink-600">
+                  Turn your courses, badges, and work into a resume.
+                </span>
+              </span>
+              <span className="flex-none text-[16px] font-bold text-blue-primary">
+                →
+              </span>
+            </Link>
           </>
         )}
 

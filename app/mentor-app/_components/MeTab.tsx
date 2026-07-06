@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Diamond } from "lucide-react";
+
+/** Fired by MentorApp after a session POST succeeds so this tab refetches. */
+export const SESSION_LOGGED_EVENT = "mentor:session-logged";
 
 /* ── GET /api/mentor/analytics shape ───────────────────────────────────── */
 
-type BarcTrend = "up" | "flat" | "down";
+export type BarcTrend = "up" | "flat" | "down";
 
-type MenteeAnalytics = {
+export type MenteeAnalytics = {
   id: string;
   name: string;
   avatarColor: string;
@@ -61,7 +64,7 @@ const TREND: Record<BarcTrend, { glyph: string; cls: string; word: string }> = {
 
 /* ── demo fallback - mirrors the roster's three flagship mentees ───────── */
 
-const DEMO_MENTEES: MenteeAnalytics[] = [
+export const DEMO_MENTEES: MenteeAnalytics[] = [
   {
     id: "demo-danielle",
     name: "Danielle",
@@ -267,6 +270,22 @@ export default function MeTab({
   const [data, setData] = useState<Analytics | null>(null);
   const [live, setLive] = useState(false);
 
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/mentor/analytics");
+      const body = await res.json().catch(() => null);
+      if (res.ok && body?.rollup && body.mentees?.length > 0) {
+        setData(body as Analytics);
+        setLive(true);
+        return;
+      }
+    } catch {
+      /* falls through to demo */
+    }
+    setData(DEMO);
+    setLive(false);
+  }, []);
+
   useEffect(() => {
     if (signedIn === undefined) return; // auth check still in flight
     if (!isMentor) {
@@ -274,29 +293,17 @@ export default function MeTab({
       setLive(false);
       return;
     }
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/mentor/analytics");
-        const body = await res.json().catch(() => null);
-        if (!alive) return;
-        if (res.ok && body?.rollup && body.mentees?.length > 0) {
-          setData(body as Analytics);
-          setLive(true);
-          return;
-        }
-      } catch {
-        /* falls through to demo */
-      }
-      if (alive) {
-        setData(DEMO);
-        setLive(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [signedIn, isMentor]);
+    load();
+  }, [signedIn, isMentor, load]);
+
+  // A freshly logged session changes these numbers - refetch on the event
+  // MentorApp dispatches after a successful POST /api/sessions.
+  useEffect(() => {
+    if (!isMentor) return;
+    const onLogged = () => load();
+    window.addEventListener(SESSION_LOGGED_EVENT, onLogged);
+    return () => window.removeEventListener(SESSION_LOGGED_EVENT, onLogged);
+  }, [isMentor, load]);
 
   const r = data?.rollup;
 

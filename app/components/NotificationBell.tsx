@@ -9,6 +9,7 @@ import {
   CalendarClock,
   CalendarDays,
   Check,
+  ChevronRight,
   HeartHandshake,
   Heart,
   Info,
@@ -62,6 +63,46 @@ export const KIND_META: Record<
   mention: { icon: AtSign, label: "Mention" },
   system: { icon: Info, label: "Update" },
 };
+
+/**
+ * Where a notification should take you - shared by the bell dropdown and the
+ * full /notifications page (same export pattern as KIND_META). Returns null
+ * when there is no sensible destination (row stays a mark-read-only row).
+ */
+export function notificationHref(n: NotificationItem): string | null {
+  const refType = n.refType ?? "";
+  switch (refType) {
+    case "post":
+      return n.refId ? `/community#post-${n.refId}` : "/community";
+    case "event":
+      return "/community/events";
+    case "job":
+    case "posting":
+    case "posting_candidate":
+      // Employers get candidate alerts (kind "job", "New candidate…" titles);
+      // members get opportunity alerts - their job tracker lives in the app.
+      if (n.kind === "job" && /new candidate/i.test(n.title)) {
+        return "/employer/dashboard";
+      }
+      return "/member-app";
+    case "donation":
+      return "/member-app";
+    case "channel":
+    case "care_message":
+      return "/member-app";
+    case "circle":
+      return "/community/circles";
+    case "report":
+      return "/dashboard";
+    case "kudos":
+      return "/member-app";
+  }
+  if (n.kind === "care_message") return "/member-app";
+  if (n.kind === "mention" || n.kind === "comment" || n.kind === "reaction") {
+    return "/community";
+  }
+  return null;
+}
 
 /** "just now" / "5m" / "3h" / "2d" / "May 12" - relative recency. */
 export function relTime(ts: number): string {
@@ -249,47 +290,73 @@ export default function NotificationBell() {
               <ul className="flex flex-col">
                 {recent.map((n) => {
                   const Icon = (KIND_META[n.kind] ?? KIND_META.system).icon;
-                  return (
-                    <li key={n.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!n.read) markRead([n.id]);
-                        }}
+                  const href = notificationHref(n);
+                  const rowCls =
+                    "flex w-full items-start gap-3 border-t border-sky-tint px-4 py-3 text-left hover:bg-canvas " +
+                    (n.read ? "" : "bg-sky-tint/50");
+                  const inner = (
+                    <>
+                      <span
                         className={
-                          "flex w-full items-start gap-3 border-t border-sky-tint px-4 py-3 text-left hover:bg-canvas " +
-                          (n.read ? "" : "bg-sky-tint/50")
+                          "grid h-9 w-9 flex-none place-items-center rounded-[10px] " +
+                          (n.read
+                            ? "bg-canvas text-ink-400"
+                            : "bg-sky-tint text-blue-primary")
                         }
                       >
-                        <span
-                          className={
-                            "grid h-9 w-9 flex-none place-items-center rounded-[10px] " +
-                            (n.read
-                              ? "bg-canvas text-ink-400"
-                              : "bg-sky-tint text-blue-primary")
-                          }
-                        >
-                          <Icon size={17} strokeWidth={2} />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate text-[14px] font-bold text-ink-900">
-                              {n.title}
-                            </span>
-                            {!n.read && (
-                              <span className="h-2 w-2 flex-none rounded-full bg-blue-primary" />
-                            )}
+                        <Icon size={17} strokeWidth={2} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="min-w-0 flex-1 truncate text-[14px] font-bold text-ink-900">
+                            {n.title}
                           </span>
-                          {n.body && (
-                            <span className="mt-0.5 block text-[13px]/[1.4] text-ink-600 line-clamp-2">
-                              {n.body}
-                            </span>
+                          {!n.read && (
+                            <span className="h-2 w-2 flex-none rounded-full bg-blue-primary" />
                           )}
-                          <span className="mt-1 block text-[12px] font-medium text-ink-400">
-                            {relTime(n.createdAt)}
-                          </span>
                         </span>
-                      </button>
+                        {n.body && (
+                          <span className="mt-0.5 block text-[13px]/[1.4] text-ink-600 line-clamp-2">
+                            {n.body}
+                          </span>
+                        )}
+                        <span className="mt-1 block text-[12px] font-medium text-ink-400">
+                          {relTime(n.createdAt)}
+                        </span>
+                      </span>
+                      {href && (
+                        <ChevronRight
+                          size={16}
+                          className="mt-2.5 flex-none text-ink-400"
+                          aria-hidden
+                        />
+                      )}
+                    </>
+                  );
+                  return (
+                    <li key={n.id}>
+                      {href ? (
+                        <Link
+                          href={href}
+                          onClick={() => {
+                            if (!n.read) markRead([n.id]);
+                            setOpen(false);
+                          }}
+                          className={rowCls}
+                        >
+                          {inner}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!n.read) markRead([n.id]);
+                          }}
+                          className={rowCls}
+                        >
+                          {inner}
+                        </button>
+                      )}
                     </li>
                   );
                 })}

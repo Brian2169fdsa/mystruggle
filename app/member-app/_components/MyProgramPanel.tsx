@@ -54,13 +54,15 @@ function sessionTime(ts: number, isToday: boolean): string {
   return `${day} ${time}`;
 }
 
-/** Switch the shell to the Chat tab by driving the existing TabBar button -
- *  the same goTab("chat") mechanism MemberApp already owns. Keeps this panel
- *  additive: no MemberApp/ChatTab changes needed. */
-function openChatTab() {
-  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>("button"));
-  const chat = buttons.find((b) => b.textContent?.trim() === "Chat");
-  chat?.click();
+/** Cross-component "open my cohort chat" signal. MemberApp listens, switches
+ *  to the Chat tab, and hands the channel id to ChatTab to auto-open. A
+ *  CustomEvent keeps this panel additive - HomeTab needs no new props. */
+export const OPEN_CARE_CHANNEL_EVENT = "ms:open-care-channel";
+
+function openCohortChat(channelId: string) {
+  window.dispatchEvent(
+    new CustomEvent(OPEN_CARE_CHANNEL_EVENT, { detail: { channelId } })
+  );
 }
 
 /* ── subtle confetti accent for the kudos row - pure CSS, no libraries ── */
@@ -202,6 +204,7 @@ export default function MyProgramPanel({
   if (!portal?.enrolled || !portal.program) return null;
 
   const program = portal.program;
+  const channelId = program.channelId; // const-bound so the closure narrows
   const sessions = portal.today.sessions;
   const tasks = portal.today.tasks.slice(0, 3);
   const latestKudos = portal.kudos[0] ?? null;
@@ -416,10 +419,10 @@ export default function MyProgramPanel({
 
         {/* Quick links */}
         <div className="mt-4 flex gap-2">
-          {program.channelId && (
+          {channelId && (
             <button
               type="button"
-              onClick={openChatTab}
+              onClick={() => openCohortChat(channelId)}
               className="flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full bg-white/15 px-4 text-[13px] font-bold text-white hover:bg-white/25"
             >
               Open cohort chat →

@@ -7,6 +7,7 @@ export type MentorView =
   | "detail"
   | "chatlist"
   | "thread"
+  | "channel"
   | "community"
   | "me";
 
@@ -34,7 +35,7 @@ export default function TabBar({
     {
       label: "Chat",
       Icon: MessageCircle,
-      active: view === "chatlist" || view === "thread",
+      active: view === "chatlist" || view === "thread" || view === "channel",
       onClick: onChat,
     },
     {

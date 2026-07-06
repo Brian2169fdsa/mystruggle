@@ -11,7 +11,7 @@
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
-import { findMemberBySlug, save, uid, emitContinuumEvent } from "@/app/lib/store";
+import { db, findMemberBySlug, save, uid, emitContinuumEvent } from "@/app/lib/store";
 import { toSafeUser, type BarcSelfCheck, type ProfileDetails } from "@/app/lib/types";
 import {
   barcChecksStore,
@@ -49,12 +49,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Sign in to see your profile." }, { status: 401 });
   }
   const details = detailsFor(user.id) ?? defaultDetails(user.id);
+  // Gift history - the member's own donations, newest first, capped at 10.
+  // Anonymous by design: amounts and timing only, never donor identity.
+  const donations = db()
+    .donations.filter((d) => d.memberId === user.id)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 10)
+    .map((d) => ({ amount: d.amount, weekly: d.weekly, createdAt: d.createdAt }));
   return NextResponse.json({
     user: toSafeUser(user),
     details,
     checks: trendOf(checksFor(user.id)),
     recoveryCapital: deriveRecoveryCapital(user),
     milestones: deriveMilestones(user),
+    giving: { donations },
   });
 }
 
@@ -132,6 +140,18 @@ export async function POST(req: Request) {
       check: { id: check.id, takenAt: check.takenAt, total: check.total },
       checks: trendOf(checksFor(user.id)),
     });
+  }
+
+  // ── public giving page consent - the member's own switch ─────────────
+  // Same field the staff consent desk flips (/api/admin/consent); here the
+  // member flips it for themselves. /p/[slug] reads it live per request.
+  if (body.consentPublic !== undefined) {
+    if (typeof body.consentPublic !== "boolean") {
+      return NextResponse.json({ error: "Invalid toggle value." }, { status: 400 });
+    }
+    user.consentPublic = body.consentPublic;
+    save();
+    return NextResponse.json({ consentPublic: user.consentPublic });
   }
 
   // ── profile details update (partial, member-owned) ───────────────────

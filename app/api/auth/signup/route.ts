@@ -21,6 +21,8 @@ export async function POST(req: Request) {
   const password = String(body?.password ?? "");
   const role: Role = body?.role === "mentor" ? "mentor" : "member";
   const story = String(body?.story ?? "").trim();
+  // Consent is opt-in: only an explicit true turns the public page on.
+  const consentPublic = body?.consentPublic === true;
   const goalLabel = String(body?.goalLabel ?? "").trim();
   const goalAmount = Number(body?.goalAmount ?? 0);
 
@@ -53,7 +55,9 @@ export async function POST(req: Request) {
     user.slug = slugify(user.name);
     user.memberNumber = newMemberNumber();
     user.story = story;
-    user.consentPublic = true;
+    // Slug + member number exist either way; the public page (and /api/members
+    // gate) stays hidden until the member opts in.
+    user.consentPublic = consentPublic;
     user.balances = { cash: 0, credits: 0, savings: 0 };
     user.streak = 0;
     user.points = 0;

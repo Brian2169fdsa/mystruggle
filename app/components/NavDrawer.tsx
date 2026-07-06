@@ -6,6 +6,7 @@ import {
   Activity,
   BookOpen,
   Briefcase,
+  Building2,
   ChevronDown,
   Gift,
   GraduationCap,
@@ -71,6 +72,11 @@ const DONATE_ITEMS: DrawerItem[] = [
   { href: "/give", label: "Give to a member", icon: QrCode },
   { href: "/mentor", label: "Donate items or time", icon: Gift },
   { href: "/giving", label: "How giving works", icon: ScrollText },
+];
+
+const EMPLOYER_ITEMS: DrawerItem[] = [
+  { href: "/jobs", label: "Browse jobs", icon: Briefcase },
+  { href: "/employers", label: "For employers", icon: Building2 },
 ];
 
 /**
@@ -224,22 +230,16 @@ export default function NavDrawer() {
               </div>
               <div className="flex flex-col">
                 <div className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-[.14em] text-[#8FBCF0]">
-                  For employers
+                  Jobs &amp; employers
                 </div>
-                <a
-                  href="mailto:info@themystruggles.com"
-                  onClick={close}
-                  className="flex min-h-11 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-semibold text-white/70 hover:bg-white/[.08]"
-                >
-                  <span className="grid h-8 w-8 flex-none place-items-center rounded-[9px] bg-white/10 text-[#9DBEEC]">
-                    <Briefcase size={16} />
-                  </span>
-                  Post jobs to the community
-                </a>
+                {EMPLOYER_ITEMS.map((item) => renderItem(item, true))}
               </div>
             </div>
           )}
 
+          <Link href="/signup" onClick={close} className={rowClass}>
+            Join the community
+          </Link>
           <Link href="/login" onClick={close} className={rowClass}>
             Sign in
           </Link>

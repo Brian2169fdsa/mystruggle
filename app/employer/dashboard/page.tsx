@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Award,
+  Bell,
   BookOpen,
   Briefcase,
   Building2,
@@ -25,6 +26,7 @@ import {
   FileText,
   HeartHandshake,
   LayoutDashboard,
+  LogOut,
   MapPin,
   Plus,
   Settings,
@@ -43,6 +45,15 @@ const inputCls =
 
 const cardCls = "rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
+/** Full posting lifecycle (mirror of /api/jobs). */
+type PostingStatus =
+  | "draft"
+  | "pending_review"
+  | "open"
+  | "paused"
+  | "filled"
+  | "closed";
+
 interface Job {
   id: string;
   title: string;
@@ -51,9 +62,53 @@ interface Job {
   type: JobType;
   payRange?: string;
   description: string;
-  status: "open" | "closed";
+  status: PostingStatus;
   createdAt: number;
 }
+
+/** Friendly status pills + the lifecycle moves the API allows the owner
+ *  (mirror of OWNER_TRANSITIONS in /api/jobs/[id]): open → paused/filled/
+ *  closed, paused → open, closed → open. pending_review has NO owner moves -
+ *  staff approval takes it live. */
+const STATUS_META: Record<
+  PostingStatus,
+  { label: string; pillCls: string; actions: Array<{ to: PostingStatus; label: string }> }
+> = {
+  draft: {
+    label: "Draft",
+    pillCls: "bg-sky-tint-2 text-ink-600",
+    actions: [],
+  },
+  pending_review: {
+    label: "In review",
+    pillCls: "bg-amber-bg text-amber-ink",
+    actions: [],
+  },
+  open: {
+    label: "Open",
+    pillCls: "bg-[#E8F8F0] text-success",
+    actions: [
+      { to: "paused", label: "Pause role" },
+      { to: "filled", label: "Mark filled" },
+      { to: "closed", label: "Close role" },
+    ],
+  },
+  paused: {
+    label: "Paused",
+    pillCls: "bg-sky-tint text-blue-primary",
+    actions: [{ to: "open", label: "Reopen role" }],
+  },
+  filled: {
+    label: "Filled",
+    pillCls: "bg-sky-tint text-indigo-brand",
+    actions: [],
+  },
+  closed: {
+    label: "Closed",
+    pillCls: "bg-sky-tint-2 text-ink-600",
+    actions: [{ to: "open", label: "Reopen role" }],
+  },
+};
 
 const TYPE_LABEL: Record<JobType, string> = {
   "full-time": "Full-time",
@@ -131,6 +186,7 @@ interface Hire {
     confirmedAt: number;
   }>;
   nextDue: RetentionDay | null;
+  upcoming?: { day: RetentionDay; dueAt: number } | null;
 }
 
 type Tab =
@@ -205,7 +261,10 @@ export default function EmployerDashboard() {
   const [payRange, setPayRange] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [postSuccess, setPostSuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [retentionNote, setRetentionNote] = useState<string | null>(null);
 
   const loadJobs = useCallback(async () => {
     try {
@@ -269,9 +328,19 @@ export default function EmployerDashboard() {
     };
   }, [router, loadJobs, loadPipeline, loadRetention]);
 
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      router.push("/");
+    }
+  }
+
   async function postJob(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setPostSuccess(null);
     if (!title.trim()) return setError("Give the role a title.");
     if (!location.trim()) return setError("Where is the role based?");
     if (!description.trim())
@@ -299,6 +368,11 @@ export default function EmployerDashboard() {
       setType("full-time");
       setPayRange("");
       setDescription("");
+      setPostSuccess(
+        typeof data?.message === "string" && data.message
+          ? data.message
+          : "Posting submitted for review."
+      );
       await Promise.all([loadJobs(), loadPipeline()]);
     } catch {
       setError("Couldn't reach the server. Please try again.");
@@ -307,7 +381,7 @@ export default function EmployerDashboard() {
     }
   }
 
-  async function setStatus(id: string, status: "open" | "closed") {
+  async function setStatus(id: string, status: PostingStatus) {
     setJobs((prev) =>
       prev ? prev.map((j) => (j.id === id ? { ...j, status } : j)) : prev
     );
@@ -390,12 +464,19 @@ export default function EmployerDashboard() {
     day: RetentionDay,
     stillEmployed: boolean
   ) {
+    setRetentionNote(null);
     try {
-      await fetch("/api/employer/retention", {
+      const res = await fetch("/api/employer/retention", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidateId, day, stillEmployed }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setRetentionNote(
+          data?.error ?? "Couldn't record that check-in. Please try again."
+        );
+      }
     } catch {
       // reload reconciles
     }
@@ -430,6 +511,7 @@ export default function EmployerDashboard() {
   }
 
   const verification = profile?.verificationStatus;
+  const verified = verification === "verified";
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
@@ -444,12 +526,30 @@ export default function EmployerDashboard() {
               className="block h-8 w-auto"
             />
           </Link>
-          <Link
-            href="/jobs"
-            className="text-[13.5px] font-bold text-blue-primary hover:text-blue-hover"
-          >
-            View the public board →
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/jobs"
+              className="text-[13.5px] font-bold text-blue-primary hover:text-blue-hover"
+            >
+              View the public board →
+            </Link>
+            <Link
+              href="/notifications"
+              aria-label="Notifications"
+              className="grid h-11 w-11 place-items-center rounded-full text-ink-600 hover:bg-sky-tint hover:text-blue-primary"
+            >
+              <Bell className="h-5 w-5" aria-hidden />
+            </Link>
+            <button
+              type="button"
+              onClick={signOut}
+              disabled={signingOut}
+              className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[13.5px] font-bold text-ink-600 hover:bg-sky-tint hover:text-ink-900 disabled:cursor-default disabled:opacity-60"
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          </div>
         </div>
         <div className="hairline" />
       </div>
@@ -462,12 +562,43 @@ export default function EmployerDashboard() {
               {user?.company ?? "Your"} dashboard
             </h1>
             <p className="mt-1.5 text-[14px]/[1.6] font-medium text-ink-600">
-              Welcome{user?.name ? `, ${user.name}` : ""}. You have{" "}
-              <span className="font-bold text-ink-900">{openCount}</span> open{" "}
-              {openCount === 1 ? "role" : "roles"} live in the community.
+              Welcome{user?.name ? `, ${user.name}` : ""}.{" "}
+              {verified ? (
+                <>
+                  You have{" "}
+                  <span className="font-bold text-ink-900">{openCount}</span>{" "}
+                  open {openCount === 1 ? "role" : "roles"} live in the
+                  community.
+                </>
+              ) : (
+                <>
+                  You have{" "}
+                  <span className="font-bold text-ink-900">
+                    {jobs?.length ?? 0}
+                  </span>{" "}
+                  {(jobs?.length ?? 0) === 1 ? "posting" : "postings"} ready to
+                  go live once your account is verified.
+                </>
+              )}
             </p>
           </div>
         </div>
+
+        {/* VERIFICATION BANNER - every tab, not just Settings */}
+        {verification === "pending" && (
+          <div className="mt-5 rounded-2xl bg-sky-tint px-5 py-4 text-[13.5px]/[1.6] font-semibold text-ink-900">
+            Your account is under review - your postings will go live once
+            you&apos;re verified. We review every employer so members can trust
+            every listing.
+          </div>
+        )}
+        {verification === "suspended" && (
+          <div className="mt-5 rounded-2xl bg-amber-bg px-5 py-4 text-[13.5px]/[1.6] font-semibold text-amber-ink">
+            Your account is suspended and your postings are paused while we
+            take a look. Reach out to the My Struggle team and we&apos;ll work
+            it out together.
+          </div>
+        )}
 
         {/* TAB SWITCHER */}
         <nav
@@ -522,7 +653,9 @@ export default function EmployerDashboard() {
                 {
                   label: "Open roles",
                   value: String(openCount),
-                  sub: "live on the community board",
+                  sub: verified
+                    ? "live on the community board"
+                    : "will go live once you're verified",
                 },
                 {
                   label: "In the pipeline",
@@ -671,6 +804,24 @@ export default function EmployerDashboard() {
                   </div>
                 )}
 
+                {postSuccess && (
+                  <div
+                    role="status"
+                    className="flex items-start gap-2 rounded-xl bg-[#E8F8F0] px-4 py-3 text-[13px]/[1.6] font-semibold text-success"
+                  >
+                    <CheckCircle2
+                      className="mt-0.5 h-4 w-4 shrink-0"
+                      aria-hidden
+                    />
+                    <span>
+                      <span className="font-extrabold">
+                        Posting submitted for review.
+                      </span>{" "}
+                      {postSuccess}
+                    </span>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={busy}
@@ -696,8 +847,9 @@ export default function EmployerDashboard() {
                       No postings yet
                     </p>
                     <p className="mt-1 text-[13px]/[1.6] font-medium text-ink-600">
-                      Post your first opening and it&apos;ll show up in the
-                      community Hiring rail right away.
+                      {verified
+                        ? "Post your first opening - after a quick content review it'll show up in the community Hiring rail."
+                        : "Post your first opening now - it'll go live in the community once your account is verified and the posting passes review."}
                     </p>
                   </div>
                 )}
@@ -727,30 +879,33 @@ export default function EmployerDashboard() {
                       <span
                         className={
                           "inline-flex h-[26px] shrink-0 items-center rounded-full px-3 text-[11px] font-extrabold uppercase tracking-[.06em] " +
-                          (job.status === "open"
-                            ? "bg-[#E8F8F0] text-success"
-                            : "bg-sky-tint-2 text-ink-600")
+                          (STATUS_META[job.status]?.pillCls ??
+                            "bg-sky-tint-2 text-ink-600")
                         }
                       >
-                        {job.status}
+                        {STATUS_META[job.status]?.label ?? job.status}
                       </span>
                     </div>
                     <p className="mt-2.5 text-[13.5px]/[1.65] font-medium text-ink-600">
                       {job.description}
                     </p>
-                    <div className="mt-3.5 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setStatus(
-                            job.id,
-                            job.status === "open" ? "closed" : "open"
-                          )
-                        }
-                        className="inline-flex h-9 cursor-pointer items-center justify-center rounded-full bg-sky-tint px-4 text-[12.5px] font-extrabold text-blue-primary hover:bg-sky-tint-2"
-                      >
-                        {job.status === "open" ? "Close role" : "Reopen role"}
-                      </button>
+                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                      {(STATUS_META[job.status]?.actions ?? []).map((a) => (
+                        <button
+                          key={a.to}
+                          type="button"
+                          onClick={() => setStatus(job.id, a.to)}
+                          className="inline-flex h-9 cursor-pointer items-center justify-center rounded-full bg-sky-tint px-4 text-[12.5px] font-extrabold text-blue-primary hover:bg-sky-tint-2"
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                      {job.status === "pending_review" && (
+                        <span className="text-[12px] font-semibold text-ink-400">
+                          Our team is reviewing this posting - usually within a
+                          day.
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => remove(job.id)}
@@ -866,6 +1021,14 @@ export default function EmployerDashboard() {
         {/* ── HIRES & RETENTION ────────────────────────────────────── */}
         {tab === "hires" && (
           <div className="mt-7 flex flex-col gap-3">
+            {retentionNote && (
+              <div
+                role="status"
+                className="rounded-2xl bg-amber-bg px-5 py-3.5 text-[13px]/[1.6] font-semibold text-amber-ink"
+              >
+                {retentionNote}
+              </div>
+            )}
             {hires.length === 0 && (
               <div className={cardCls + " p-10 text-center"}>
                 <span className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-sky-tint text-blue-primary">
@@ -897,7 +1060,7 @@ export default function EmployerDashboard() {
                       </span>
                     </p>
                   </div>
-                  {h.nextDue === null && (
+                  {h.confirms.length === 3 && (
                     <span className="inline-flex h-[26px] items-center gap-1 rounded-full bg-[#E8F8F0] px-3 text-[11px] font-extrabold uppercase tracking-[.06em] text-success">
                       <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
                       All check-ins done
@@ -907,7 +1070,10 @@ export default function EmployerDashboard() {
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {([30, 90, 180] as RetentionDay[]).map((day) => {
                     const confirm = h.confirms.find((c) => c.day === day);
-                    const isNext = h.nextDue === day;
+                    // Mirror of the server's time gate: a day-N check-in is
+                    // confirmable only once N days have passed since the hire.
+                    const dueAtMs = h.hiredAt + day * 86_400_000;
+                    const isDue = !confirm && Date.now() >= dueAtMs;
                     return (
                       <div
                         key={day}
@@ -917,7 +1083,7 @@ export default function EmployerDashboard() {
                             ? confirm.stillEmployed
                               ? "bg-[#E8F8F0]"
                               : "bg-amber-bg"
-                            : isNext
+                            : isDue
                               ? "border-[1.5px] border-sky-tint-2 bg-white"
                               : "bg-canvas")
                         }
@@ -941,10 +1107,10 @@ export default function EmployerDashboard() {
                               {fmtDate(confirm.confirmedAt)}
                             </span>
                           </p>
-                        ) : isNext ? (
+                        ) : isDue ? (
                           <>
                             <p className="mt-1.5 text-[13px] font-bold text-ink-900">
-                              Still on the team?
+                              Due now - still on the team?
                             </p>
                             <div className="mt-2 flex gap-2">
                               <button
@@ -969,7 +1135,7 @@ export default function EmployerDashboard() {
                           </>
                         ) : (
                           <p className="mt-1.5 text-[12.5px] font-semibold text-ink-400">
-                            Coming up
+                            Coming up (day {day}) - opens {fmtDate(dueAtMs)}
                           </p>
                         )}
                       </div>
@@ -1032,20 +1198,6 @@ export default function EmployerDashboard() {
         {/* ── SETTINGS ─────────────────────────────────────────────── */}
         {tab === "settings" && (
           <div className="mt-7 flex max-w-[720px] flex-col gap-4">
-            {verification === "pending" && (
-              <div className="rounded-2xl bg-sky-tint px-5 py-4 text-[13.5px]/[1.6] font-semibold text-ink-900">
-                Your account is under review - postings go live once verified.
-                We review every employer so members can trust every listing.
-              </div>
-            )}
-            {verification === "suspended" && (
-              <div className="rounded-2xl bg-amber-bg px-5 py-4 text-[13.5px]/[1.6] font-semibold text-amber-ink">
-                Your account is suspended and your postings are paused while we
-                take a look. Reach out to the My Struggle team and we&apos;ll
-                work it out together.
-              </div>
-            )}
-
             <section className={cardCls + " p-6"}>
               <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-ink-900">
                 <span className="grid h-8 w-8 place-items-center rounded-lg bg-sky-tint text-blue-primary">

@@ -23,6 +23,7 @@ import {
   timeAgo,
 } from "@/app/community/_components/ui";
 import ProfileHeader from "@/app/community/_components/ProfileHeader";
+import CommunityTabBar from "@/app/community/_components/CommunityTabBar";
 
 export const dynamic = "force-dynamic";
 
@@ -333,13 +334,16 @@ export default async function PublicProfilePage({
   return (
     <div className="min-h-screen bg-canvas">
       <Nav />
-      <main className="mx-auto flex max-w-[860px] flex-col gap-6 px-4 py-8 lg:px-6 lg:py-12">
+      {/* pb-20 keeps the mobile community tab bar from overlapping the
+          last cards (lg:pb-12 once the bar hides). */}
+      <main className="mx-auto flex max-w-[860px] flex-col gap-6 px-4 py-8 pb-20 lg:px-6 lg:py-12 lg:pb-12">
         {profile && member ? (
           <ProfileBody profile={profile} memberId={member.id} />
         ) : (
           <PrivateCard />
         )}
       </main>
+      <CommunityTabBar />
       <Footer />
       <PrototypeMap />
     </div>

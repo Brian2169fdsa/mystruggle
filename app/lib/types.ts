@@ -339,7 +339,7 @@ export interface GoalMilestone {
   dueDate?: string;
 }
 
-export type JobAppStatus = "applied" | "interview" | "offer" | "closed";
+export type JobAppStatus = "applied" | "interview" | "offer" | "hired" | "closed";
 
 export interface JobApplication {
   id: string;

@@ -159,6 +159,7 @@ export default function PublicGivingPage() {
         {gave ? (
           <ThankYou
             gave={gave}
+            slug={slug}
             back={() => setGave(null)}
           />
         ) : page.kind === "loading" ? (
@@ -292,9 +293,11 @@ function NotFound() {
 /* ── Thank-you state - real split recap ───────────────────────────────── */
 function ThankYou({
   gave,
+  slug,
   back,
 }: {
   gave: { amount: number; weekly: boolean; split: Split | null; name: string };
+  slug: string;
   back: () => void;
 }) {
   const confirmAmount = `$${gave.amount}` + (gave.weekly ? " weekly" : "");
@@ -323,7 +326,7 @@ function ThankYou({
         )}
       </div>
       <div className="max-w-[300px] rounded-2xl bg-white px-[22px] py-[18px] text-[13px]/[1.7] font-medium text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-        Receipt sent by email.
+        Demo checkout - Stripe payments and email receipts arrive with launch.
         <br />
         {gave.name ? (
           <>
@@ -331,16 +334,20 @@ function ThankYou({
             milestones they choose to share.
           </>
         ) : (
-          <>Your gift goes where the need is greatest.</>
+          <>
+            Your gift goes where the need is greatest.
+            <br />
+            Demo: general-fund gifts are illustrative for now.
+          </>
         )}
       </div>
       {gave.name && (
-        <button
-          type="button"
+        <Link
+          href={`/community/u/${encodeURIComponent(slug)}`}
           className="inline-flex h-[52px] cursor-pointer items-center rounded-full bg-blue-primary px-8 text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover"
         >
           Follow {gave.name}&apos;s journey
-        </button>
+        </Link>
       )}
       <button
         type="button"
@@ -528,7 +535,7 @@ function AmountPicker(props: {
         <Heart size={15} fill="currentColor" />
       </button>
       <div className="text-center text-[12px]/[1.6] font-medium text-ink-600">
-        Secure checkout via Stripe · Receipt by email
+        Demo checkout - Stripe payments and email receipts arrive with launch
         {footerName && (
           <>
             <br />

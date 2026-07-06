@@ -3,18 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { SafeUser, SupportRequest } from "../../lib/types";
+import { timeAgo } from "@/app/components/chat/ChatThread";
 
 /** $12.5 → "$12.50", $12 → "$12" */
 function money(n: number) {
   return "$" + (Number.isInteger(n) ? n.toString() : n.toFixed(2));
 }
 
+/** One row of the member's real gift history (GET /api/profile → giving). */
+type GiftRow = { amount: number; weekly: boolean; createdAt: number };
+
 type Session =
   | { kind: "loading" }
   | { kind: "guest" }
   | { kind: "member"; user: SafeUser; requests: SupportRequest[] };
 
-export default function GiveTab() {
+export default function GiveTab({ openPlan }: { openPlan?: () => void }) {
   const [session, setSession] = useState<Session>({ kind: "loading" });
 
   useEffect(() => {
@@ -61,6 +65,7 @@ export default function GiveTab() {
         <SignedInGive
           user={session.user}
           requests={session.requests}
+          openPlan={openPlan}
           addRequest={(r) =>
             setSession((s) =>
               s.kind === "member" ? { ...s, requests: [...s.requests, r] } : s
@@ -80,7 +85,7 @@ export default function GiveTab() {
           }
         />
       ) : (
-        <DemoGive />
+        <DemoGive openPlan={openPlan} />
       )}
     </div>
   );
@@ -92,11 +97,13 @@ function SignedInGive({
   requests,
   addRequest,
   replaceRequest,
+  openPlan,
 }: {
   user: SafeUser;
   requests: SupportRequest[];
   addRequest: (r: SupportRequest) => void;
   replaceRequest: (tempId: string, r: SupportRequest | null) => void;
+  openPlan?: () => void;
 }) {
   const slug = user.slug!;
   const balances = user.balances ?? { cash: 0, credits: 0, savings: 0 };
@@ -105,6 +112,23 @@ function SignedInGive({
   const [target, setTarget] = useState("");
   const [posting, setPosting] = useState(false);
   const [formError, setFormError] = useState("");
+  // Real gift history - null until loaded; failures just hide the section.
+  const [gifts, setGifts] = useState<GiftRow[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && Array.isArray(data?.giving?.donations)) {
+          setGifts(data.giving.donations);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const ask = async () => {
     const weeklyTarget = parseInt(target, 10);
@@ -178,7 +202,8 @@ function SignedInGive({
             </Link>
             <button
               type="button"
-              className="inline-flex h-9 cursor-pointer items-center rounded-full border-[1.5px] border-white/40 px-4 text-[12px] font-bold text-white"
+              onClick={() => window.print()}
+              className="inline-flex h-9 cursor-pointer items-center rounded-full border-[1.5px] border-white/40 px-4 text-[12px] font-bold text-white hover:bg-white/10"
             >
               Print card
             </button>
@@ -221,13 +246,60 @@ function SignedInGive({
             {money(balances.savings)}
           </div>
         </div>
-        <button
-          type="button"
-          className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-success px-5 text-[13px] font-bold text-success hover:bg-[#E8F8F0]"
-        >
-          Save more
-        </button>
+        {openPlan && (
+          <button
+            type="button"
+            onClick={openPlan}
+            className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-success px-5 text-[13px] font-bold text-success hover:bg-[#E8F8F0]"
+          >
+            Save more
+          </button>
+        )}
       </div>
+
+      {/* Recent activity - the member's real gift history */}
+      {gifts !== null && (
+        <>
+          <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
+            RECENT ACTIVITY
+          </div>
+          {gifts.length === 0 ? (
+            <div className="rounded-2xl bg-white px-5 py-4 text-[13px] text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              No gifts yet - share your QR code and every gift shows up here.
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]">
+              {gifts.map((g, i) => (
+                <div
+                  key={g.createdAt + "-" + i}
+                  className={
+                    "flex items-center gap-3.5 px-5 py-4" +
+                    (i < gifts.length - 1 ? " border-b border-canvas" : "")
+                  }
+                >
+                  <span className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#E8F8F0] text-[16px] font-extrabold text-success">
+                    +
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14px] font-bold text-ink-900">
+                      Gift received · {money(g.amount)}
+                      {g.weekly && (
+                        <span className="ml-2 rounded-full bg-sky-tint px-2 py-0.5 text-[10px] font-bold text-blue-primary">
+                          WEEKLY
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[12px] text-ink-600">
+                      {money(g.amount / 2)} Cash · {money(g.amount / 2)} Reentry
+                      Fund · {timeAgo(g.createdAt)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Support requests - real progress */}
       <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
@@ -327,8 +399,8 @@ function SignedInGive({
   );
 }
 
-/* ── Signed-out: the original Danielle demo content, untouched ────────── */
-function DemoGive() {
+/* ── Signed-out: the original Danielle demo content ───────────────────── */
+function DemoGive({ openPlan }: { openPlan?: () => void }) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-5">
       {/* QR card */}
@@ -361,7 +433,8 @@ function DemoGive() {
             </Link>
             <button
               type="button"
-              className="inline-flex h-9 cursor-pointer items-center rounded-full border-[1.5px] border-white/40 px-4 text-[12px] font-bold text-white"
+              onClick={() => window.print()}
+              className="inline-flex h-9 cursor-pointer items-center rounded-full border-[1.5px] border-white/40 px-4 text-[12px] font-bold text-white hover:bg-white/10"
             >
               Print card
             </button>
@@ -411,12 +484,15 @@ function DemoGive() {
             $240
           </div>
         </div>
-        <button
-          type="button"
-          className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-success px-5 text-[13px] font-bold text-success hover:bg-[#E8F8F0]"
-        >
-          Save more
-        </button>
+        {openPlan && (
+          <button
+            type="button"
+            onClick={openPlan}
+            className="inline-flex h-11 cursor-pointer items-center rounded-full border-[1.5px] border-success px-5 text-[13px] font-bold text-success hover:bg-[#E8F8F0]"
+          >
+            Save more
+          </button>
+        )}
       </div>
 
       {/* Recent activity */}

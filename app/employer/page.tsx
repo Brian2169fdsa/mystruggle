@@ -28,6 +28,7 @@ export default function EmployerEntryPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [pledge, setPledge] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -63,6 +64,10 @@ export default function EmployerEntryPage() {
     if (!email.includes("@")) return setError("Please enter a valid email.");
     if (password.length < 6)
       return setError("Password needs at least 6 characters.");
+    if (mode === "signup" && !pledge)
+      return setError(
+        "Please sign the Fair-Chance Pledge - it's how members know every posting here is safe."
+      );
 
     setBusy(true);
     try {
@@ -78,6 +83,7 @@ export default function EmployerEntryPage() {
                   name: name.trim(),
                   email: email.trim(),
                   password,
+                  pledge: true,
                 }
               : { email: email.trim(), password }
           ),
@@ -248,6 +254,29 @@ export default function EmployerEntryPage() {
               />
             </label>
 
+            {mode === "signup" && (
+              <div className="rounded-xl border-[1.5px] border-blue-primary/35 bg-sky-tint p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={pledge}
+                    onChange={(e) => setPledge(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 flex-none cursor-pointer rounded accent-[#2E7CD6]"
+                  />
+                  <span className="text-[13px]/[1.65] font-medium text-ink-900">
+                    <span className="font-extrabold">
+                      The Fair-Chance Pledge.
+                    </span>{" "}
+                    We hire based on qualifications. We consider records
+                    individually, consistent with EEOC guidance - never as a
+                    blanket exclusion. We won&apos;t ask anyone to disclose
+                    recovery or justice history beyond the lawful
+                    background-check process.
+                  </span>
+                </label>
+              </div>
+            )}
+
             {error && (
               <div className="rounded-xl bg-heart-bg px-4 py-3 text-[13.5px]/[1.6] font-semibold text-heart-red">
                 {error}
@@ -256,7 +285,7 @@ export default function EmployerEntryPage() {
 
             <button
               type="submit"
-              disabled={busy || checking}
+              disabled={busy || checking || (mode === "signup" && !pledge)}
               className="inline-flex h-[54px] cursor-pointer items-center justify-center rounded-full bg-blue-primary text-[16px] font-extrabold text-white shadow-[0_8px_20px_rgba(46,124,214,.35)] hover:bg-blue-hover disabled:cursor-default disabled:opacity-60"
             >
               {busy
