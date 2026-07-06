@@ -1,5 +1,19 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import {
+  Heart,
+  Users,
+  Activity,
+  Home as HomeIcon,
+  ArrowRight,
+  MessagesSquare,
+  CircleDot,
+  LifeBuoy,
+  ShieldCheck,
+  Smartphone,
+  Compass,
+  LayoutDashboard,
+  HeartHandshake,
+} from "lucide-react";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import PrototypeMap from "./components/PrototypeMap";
@@ -210,6 +224,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* THE CONTINUUM OF CARE */}
+      <TheContinuum />
+
       {/* EST. 2021 MANIFESTO */}
       <section className="relative overflow-hidden bg-navy-deep">
         <div className="absolute -top-[30px] left-10 hidden whitespace-nowrap text-[220px]/[1] font-extrabold tracking-[-0.02em] text-white/[.04] lg:block">
@@ -308,11 +325,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* THE RECOVERY COMMUNITY (expanded community teaser) */}
+      <CommunityTeaser />
+
+      {/* PLATFORM AT A GLANCE */}
+      <PlatformAtAGlance />
+
       {/* SOCIAL WALL */}
       <SocialWall />
-
-      {/* COMMUNITY TEASER */}
-      <CommunityTeaser />
 
       {/* EMPLOYER BAND */}
       <EmployerBand />
@@ -409,6 +429,282 @@ const FAQ = [
   },
 ];
 
+/* ---------------------------------------------------------------- */
+/* THE CONTINUUM OF CARE — the platform thesis on the home page      */
+/* ---------------------------------------------------------------- */
+
+const CONTINUUM_STAGES = [
+  {
+    key: "BEFORE CARE",
+    tag: "PRE-CENTER",
+    icon: Users,
+    accent: "#2E7CD6",
+    lines: [
+      "Joins the community from a QR flyer, sets goals, the Guide checks in.",
+      "Recovery capital measured before day one.",
+    ],
+  },
+  {
+    key: "IN A PROGRAM",
+    tag: "IN-CENTER",
+    icon: Activity,
+    accent: "#4E5B9B",
+    lines: [
+      "Program group channels, courses, streaks, mentor sessions.",
+      "Engagement measured the same inside and out.",
+    ],
+  },
+  {
+    key: "AFTER CARE",
+    tag: "POST-CENTER",
+    icon: HomeIcon,
+    accent: "#12B76A",
+    lines: [
+      "Housed, working, still posting wins; 30 / 60 / 90-day check-ins.",
+      "A center sees the whole arc.",
+    ],
+  },
+];
+
+/** Rising engagement rail spanning the three stages (sky-tint→blue→indigo→green). */
+function ContinuumRail() {
+  return (
+    <div className="w-full">
+      <svg
+        viewBox="0 0 600 70"
+        className="h-auto w-full"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label="One continuous engagement timeline rising from before care, through a program, to after care."
+      >
+        <defs>
+          <linearGradient id="ms-cont-rail" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#8FBCF0" />
+            <stop offset="42%" stopColor="#2E7CD6" />
+            <stop offset="72%" stopColor="#4E5B9B" />
+            <stop offset="100%" stopColor="#12B76A" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M20,58 C150,58 150,40 300,34 C450,28 470,18 580,12"
+          fill="none"
+          stroke="url(#ms-cont-rail)"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        {[
+          { x: 20, y: 58, c: "#8FBCF0" },
+          { x: 300, y: 34, c: "#2E7CD6" },
+          { x: 580, y: 12, c: "#12B76A" },
+        ].map((d) => (
+          <circle
+            key={d.x}
+            cx={d.x}
+            cy={d.y}
+            r="6"
+            fill="#0B2545"
+            stroke={d.c}
+            strokeWidth="3.5"
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function TheContinuum() {
+  return (
+    <section className="relative overflow-hidden bg-navy-deep">
+      <div className="absolute -top-6 left-8 hidden whitespace-nowrap text-[180px]/[1] font-extrabold tracking-[-0.02em] text-white/[.04] lg:block">
+        CONTINUUM
+      </div>
+      <div className="relative mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
+        <div className="mx-auto max-w-[760px] text-center">
+          <div className="text-[12px] font-bold uppercase tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
+            The continuum of care
+          </div>
+          <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-white lg:text-[48px]/[1.1]">
+            We stay with people before, during, and after a{" "}
+            <span className="script text-[44px] text-[#A9B4E8] lg:text-[60px]">
+              center
+            </span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-[640px] text-base/[1.7] text-white/75 lg:text-[17px]">
+            Recovery doesn&apos;t start at intake or end at discharge. My
+            Struggle follows a person&apos;s engagement from their first day in
+            the community, through their program, and for years after — one
+            continuous record.
+          </p>
+        </div>
+
+        {/* rising engagement rail */}
+        <div className="mx-auto mt-10 max-w-[900px] lg:mt-[52px]">
+          <ContinuumRail />
+        </div>
+
+        {/* three connected stage panels */}
+        <div className="mt-6 flex flex-col gap-4 lg:mt-8 lg:flex-row lg:items-stretch lg:gap-3">
+          {CONTINUUM_STAGES.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <div
+                key={s.key}
+                className="flex flex-1 items-stretch lg:contents"
+              >
+                <div className="flex w-full flex-col rounded-2xl border border-white/10 bg-white/[.06] p-6 lg:p-7">
+                  <div
+                    className="mb-4 h-1 w-12 rounded-full"
+                    style={{ backgroundColor: s.accent }}
+                  />
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex h-10 w-10 flex-none items-center justify-center rounded-xl"
+                      style={{ backgroundColor: s.accent }}
+                    >
+                      <Icon size={18} className="text-white" strokeWidth={2.2} />
+                    </span>
+                    <div>
+                      <div className="text-[11px] font-bold tracking-[.1em] text-white/50">
+                        {s.tag}
+                      </div>
+                      <div className="text-[17px] font-extrabold tracking-[-0.01em] text-white lg:text-[18px]">
+                        {s.key}
+                      </div>
+                    </div>
+                  </div>
+                  <ul className="mt-4 flex flex-col gap-2.5">
+                    {s.lines.map((l) => (
+                      <li
+                        key={l}
+                        className="flex gap-2.5 text-[14px]/[1.6] text-white/85"
+                      >
+                        <span
+                          className="mt-[7px] h-1.5 w-1.5 flex-none rounded-full"
+                          style={{ backgroundColor: s.accent }}
+                        />
+                        {l}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {i < CONTINUUM_STAGES.length - 1 && (
+                  <div className="hidden items-center px-1 lg:flex">
+                    <ArrowRight size={22} className="text-white/35" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mx-auto mt-8 max-w-[680px] text-center text-[16px]/[1.6] font-semibold text-white lg:mt-10 lg:text-[18px]">
+          Every post, lesson, session, and gift becomes a point on one timeline.
+        </p>
+
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
+          <Link
+            href="/centers"
+            className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-[34px] text-base font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.4)] hover:bg-blue-hover sm:w-auto"
+            style={{ color: "#fff" }}
+          >
+            How it works for centers <ArrowRight size={16} />
+          </Link>
+          <Link
+            href="/community"
+            className="inline-flex h-[52px] w-full items-center justify-center rounded-full border-[1.5px] border-white/85 bg-[rgba(11,37,69,.35)] px-[34px] text-base font-bold text-white hover:bg-white/[.12] sm:w-auto"
+            style={{ color: "#fff", borderColor: "rgba(255,255,255,.85)" }}
+          >
+            Join the community →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/* PLATFORM AT A GLANCE — every surface, linked                      */
+/* ---------------------------------------------------------------- */
+
+const SURFACES = [
+  {
+    icon: Smartphone,
+    title: "Member app",
+    desc: "Courses, streaks, goals, mentor chat, and the community feed — in a pocket.",
+    href: "/member-app",
+  },
+  {
+    icon: Compass,
+    title: "Mentor app",
+    desc: "Message members, log mood check-ins, and quietly escalate concern to the care team.",
+    href: "/mentor-app",
+  },
+  {
+    icon: LayoutDashboard,
+    title: "Center dashboard",
+    desc: "Live KPIs, roster, moderation queue, giving desk, and outcome reports in one place.",
+    href: "/dashboard",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Public giving page",
+    desc: "Scan a member's QR code and give directly — half cash now, half held for reentry.",
+    href: "/give",
+  },
+];
+
+function PlatformAtAGlance() {
+  return (
+    <section className="bg-canvas">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
+        <div className="mx-auto max-w-[680px] text-center">
+          <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
+            One platform, every surface
+          </div>
+          <h2 className="mt-3.5 text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
+            Platform at a{" "}
+            <span className="script text-[44px] lg:text-[60px]">glance</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-[560px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+            The whole thing is explorable right now — nothing hidden. Open any
+            screen and look around.
+          </p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-[56px] lg:grid-cols-4 lg:gap-6">
+          {SURFACES.map((s) => {
+            const Icon = s.icon;
+            return (
+              <Link
+                key={s.title}
+                href={s.href}
+                className="flex flex-col rounded-2xl border border-sky-tint bg-white p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)] hover:bg-sky-tint hover:shadow-[0_8px_24px_rgba(11,37,69,.1)]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)] shadow-[0_4px_12px_rgba(46,124,214,.28)]">
+                  <Icon size={20} className="text-white" strokeWidth={2.1} />
+                </span>
+                <div className="mt-4 text-[19px] font-bold text-ink-900">
+                  {s.title}
+                </div>
+                <p className="mt-2 flex-1 text-[14px]/[1.65] text-ink-600">
+                  {s.desc}
+                </p>
+                <span className="mt-4 inline-flex min-h-[24px] items-center gap-1.5 text-[15px] font-bold text-blue-primary">
+                  Open <ArrowRight size={15} />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <p className="mt-8 text-center text-[13px] font-medium text-ink-400">
+          Explore the demo — logins on each screen.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function EmployerBand() {
   return (
     <section className="bg-navy-deep">
@@ -446,27 +742,76 @@ function EmployerBand() {
   );
 }
 
+const COMMUNITY_FEATURES = [
+  {
+    icon: MessagesSquare,
+    title: "Share your journey",
+    desc: "A feed for wins and milestones, honest hard days, and asking for support — met by people who get it.",
+  },
+  {
+    icon: Users,
+    title: "Circles",
+    desc: "Job Seekers, New in Recovery, Parents in Recovery, and center alumni — smaller rooms for your people.",
+  },
+  {
+    icon: LifeBuoy,
+    title: "Support board",
+    desc: "Raise a hand for rent, work boots, or a bus pass — donors give directly to the need.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Safe by design",
+    desc: "Crisis language is held for a human, every space is staff-moderated, and 988 is always one tap away.",
+  },
+];
+
 function CommunityTeaser() {
   return (
     <section className="bg-canvas">
       <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
-        <div className="mx-auto flex max-w-[680px] flex-col items-center gap-3.5 text-center">
+        <div className="mx-auto flex max-w-[720px] flex-col items-center gap-3.5 text-center">
           <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary lg:text-[13px]">
-            The community
+            The recovery community
           </div>
-          <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[44px]/[1.1]">
-            One feed, five hundred journeys, zero{" "}
-            <span className="script text-[42px] text-indigo-brand lg:text-[56px]">
-              judgment
+          <h2 className="text-[34px]/[1.12] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[48px]/[1.1]">
+            A community that follows you into the{" "}
+            <span className="script text-[44px] text-indigo-brand lg:text-[60px]">
+              world
             </span>
           </h2>
-          <div className="text-base text-ink-600">
-            Members and mentors share wins, jobs, housing leads, and support
-            requests — and anyone can give directly.
+          <div className="max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
+            A recovery-first, moderated, peer network. Members and mentors share
+            wins, jobs, and housing leads, join circles for their people, and
+            ask for support — and anyone can give directly.
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3 lg:mt-[52px] lg:gap-6">
+        {/* feature row */}
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4 lg:gap-6">
+          {COMMUNITY_FEATURES.map((f) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={f.title}
+                className="flex flex-col rounded-2xl border border-sky-tint bg-white p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-tint">
+                  <Icon size={20} className="text-blue-primary" strokeWidth={2.1} />
+                </span>
+                <div className="mt-4 text-[17px] font-bold text-ink-900">
+                  {f.title}
+                </div>
+                <p className="mt-2 text-[14px]/[1.65] text-ink-600">{f.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* sample posts */}
+        <div className="mt-6 text-center text-[11px] font-bold uppercase tracking-[.1em] text-ink-400 lg:mt-10">
+          A look at the feed
+        </div>
+        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3 lg:gap-6">
           {/* Win post */}
           <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
             <div className="flex items-center gap-2.5">

@@ -2,37 +2,85 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Heart, Menu, X } from "lucide-react";
+import {
+  Activity,
+  BookOpen,
+  Briefcase,
+  ChevronDown,
+  Gift,
+  GraduationCap,
+  Heart,
+  HeartHandshake,
+  LayoutDashboard,
+  Menu,
+  MessageCircle,
+  QrCode,
+  ScrollText,
+  Smartphone,
+  Sparkles,
+  Target,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const WORDMARK_WHITE =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2843%29-1920w.png";
 
-const PROGRAM_LINKS = [
-  { href: "/about", label: "Position of Neutrality" },
-  { href: "/mentor", label: "Peer Mentorship" },
-  { href: "/giving", label: "QR Code Giving" },
+type DrawerItem = { href: string; label: string; icon: LucideIcon };
+type DrawerGroup = { heading: string; items: DrawerItem[] };
+
+/** Platform accordion — mirrors the desktop mega-menu groups. */
+const PLATFORM_GROUPS: DrawerGroup[] = [
+  {
+    heading: "The Community",
+    items: [
+      { href: "/community", label: "Community feed", icon: MessageCircle },
+      { href: "/community", label: "Circles", icon: Users },
+      { href: "/giving", label: "QR Code Giving", icon: QrCode },
+    ],
+  },
+  {
+    heading: "For Members",
+    items: [
+      { href: "/member-app", label: "Member app", icon: Smartphone },
+      { href: "/member-app", label: "Learn & programs", icon: GraduationCap },
+      { href: "/member-app", label: "Goals & résumé", icon: Target },
+      { href: "/member-app", label: "The Guide", icon: Sparkles },
+    ],
+  },
+  {
+    heading: "Programs & Mentors",
+    items: [
+      { href: "/about", label: "Position of Neutrality", icon: BookOpen },
+      { href: "/mentor", label: "Peer Mentorship", icon: HeartHandshake },
+      { href: "/mentor", label: "Become a Mentor", icon: UserPlus },
+    ],
+  },
 ];
 
-const CENTER_LINKS = [
-  { href: "/dashboard", label: "Center dashboard" },
-  { href: "/member-app", label: "Member app" },
-  { href: "/mentor-app", label: "Mentor app" },
+const CENTER_ITEMS: DrawerItem[] = [
+  { href: "/centers", label: "Platform overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Center dashboard", icon: Activity },
+  { href: "/mentor-app", label: "Mentor app", icon: Smartphone },
 ];
 
-const DONATE_LINKS = [
-  { href: "/donate", label: "Give monthly" },
-  { href: "/give", label: "Give to a member" },
-  { href: "/mentor", label: "Donate items or time" },
+const DONATE_ITEMS: DrawerItem[] = [
+  { href: "/donate", label: "Give monthly", icon: HeartHandshake },
+  { href: "/give", label: "Give to a member", icon: QrCode },
+  { href: "/mentor", label: "Donate items or time", icon: Gift },
+  { href: "/giving", label: "How giving works", icon: ScrollText },
 ];
 
 /**
  * Mobile nav drawer (below lg) — hamburger trigger + full-screen navy-deep
- * panel sliding in from the right. Desktop nav/mega-menu is untouched; this
- * component renders nothing visible at lg+.
+ * panel. Mirrors the desktop Platform / Donate mega-menus as tidy expandable
+ * accordion groups. Renders nothing visible at lg+.
  */
 export default function NavDrawer() {
   const [open, setOpen] = useState(false);
-  const [programsOpen, setProgramsOpen] = useState(false);
+  const [platformOpen, setPlatformOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
 
   useEffect(() => {
@@ -46,6 +94,29 @@ export default function NavDrawer() {
 
   const rowClass =
     "flex min-h-[52px] items-center border-b border-white/10 py-2.5";
+  const accordionBtnClass =
+    rowClass +
+    " w-full cursor-pointer justify-between bg-transparent p-0 py-2.5 text-left text-[20px] font-bold text-white";
+
+  const renderItem = (item: DrawerItem, muted = false) => {
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.label + item.href + (muted ? "-c" : "")}
+        href={item.href}
+        onClick={close}
+        className={
+          "flex min-h-11 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-semibold hover:bg-white/[.08] " +
+          (muted ? "text-white/70" : "text-white/90")
+        }
+      >
+        <span className="grid h-8 w-8 flex-none place-items-center rounded-[9px] bg-white/10 text-[#9DBEEC]">
+          <Icon size={16} />
+        </span>
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -91,66 +162,50 @@ export default function NavDrawer() {
             About us
           </Link>
 
+          {/* Platform accordion */}
           <button
             type="button"
-            onClick={() => setProgramsOpen((v) => !v)}
-            className={
-              rowClass +
-              " w-full cursor-pointer justify-between bg-transparent p-0 py-2.5 text-left text-[20px] font-bold text-white"
-            }
-            aria-expanded={programsOpen}
+            onClick={() => setPlatformOpen((v) => !v)}
+            className={accordionBtnClass}
+            aria-expanded={platformOpen}
           >
-            Programs
+            Platform
             <ChevronDown
               size={20}
               className={
                 "text-[#8FBCF0] transition-transform " +
-                (programsOpen ? "rotate-180" : "")
+                (platformOpen ? "rotate-180" : "")
               }
             />
           </button>
-          {programsOpen && (
-            <div className="flex flex-col border-b border-white/10 py-3">
-              {PROGRAM_LINKS.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  onClick={close}
-                  className="flex min-h-11 items-center rounded-xl px-3 text-[16px] font-semibold text-white/85 hover:bg-white/[.08]"
-                >
-                  {l.label}
-                </Link>
+          {platformOpen && (
+            <div className="flex flex-col gap-3 border-b border-white/10 py-3">
+              {PLATFORM_GROUPS.map((group) => (
+                <div key={group.heading} className="flex flex-col">
+                  <div className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-[.14em] text-[#8FBCF0]">
+                    {group.heading}
+                  </div>
+                  {group.items.map((item) => renderItem(item))}
+                </div>
               ))}
-              <div className="mt-2 px-3 text-[11px] font-bold tracking-[.12em] text-[#8FBCF0]">
-                FOR CENTERS
+              <div className="flex flex-col">
+                <div className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-[.14em] text-[#8FBCF0]">
+                  For recovery centers
+                </div>
+                {CENTER_ITEMS.map((item) => renderItem(item, true))}
               </div>
-              {CENTER_LINKS.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  onClick={close}
-                  className="flex min-h-11 items-center rounded-xl px-3 text-[15px] font-semibold text-white/70 hover:bg-white/[.08]"
-                >
-                  {l.label} →
-                </Link>
-              ))}
             </div>
           )}
 
           <Link href="/community" onClick={close} className={rowClass}>
             Community
           </Link>
-          <Link href="/giving" onClick={close} className={rowClass}>
-            Giving
-          </Link>
 
+          {/* Donate accordion */}
           <button
             type="button"
             onClick={() => setDonateOpen((v) => !v)}
-            className={
-              rowClass +
-              " w-full cursor-pointer justify-between bg-transparent p-0 py-2.5 text-left text-[20px] font-bold text-white"
-            }
+            className={accordionBtnClass}
             aria-expanded={donateOpen}
           >
             Donate today
@@ -163,35 +218,28 @@ export default function NavDrawer() {
             />
           </button>
           {donateOpen && (
-            <div className="flex flex-col border-b border-white/10 py-3">
-              {DONATE_LINKS.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  onClick={close}
-                  className="flex min-h-11 items-center rounded-xl px-3 text-[16px] font-semibold text-white/85 hover:bg-white/[.08]"
-                >
-                  {l.label}
-                </Link>
-              ))}
-              <div className="mt-2 px-3 text-[11px] font-bold tracking-[.12em] text-[#8FBCF0]">
-                DIRECT SUPPORT
+            <div className="flex flex-col gap-3 border-b border-white/10 py-3">
+              <div className="flex flex-col">
+                {DONATE_ITEMS.map((item) => renderItem(item))}
               </div>
-              <Link
-                href="/give"
-                onClick={close}
-                className="flex min-h-11 items-center rounded-xl px-3 text-[15px] font-semibold text-white/70 hover:bg-white/[.08]"
-              >
-                Danielle&rsquo;s giving page →
-              </Link>
+              <div className="flex flex-col">
+                <div className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-[.14em] text-[#8FBCF0]">
+                  For employers
+                </div>
+                <a
+                  href="mailto:info@themystruggles.com"
+                  onClick={close}
+                  className="flex min-h-11 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-semibold text-white/70 hover:bg-white/[.08]"
+                >
+                  <span className="grid h-8 w-8 flex-none place-items-center rounded-[9px] bg-white/10 text-[#9DBEEC]">
+                    <Briefcase size={16} />
+                  </span>
+                  Post jobs to the community
+                </a>
+              </div>
             </div>
           )}
-          <Link href="/mentor" onClick={close} className={rowClass}>
-            Become a Mentor
-          </Link>
-          <Link href="/centers" onClick={close} className={rowClass}>
-            For centers
-          </Link>
+
           <Link href="/login" onClick={close} className={rowClass}>
             Sign in
           </Link>

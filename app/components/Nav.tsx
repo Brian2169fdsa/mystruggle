@@ -1,14 +1,183 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BookOpen,
+  Briefcase,
+  Gift,
+  GraduationCap,
+  Heart,
+  HeartHandshake,
+  LayoutDashboard,
+  MessageCircle,
+  QrCode,
+  ScrollText,
+  Smartphone,
+  Sparkles,
+  Target,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import NavDrawer from "./NavDrawer";
 
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
 
+type Item = {
+  href: string;
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+};
+
+type Section = {
+  heading: string;
+  items: Item[];
+};
+
+/** Grouped columns for the Platform mega-menu. */
+const PLATFORM_SECTIONS: Section[] = [
+  {
+    heading: "The Community",
+    items: [
+      {
+        href: "/community",
+        title: "Community feed",
+        desc: "Wins, circles, and support — a recovery-first network",
+        icon: MessageCircle,
+      },
+      {
+        href: "/community",
+        title: "Circles",
+        desc: "Topic & alumni groups",
+        icon: Users,
+      },
+      {
+        href: "/giving",
+        title: "QR Code Giving",
+        desc: "Half now, half held for reentry",
+        icon: QrCode,
+      },
+    ],
+  },
+  {
+    heading: "For Members",
+    items: [
+      {
+        href: "/member-app",
+        title: "Member app",
+        desc: "Home, tracker, streaks",
+        icon: Smartphone,
+      },
+      {
+        href: "/member-app",
+        title: "Learn & programs",
+        desc: "Courses by program: PON · VOC · IOP · NAV",
+        icon: GraduationCap,
+      },
+      {
+        href: "/member-app",
+        title: "Goals & résumé",
+        desc: "My Plan, job search, résumé builder",
+        icon: Target,
+      },
+      {
+        href: "/member-app",
+        title: "The Guide",
+        desc: "24/7 recovery companion",
+        icon: Sparkles,
+      },
+    ],
+  },
+  {
+    heading: "Programs & Mentors",
+    items: [
+      {
+        href: "/about",
+        title: "Position of Neutrality",
+        desc: "The 8-course ISE curriculum",
+        icon: BookOpen,
+      },
+      {
+        href: "/mentor",
+        title: "Peer Mentorship",
+        desc: "Walk with someone who's been there",
+        icon: HeartHandshake,
+      },
+      {
+        href: "/mentor",
+        title: "Become a Mentor",
+        desc: "Lived experience is the qualification",
+        icon: UserPlus,
+      },
+    ],
+  },
+];
+
+/** Bottom strip of the Platform mega-menu. */
+const CENTER_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/centers", label: "Platform overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Center dashboard", icon: Activity },
+  { href: "/mentor-app", label: "Mentor app", icon: Smartphone },
+];
+
+/** Column items for the Donate mega-menu. */
+const DONATE_ITEMS: Item[] = [
+  {
+    href: "/donate",
+    title: "Give monthly",
+    desc: "Tiers from $25",
+    icon: HeartHandshake,
+  },
+  {
+    href: "/give",
+    title: "Give to a member",
+    desc: "Scan a QR or visit their page — 50/50 split",
+    icon: QrCode,
+  },
+  {
+    href: "/mentor",
+    title: "Donate items or time",
+    desc: "Supplies or hands-on hours at a center",
+    icon: Gift,
+  },
+  {
+    href: "/giving",
+    title: "How giving works",
+    desc: "The 50/50 promise, explained",
+    icon: ScrollText,
+  },
+];
+
+/** A single icon-tile menu row (≥44px, hover:bg-sky-tint). */
+function MenuTile({ item }: { item: Item }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      className="group/tile flex items-start gap-3 rounded-xl p-2.5 hover:bg-sky-tint"
+    >
+      <span className="grid h-9 w-9 flex-none place-items-center rounded-[10px] bg-sky-tint text-blue-primary transition-colors group-hover/tile:bg-white">
+        <Icon size={17} strokeWidth={2} />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[15px] font-bold leading-tight text-ink-900">
+          {item.title}
+        </span>
+        <span className="mt-0.5 block text-[13px]/[1.35] text-ink-600">
+          {item.desc}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 /**
- * Sticky website nav with the Programs mega-menu (CSS-hover, kept open across
- * the 22px hover bridge) and the 3px indigo→blue gradient hairline.
- * Shared by all four marketing pages.
+ * Sticky website nav with two premium mega-menus — Platform (a wide, multi-
+ * column panel organizing every platform destination) and Donate — both using
+ * CSS-hover kept open across a 22px hover bridge, over the 3px indigo→blue
+ * hairline. Shared by all marketing pages; mobile mirror in NavDrawer.
  */
 export default function Nav() {
   return (
@@ -28,93 +197,92 @@ export default function Nav() {
             About us
           </Link>
 
-          {/* Programs — mega-menu on hover */}
+          {/* Platform — wide mega-menu on hover; top-level link → /centers */}
           <div className="group relative flex items-center">
-            <span className="flex cursor-pointer items-center gap-[5px] text-ink-900 group-hover:text-blue-primary">
-              Programs <span className="text-[10px] text-ink-600">▾</span>
-            </span>
+            <Link
+              href="/centers"
+              className="flex cursor-pointer items-center gap-[5px] text-ink-900 group-hover:text-blue-primary"
+            >
+              Platform <span className="text-[10px] text-ink-600">▾</span>
+            </Link>
             <div className="pointer-events-none absolute left-1/2 top-full z-[60] hidden -translate-x-1/2 pt-[22px] group-hover:pointer-events-auto group-hover:block">
-              <div className="w-[740px] overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(11,37,69,.25)]">
+              <div className="w-[900px] overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(11,37,69,.25)]">
                 <div className="hairline" />
-                <div className="grid grid-cols-[280px_1fr] gap-7 p-7">
-                  <Link
-                    href="/about"
-                    className="photo-ph relative block min-h-[250px] overflow-hidden rounded-xl"
-                  >
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(11,37,69,.85))]" />
-                    <div className="absolute bottom-0 p-[18px] text-white">
-                      <div className="text-base font-bold">
-                        Position of Neutrality
+                <div className="p-8">
+                  <div className="grid grid-cols-[260px_1fr] gap-8">
+                    {/* Featured card — The Continuum of Care */}
+                    <Link
+                      href="/centers"
+                      className="group/feat relative flex min-h-[300px] flex-col justify-end overflow-hidden rounded-2xl p-6 text-white"
+                    >
+                      <div className="photo-ph absolute inset-0" />
+                      <div className="absolute inset-0 bg-[linear-gradient(155deg,rgba(78,91,155,.94),rgba(11,37,69,.97))]" />
+                      <div className="relative">
+                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
+                          <Activity size={20} />
+                        </span>
+                        <div className="mt-4 text-[11px] font-bold uppercase tracking-[.16em] text-[#9DBEEC]">
+                          The Platform
+                        </div>
+                        <div className="mt-1.5 text-[20px] font-bold leading-tight">
+                          The Continuum of Care
+                        </div>
+                        <p className="mt-2 text-[13px]/[1.5] text-white/80">
+                          We follow a person before, during, and after a center
+                          — one continuous record.
+                        </p>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-white group-hover/feat:gap-2.5">
+                          Explore the platform
+                          <ArrowRight size={15} />
+                        </span>
                       </div>
-                      <div className="mt-1 text-[13px]/[1.5] italic text-white/80">
-                        &ldquo;Steady ground first. Everything else follows.&rdquo;
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      {
-                        href: "/about",
-                        title: "Position of Neutrality",
-                        desc: "The eight-course ISE curriculum, from surviving to becoming.",
-                      },
-                      {
-                        href: "/mentor",
-                        title: "Peer Mentorship",
-                        desc: "One-on-one guidance from someone who's walked your road.",
-                      },
-                      {
-                        href: "/giving",
-                        title: "QR Code Giving",
-                        desc: "Direct, accountable giving — half now, half held for reentry.",
-                      },
-                    ].map((it) => (
-                      <Link
-                        key={it.title}
-                        href={it.href}
-                        className="flex items-center gap-4 rounded-xl p-3 hover:bg-sky-tint"
-                      >
-                        <div className="h-[52px] w-[52px] flex-none rounded-[10px] bg-[repeating-linear-gradient(45deg,#D2E2F5_0_8px,#C3D8F0_8px_16px)]" />
-                        <div>
-                          <div className="text-[15px] font-bold text-ink-900">
-                            {it.title}
+                    </Link>
+
+                    {/* Three grouped columns */}
+                    <div className="grid grid-cols-3 gap-x-5 gap-y-5">
+                      {PLATFORM_SECTIONS.map((section) => (
+                        <div key={section.heading}>
+                          <div className="mb-1.5 px-2.5 text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
+                            {section.heading}
                           </div>
-                          <div className="text-[13px] text-ink-600">
-                            {it.desc}
+                          <div className="flex flex-col gap-0.5">
+                            {section.items.map((item) => (
+                              <MenuTile
+                                key={item.title + item.href}
+                                item={item}
+                              />
+                            ))}
                           </div>
                         </div>
-                      </Link>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-5 border-t border-sky-tint bg-canvas px-7 py-4">
-                  <span className="text-[12px] font-bold tracking-[.12em] text-indigo-brand">
-                    FOR CENTERS
-                  </span>
-                  <Link
-                    href="/centers"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
-                  >
-                    Platform overview →
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
-                  >
-                    Center dashboard →
-                  </Link>
-                  <Link
-                    href="/member-app"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
-                  >
-                    Member app →
-                  </Link>
-                  <Link
-                    href="/mentor-app"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
-                  >
-                    Mentor app →
-                  </Link>
+
+                  {/* Bottom strip — For recovery centers */}
+                  <div className="-mx-8 -mb-8 mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 rounded-b-2xl bg-canvas px-8 py-4">
+                    <span className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
+                      For recovery centers
+                    </span>
+                    {CENTER_LINKS.map((l) => {
+                      const Icon = l.icon;
+                      return (
+                        <Link
+                          key={l.href}
+                          href={l.href}
+                          className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
+                        >
+                          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-blue-primary shadow-[0_1px_3px_rgba(11,37,69,.10)]">
+                            <Icon size={14} />
+                          </span>
+                          {l.label}
+                          <ArrowRight
+                            size={13}
+                            className="transition-transform group-hover/link:translate-x-0.5"
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -127,10 +295,6 @@ export default function Nav() {
             Community
           </Link>
 
-          <Link href="/giving" className="text-ink-900 hover:text-blue-primary">
-            Giving
-          </Link>
-
           {/* Donate — mega-menu on hover; top-level link still navigates */}
           <div className="group relative flex items-center">
             <Link
@@ -139,82 +303,66 @@ export default function Nav() {
             >
               Donate today <span className="text-[10px] text-ink-600">▾</span>
             </Link>
-            <div className="pointer-events-none absolute left-1/2 top-full z-[60] hidden -translate-x-1/2 pt-[22px] group-hover:pointer-events-auto group-hover:block">
-              <div className="w-[640px] overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(11,37,69,.25)]">
+            <div className="pointer-events-none absolute right-0 top-full z-[60] hidden pt-[22px] group-hover:pointer-events-auto group-hover:block">
+              <div className="w-[660px] overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(11,37,69,.25)]">
                 <div className="hairline" />
-                <div className="grid grid-cols-[240px_1fr] gap-7 p-7">
-                  <Link
-                    href="/donate"
-                    className="photo-ph relative block min-h-[250px] overflow-hidden rounded-xl"
-                  >
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(11,37,69,.85))]" />
-                    <div className="absolute bottom-0 p-[18px] text-white">
-                      <div className="text-base font-bold">
-                        Every gift builds someone&rsquo;s way home
-                      </div>
-                      <div className="mt-1 text-[13px]/[1.5] italic text-white/80">
-                        &ldquo;$25 provides a week of essential services.&rdquo;
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      {
-                        href: "/donate",
-                        title: "Give monthly",
-                        desc: "Tiers from $25 — a week of essential services",
-                      },
-                      {
-                        href: "/give",
-                        title: "Give to a member",
-                        desc: "Scan a QR code or visit their page — half now, half for reentry",
-                      },
-                      {
-                        href: "/mentor",
-                        title: "Donate items or time",
-                        desc: "Give supplies or mentor at a center",
-                      },
-                      {
-                        href: "/giving",
-                        title: "How giving works",
-                        desc: "The 50/50 promise, explained",
-                      },
-                    ].map((it) => (
-                      <Link
-                        key={it.title}
-                        href={it.href}
-                        className="flex items-center gap-4 rounded-xl p-3 hover:bg-sky-tint"
-                      >
-                        <div className="h-[52px] w-[52px] flex-none rounded-[10px] bg-[repeating-linear-gradient(45deg,#D2E2F5_0_8px,#C3D8F0_8px_16px)]" />
-                        <div>
-                          <div className="text-[15px] font-bold text-ink-900">
-                            {it.title}
-                          </div>
-                          <div className="text-[13px] text-ink-600">
-                            {it.desc}
-                          </div>
+                <div className="p-8">
+                  <div className="grid grid-cols-[240px_1fr] gap-8">
+                    {/* Featured card */}
+                    <Link
+                      href="/donate"
+                      className="group/feat relative flex min-h-[280px] flex-col justify-end overflow-hidden rounded-2xl p-6 text-white"
+                    >
+                      <div className="photo-ph absolute inset-0" />
+                      <div className="absolute inset-0 bg-[linear-gradient(155deg,rgba(78,91,155,.94),rgba(11,37,69,.97))]" />
+                      <div className="relative">
+                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
+                          <Heart size={20} fill="currentColor" />
+                        </span>
+                        <div className="mt-4 text-[11px] font-bold uppercase tracking-[.16em] text-[#9DBEEC]">
+                          Give
                         </div>
-                      </Link>
-                    ))}
+                        <div className="mt-1.5 text-[20px] font-bold leading-tight">
+                          Every gift builds someone&rsquo;s way home
+                        </div>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-white group-hover/feat:gap-2.5">
+                          Donate today
+                          <ArrowRight size={15} />
+                        </span>
+                      </div>
+                    </Link>
+
+                    {/* Column of items */}
+                    <div className="flex flex-col gap-0.5">
+                      {DONATE_ITEMS.map((item) => (
+                        <MenuTile key={item.title + item.href} item={item} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-5 border-t border-sky-tint bg-canvas px-7 py-4">
-                  <span className="text-[12px] font-bold tracking-[.12em] text-indigo-brand">
-                    DIRECT SUPPORT
-                  </span>
-                  <Link
-                    href="/give"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-primary"
-                  >
-                    Danielle&rsquo;s giving page →
-                  </Link>
+
+                  {/* Bottom strip — For employers */}
+                  <div className="-mx-8 -mb-8 mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 rounded-b-2xl bg-canvas px-8 py-4">
+                    <span className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
+                      For employers
+                    </span>
+                    <a
+                      href="mailto:info@themystruggles.com"
+                      className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
+                    >
+                      <span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-blue-primary shadow-[0_1px_3px_rgba(11,37,69,.10)]">
+                        <Briefcase size={14} />
+                      </span>
+                      Post jobs to the community
+                      <ArrowRight
+                        size={13}
+                        className="transition-transform group-hover/link:translate-x-0.5"
+                      />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <Link href="/mentor" className="text-ink-900 hover:text-blue-primary">
-            Become a Mentor
-          </Link>
         </nav>
 
         <div className="flex items-center gap-2.5 lg:gap-[18px]">
