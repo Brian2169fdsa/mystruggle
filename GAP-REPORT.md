@@ -1,3 +1,80 @@
+# Gap Report — run 2026-07-06-11 (Supabase-ready: one-file schema + inert cutover seam)
+
+## Run 11 summary
+Made the whole platform **database-ready** without changing runtime behavior
+(the app still runs on the in-memory store; `DATA_BACKEND` defaults to `memory`).
+- **supabase/all-in-one.sql + supabase/RUN-IN-SUPABASE.md** — one paste-into-SQL-editor
+  file that builds the ENTIRE database: 41 tables, 142 RLS policies, the
+  employer-as-role model, and the outcomes/licensed plane. Transaction-safe
+  (`employer` baked into the `user_role` enum; no `ALTER TYPE ADD VALUE`).
+  VALIDATED end-to-end on PostgreSQL 16 applied as a single transaction.
+- **supabase/schema-run9-10.sql + policies-run9-10.sql** — notifications, events,
+  event_rsvps, member_blocks, post_reports (the Run 9/10 tables that had no SQL).
+- **supabase/apply-employer-role.sql** — reconciles the locked decision (employer =
+  profiles account, job_posts → profiles, standalone employers dropped).
+- **app/lib/supabase/{server,browser,index}.ts** — inert admin/anon clients +
+  dataBackend() flag. Not yet wired to any route.
+- **scripts/apply-supabase.mjs** + **SUPABASE-SETUP.md** — one-command DDL runner
+  + operator runbook (egress hosts, env vars, connection string, cutover, rotation).
+- Site: About hero now uses the real center photo (taller); Donate page carries
+  Danielle's spotlight (same image as home).
+
+## ENVIRONMENT BLOCKER (why cutover can't run from this session)
+The web session runs under a restricted network egress allowlist — outbound to the
+Supabase project host returns `host_not_allowed`. To connect from a session, the
+user must allowlist `uvswihqvmmwqqumofblu.supabase.co` + `*.pooler.supabase.com`
+(likely a NEW session after saving) AND add `SUPABASE_DB_URL` to `.env.local`.
+The one-file SQL is the workaround: it runs server-side in the Supabase SQL editor,
+needing neither egress nor the connection string.
+
+## MASTER "NOT DONE" LIST (authoritative — supersedes older per-run registers below)
+
+### A. Supabase go-live (schema ready; app not switched over)
+- A1. Run the one-file SQL in the Supabase SQL editor. *(user action)*
+- A2. Wire API routes to Supabase + flip `DATA_BACKEND=supabase`, route-by-route.
+      App still reads/writes the in-memory store. *(needs egress + SUPABASE_DB_URL)*
+- A3. AUTH CUTOVER — HMAC cookie → Supabase Auth so real signups/logins persist
+      across restarts. Until this, "create an account" won't durably stick.
+- A4. STRIPE — donations are simulated (no card charge). Needs keys + webhook →
+      record_donation().
+- A5. Port the deterministic demo seed (Danielle, 500 members, 2 centers) into
+      real tables so surfaces aren't empty post-cutover.
+- A6. SECURITY: rotate the Supabase keys pasted in chat + revoke the GitHub token.
+
+### B. Notifications / realtime
+- B1. Only 5 routes emit notifications; follow-up-due, job-match, and @mentions
+      don't yet emit.
+- B2. All delivery is polling (bell 45s, reports 30s, events) — no realtime; no
+      read receipts on member↔mentor or care-channel chat.
+
+### C. Community safety & depth
+- C1. Member report = file + mark-reviewed only. No hide-post / warn-author /
+      escalate-to-concern chain; a report does not auto-hide the post.
+- C2. Discovery is a member directory only — no circle/group browse surface.
+
+### D. Privacy / compliance
+- D1. Staff-readable BARC/résumé needs a consent gate (today member-private with
+      no staff path). Flagged privacy item.
+- D2. Privacy & Terms pages are templates — need counsel review before go-live.
+- D3. Licensed research plane is built but must NOT be granted to a real external
+      seat until BAA/IRB-grade governance + ToS are signed.
+
+### E. Not-yet-built features
+- E1. Real email (Resend) on employer signups / leads / reports — none send.
+- E2. Ad approval is rule-based, not a real Claude-review gate.
+- E3. Résumé/outcomes "export" is print/stub — no true PDF generation.
+- E4. `ms_admin` platform role — admin APIs still assume a single staff role;
+      per-center admin vs. platform admin not split.
+- E5. milestone → journey_task mirror not implemented.
+- E6. AI Companion (The Guide) context could go deeper (currently plan-aware,
+      rule-based, no external LLM).
+
+### F. Decisions still needed from the user
+- F1. Stripe keys. F2. Real donation-tier prices. F3. Any verbatim marketing copy
+      to lock. F4. Supabase egress + connection string (for in-session cutover).
+
+---
+
 # Gap Report — run 2026-07-06-10 (make it live: notification emission + real member reports)
 
 ## Run 10 summary
