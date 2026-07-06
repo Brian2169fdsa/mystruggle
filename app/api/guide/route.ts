@@ -12,14 +12,14 @@ import type {
   User,
 } from "@/app/lib/types";
 
-// The Guide — the member app's AI companion, made PLAN-AWARE. This endpoint
+// The Guide - the member app's AI companion, made PLAN-AWARE. This endpoint
 // assembles a grounded snapshot of the signed-in member's own plan (goals,
 // program, continuum activity, BARC trend, next follow-up) and answers with
 // warm, deterministic, rule-based guidance rooted in THAT context. No external
-// LLM call — every reply is canned and safe. Crisis language short-circuits to
+// LLM call - every reply is canned and safe. Crisis language short-circuits to
 // 988 + care-team resources and never returns generic advice.
 //
-// Voice rule (enforced in the copy below): member / mentor / journey — never
+// Voice rule (enforced in the copy below): member / mentor / journey - never
 // "client" / "case", never clinical/diagnostic.
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -45,7 +45,7 @@ function nextMilestone(
 }
 
 /** Build the plan-aware context for one member. Only ever reads THIS member's
- *  rows — never another member's data. */
+ *  rows - never another member's data. */
 function buildContext(user: User) {
   const database = db();
 
@@ -130,7 +130,7 @@ function buildContext(user: User) {
 type GuideContext = ReturnType<typeof buildContext>;
 
 /**
- * GET /api/guide — the signed-in member's plan-aware Guide context.
+ * GET /api/guide - the signed-in member's plan-aware Guide context.
  * Session-gated; members only (staff pass, but this is a member surface).
  */
 export async function GET() {
@@ -147,11 +147,11 @@ export async function GET() {
 // ── Canned, context-grounded reply engine ──────────────────────────────
 
 const CRISIS_REPLY = (name: string) =>
-  `${name}, thank you for telling me this — it matters, and you are not a burden.\n\n` +
-  `Please reach the 988 Suicide & Crisis Lifeline right now — call or text 988, ` +
+  `${name}, thank you for telling me this - it matters, and you are not a burden.\n\n` +
+  `Please reach the 988 Suicide & Crisis Lifeline right now - call or text 988, ` +
   `or chat at 988lifeline.org. It's free, confidential, and open 24/7.\n\n` +
   `If you're in immediate danger, call 911.\n\n` +
-  `Please also reach your care team today — your mentor and your center are ` +
+  `Please also reach your care team today - your mentor and your center are ` +
   `here for you and want to hear from you. You don't have to carry this alone.`;
 
 type Intent =
@@ -191,17 +191,17 @@ function cannedReply(message: string, ctx: GuideContext): string {
   switch (intent) {
     case "cravings": {
       const anchor = goal
-        ? `Picture "${goal.title}" — that's what today is buying you.`
+        ? `Picture "${goal.title}" - that's what today is buying you.`
         : `Picture the reason you started this journey.`;
       const streakLine = streak
         ? ` You've strung together a ${streak}-day streak, and an urge doesn't erase a single day of it.`
         : ``;
       return (
-        `${name}, an urge is a wave — it peaks and it passes, and you are still ` +
+        `${name}, an urge is a wave - it peaks and it passes, and you are still ` +
         `standing.${streakLine}\n\n` +
         `Try this right now: name it out loud, drink a full glass of water, and ` +
         `text one safe person before you do anything else. ${anchor}\n\n` +
-        `If it keeps climbing, message your mentor today — reaching out is a ` +
+        `If it keeps climbing, message your mentor today - reaching out is a ` +
         `strength, not a setback.`
       );
     }
@@ -210,15 +210,15 @@ function cannedReply(message: string, ctx: GuideContext): string {
         return (
           `${name}, this is a great moment to set your first recovery goal. ` +
           `Open your Plan and name one thing you want your journey to build ` +
-          `toward — I'll help you break it into small, doable steps.`
+          `toward - I'll help you break it into small, doable steps.`
         );
       }
       const step = goal.nextMilestone
         ? `Your next step is "${goal.nextMilestone}" (${goal.milestonesDone} of ${goal.milestonesTotal} milestones already behind you).`
-        : `You've cleared every milestone on it — time to name what "done" looks like.`;
+        : `You've cleared every milestone on it - time to name what "done" looks like.`;
       const whyLine = goal.why ? ` You told me why: "${goal.why}"` : ``;
       const second = goal2
-        ? `\n\nYou're also working toward "${goal2.title}" — one step at a time, both are within reach.`
+        ? `\n\nYou're also working toward "${goal2.title}" - one step at a time, both are within reach.`
         : ``;
       return (
         `${name}, you're moving on "${goal.title}." ${step}${whyLine}\n\n` +
@@ -228,7 +228,7 @@ function cannedReply(message: string, ctx: GuideContext): string {
     case "program": {
       const prog = ctx.program
         ? `You're active in your ${ctx.program}, and staying connected there is doing real work.`
-        : `Your center and mentor are your people — lean on them this week.`;
+        : `Your center and mentor are your people - lean on them this week.`;
       return (
         `${name}, ${prog}\n\n` +
         `Show up to your next group, say one honest thing, and let the cohort ` +
@@ -239,13 +239,13 @@ function cannedReply(message: string, ctx: GuideContext): string {
     case "checkin": {
       const barcLine = ctx.barc
         ? ctx.barc.trend === "rising"
-          ? `Your latest recovery self-check came in at ${ctx.barc.total} of 50 and it's trending up — that's momentum you built.`
+          ? `Your latest recovery self-check came in at ${ctx.barc.total} of 50 and it's trending up - that's momentum you built.`
           : ctx.barc.trend === "dipping"
-            ? `Your latest self-check was ${ctx.barc.total} of 50, a little below last time. Dips are data, not defeat — let's talk about what shifted.`
-            : `Your latest self-check held steady at ${ctx.barc.total} of 50 — steady is its own kind of strong.`
+            ? `Your latest self-check was ${ctx.barc.total} of 50, a little below last time. Dips are data, not defeat - let's talk about what shifted.`
+            : `Your latest self-check held steady at ${ctx.barc.total} of 50 - steady is its own kind of strong.`
         : `Whenever you're ready, a quick recovery self-check helps us see your journey clearly.`;
       const followLine = ctx.upcomingFollowUp
-        ? ` You have a ${ctx.upcomingFollowUp.dueDay}-day follow-up coming up — a good moment to reflect on how far you've come.`
+        ? ` You have a ${ctx.upcomingFollowUp.dueDay}-day follow-up coming up - a good moment to reflect on how far you've come.`
         : ``;
       const streakLine = streak
         ? ` And that ${streak}-day streak? That's you, showing up.`
@@ -265,7 +265,7 @@ function cannedReply(message: string, ctx: GuideContext): string {
         : ``;
       return (
         `${name}, I see you. ${activity}${streakLine}${goalLine}\n\n` +
-        `You don't have to do the whole journey today — just the next right thing. ` +
+        `You don't have to do the whole journey today - just the next right thing. ` +
         `I'm right here for it.`
       );
     }
@@ -273,7 +273,7 @@ function cannedReply(message: string, ctx: GuideContext): string {
 }
 
 /**
- * POST /api/guide — a warm, deterministic companion reply grounded in the
+ * POST /api/guide - a warm, deterministic companion reply grounded in the
  * member's real plan context. Rule-based only. Crisis language returns 988 +
  * care-team resources and never generic advice.
  */
@@ -294,7 +294,7 @@ export async function POST(req: Request) {
 
   const name = firstName(user.name);
 
-  // Safety first — crisis language short-circuits everything.
+  // Safety first - crisis language short-circuits everything.
   if (isCrisisText(message)) {
     return NextResponse.json({
       crisis: true,

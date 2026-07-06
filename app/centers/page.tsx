@@ -5,16 +5,16 @@ import PrototypeMap from "../components/PrototypeMap";
 import LeadForm from "./_components/LeadForm";
 
 export const metadata = {
-  title: "For Recovery Centers — My Struggle",
+  title: "For Recovery Centers - My Struggle",
   description:
-    "Member engagement, mentorship, learning programs, and accountable giving — the platform behind My Struggle's centers, built for yours.",
+    "Member engagement, mentorship, learning programs, and accountable giving - the platform behind My Struggle's centers, built for yours.",
 };
 
 /* ---------------------------------------------------------------- */
 /* Pure-CSS UI vignettes for the four pillar cards                   */
 /* ---------------------------------------------------------------- */
 
-/** Chat bubble pair — member↔mentor messaging. */
+/** Chat bubble pair - member↔mentor messaging. */
 function VignetteChat() {
   return (
     <div className="flex h-full flex-col justify-center gap-2.5 px-5">
@@ -22,7 +22,7 @@ function VignetteChat() {
         Rough morning. Made it to group anyway.
       </div>
       <div className="max-w-[78%] self-end rounded-2xl rounded-br-md bg-blue-primary px-3.5 py-2 text-[12px]/[1.5] font-medium text-white shadow-[0_2px_6px_rgba(46,124,214,.3)]">
-        That&apos;s the whole job — showing up. Proud of you.
+        That&apos;s the whole job - showing up. Proud of you.
       </div>
       <div className="mt-0.5 flex items-center gap-1.5 self-start text-[10px] font-bold tracking-[.04em] text-indigo-brand">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
@@ -32,7 +32,7 @@ function VignetteChat() {
   );
 }
 
-/** Course completion ring — programs and lessons. */
+/** Course completion ring - programs and lessons. */
 function VignetteCourse() {
   return (
     <div className="flex h-full items-center justify-center gap-4 px-5">
@@ -66,7 +66,7 @@ function VignetteCourse() {
   );
 }
 
-/** KPI row — dashboard at a glance. */
+/** KPI row - dashboard at a glance. */
 function VignetteKpis() {
   const kpis = [
     { chip: "PON", n: "128", indigo: false },
@@ -108,7 +108,7 @@ function VignetteKpis() {
   );
 }
 
-/** Moderation queue card — a held post awaiting staff review. */
+/** Moderation queue card - a held post awaiting staff review. */
 function VignetteModeration() {
   return (
     <div className="flex h-full items-center px-5">
@@ -142,7 +142,7 @@ function VignetteModeration() {
 const PILLARS = [
   {
     title: "Stay close to every client",
-    desc: "Secure member-to-mentor messaging with mood check-ins built into every conversation — and quiet concern escalation straight to your care team when something feels off.",
+    desc: "Secure member-to-mentor messaging with mood check-ins built into every conversation - and quiet concern escalation straight to your care team when something feels off.",
     href: "/mentor-app",
     vignette: <VignetteChat />,
   },
@@ -154,7 +154,7 @@ const PILLARS = [
   },
   {
     title: "Your learning management system",
-    desc: "Build curricula, track completion, and award points and levels — every completion updates the member's journey automatically, no spreadsheet in sight.",
+    desc: "Build curricula, track completion, and award points and levels - every completion updates the member's journey automatically, no spreadsheet in sight.",
     href: "/member-app",
     vignette: <VignetteKpis />,
   },
@@ -167,7 +167,7 @@ const PILLARS = [
 ];
 
 /* ---------------------------------------------------------------- */
-/* Continuum of care — phases + blind spots                          */
+/* Continuum of care - phases + blind spots                          */
 /* ---------------------------------------------------------------- */
 
 const PHASES = [
@@ -181,11 +181,11 @@ const PHASES = [
 const BLIND_SPOTS = [
   {
     tag: "Before",
-    copy: "No one sees the runway into treatment — we measure recovery capital before day one.",
+    copy: "No one sees the runway into treatment - we measure recovery capital before day one.",
   },
   {
     tag: "After",
-    copy: "Outcomes tracking dies at discharge — our community keeps the record alive for years.",
+    copy: "Outcomes tracking dies at discharge - our community keeps the record alive for years.",
   },
   {
     tag: "Engagement = efficacy",
@@ -193,14 +193,14 @@ const BLIND_SPOTS = [
   },
 ];
 
-/** Horizontal before/during/after ribbon — five connected phase segments. */
+/** Horizontal before/during/after ribbon - five connected phase segments. */
 function ContinuumRibbon() {
   return (
     <div className="w-full">
       <div
         className="flex w-full overflow-hidden rounded-full"
         role="img"
-        aria-label="The continuum of care: Pre-care, Intake, In-program, Transition, and Continuing — one connected timeline"
+        aria-label="The continuum of care: Pre-care, Intake, In-program, Transition, and Continuing - one connected timeline"
       >
         {PHASES.map((p) => (
           <div
@@ -238,7 +238,7 @@ const ONBOARDING = [
   {
     n: "01",
     title: "Talk to us",
-    desc: "A 30-minute call. Tell us about your center, your programs, and the people you serve — we'll show you exactly how the platform fits.",
+    desc: "A 30-minute call. Tell us about your center, your programs, and the people you serve - we'll show you exactly how the platform fits.",
   },
   {
     n: "02",
@@ -248,7 +248,7 @@ const ONBOARDING = [
   {
     n: "03",
     title: "Your clients sign up in minutes",
-    desc: "QR giving pages, courses, and mentors from day one. No downloads, no IT project — just a link and a welcome.",
+    desc: "QR giving pages, courses, and mentors from day one. No downloads, no IT project - just a link and a welcome.",
   },
 ];
 
@@ -300,7 +300,7 @@ function Eyebrow({
 }
 
 /* ---------------------------------------------------------------- */
-/* 1 — The engagement curve (the money section)                      */
+/* 1 - The engagement curve (the money section)                      */
 /* ---------------------------------------------------------------- */
 
 /** Relapse-risk-over-time descending curve, drawn in pure SVG. */
@@ -412,7 +412,7 @@ function EngagementCurve() {
 }
 
 /* ---------------------------------------------------------------- */
-/* 2 — Cited stat spine                                              */
+/* 2 - Cited stat spine                                              */
 /* ---------------------------------------------------------------- */
 
 const STATS: {
@@ -429,16 +429,16 @@ const STATS: {
       </>
     ),
     label:
-      "First-year relapse runs 40–60%. After five years of continuous recovery, risk drops below 15% — some studies as low as 7%.",
+      "First-year relapse runs 40–60%. After five years of continuous recovery, risk drops below 15% - some studies as low as 7%.",
     note: 1,
-    tip: "NIDA; Betty Ford Institute Consensus Panel — five-year sustained recovery approaches the general-population baseline.",
+    tip: "NIDA; Betty Ford Institute Consensus Panel - five-year sustained recovery approaches the general-population baseline.",
   },
   {
     big: <>Years 1–2</>,
     label:
-      "Relapse risk is highest in the first one to two years — exactly the window most centers lose visibility after discharge.",
+      "Relapse risk is highest in the first one to two years - exactly the window most centers lose visibility after discharge.",
     note: 2,
-    tip: "Longitudinal relapse-risk reviews — risk concentrated in years 1–2, declining through years 3–5.",
+    tip: "Longitudinal relapse-risk reviews - risk concentrated in years 1–2, declining through years 3–5.",
   },
   {
     big: (
@@ -449,7 +449,7 @@ const STATS: {
     label:
       "Continuing care lasting 12 months or longer, with active efforts to keep people engaged, produces more consistently positive outcomes.",
     note: 3,
-    tip: "McKay et al., continuing-care review — longer, actively engaged care outperforms shorter or passive follow-up.",
+    tip: "McKay et al., continuing-care review - longer, actively engaged care outperforms shorter or passive follow-up.",
   },
   {
     big: (
@@ -458,33 +458,33 @@ const STATS: {
       </>
     ),
     label:
-      "Over 80% of long-term relapses are preceded by a gradual drop in recovery-activity engagement — an early, measurable warning.",
+      "Over 80% of long-term relapses are preceded by a gradual drop in recovery-activity engagement - an early, measurable warning.",
     note: 4,
-    tip: "Kelly et al., 2026 — engagement decline precedes the large majority of long-term relapses.",
+    tip: "Kelly et al., 2026 - engagement decline precedes the large majority of long-term relapses.",
   },
   {
     big: <>Recovery capital</>,
     label:
-      "Growth in recovery capital — employment, social support, recovery-group involvement — predicts retention and better outcomes.",
+      "Growth in recovery capital - employment, social support, recovery-group involvement - predicts retention and better outcomes.",
     note: 5,
-    tip: "REC-CAP / BARC-10 longitudinal studies — the platform is built to grow exactly these.",
+    tip: "REC-CAP / BARC-10 longitudinal studies - the platform is built to grow exactly these.",
   },
   {
     big: <>Goals + milestones</>,
     label:
       "People who set structured goals are meaningfully more likely to maintain sobriety at one year; celebrated milestones lower relapse.",
     note: 6,
-    tip: "Multiple studies — structured goal-setting and milestone celebration are associated with better one-year outcomes.",
+    tip: "Multiple studies - structured goal-setting and milestone celebration are associated with better one-year outcomes.",
   },
 ];
 
 const FOOTNOTES = [
-  "NIDA; Betty Ford Institute Consensus Panel — first-year relapse 40–60%; five-year sustained recovery approaches the general-population baseline.",
-  "Longitudinal relapse-risk reviews — risk concentrated in years 1–2, declining through years 3–5.",
-  "McKay et al., continuing-care review — care lasting ≥12 months with active engagement efforts yields more consistently positive outcomes.",
-  "Kelly et al., 2026 — over 80% of long-term relapses are preceded by a gradual decline in recovery-activity engagement.",
-  "REC-CAP / BARC-10 longitudinal studies — recovery-capital growth predicts retention and outcomes.",
-  "Multiple studies — structured goal-setting and celebrated milestones associated with higher one-year sobriety.",
+  "NIDA; Betty Ford Institute Consensus Panel - first-year relapse 40–60%; five-year sustained recovery approaches the general-population baseline.",
+  "Longitudinal relapse-risk reviews - risk concentrated in years 1–2, declining through years 3–5.",
+  "McKay et al., continuing-care review - care lasting ≥12 months with active engagement efforts yields more consistently positive outcomes.",
+  "Kelly et al., 2026 - over 80% of long-term relapses are preceded by a gradual decline in recovery-activity engagement.",
+  "REC-CAP / BARC-10 longitudinal studies - recovery-capital growth predicts retention and outcomes.",
+  "Multiple studies - structured goal-setting and celebrated milestones associated with higher one-year sobriety.",
 ];
 
 function StatSpine() {
@@ -522,7 +522,7 @@ function StatSpine() {
 }
 
 /* ---------------------------------------------------------------- */
-/* 4 — Deliver your programming: LMS vignettes                       */
+/* 4 - Deliver your programming: LMS vignettes                       */
 /* ---------------------------------------------------------------- */
 
 function ProgrammingVignettes() {
@@ -576,13 +576,13 @@ function ProgrammingVignettes() {
 }
 
 /* ---------------------------------------------------------------- */
-/* 5 — Follow-up cadence timeline                                    */
+/* 5 - Follow-up cadence timeline                                    */
 /* ---------------------------------------------------------------- */
 
 const CADENCE = ["30", "60", "90", "180", "365"];
 
 /* ---------------------------------------------------------------- */
-/* 8 — How it all connects: Danielle's five phases                   */
+/* 8 - How it all connects: Danielle's five phases                   */
 /* ---------------------------------------------------------------- */
 
 const DANIELLE_PHASES = [
@@ -603,18 +603,18 @@ const DANIELLE_PHASES = [
   },
   {
     phase: "Transition",
-    line: "GED earned, first job started — milestones celebrated in the community feed.",
+    line: "GED earned, first job started - milestones celebrated in the community feed.",
     systems: ["Goals", "Community"],
   },
   {
     phase: "Continuing",
-    line: "A year past discharge, still engaged — her engagement trend is the center's outcome data.",
+    line: "A year past discharge, still engaged - her engagement trend is the center's outcome data.",
     systems: ["Community", "Goals", "LMS"],
   },
 ];
 
 /* ---------------------------------------------------------------- */
-/* 9 — Pricing tiers                                                 */
+/* 9 - Pricing tiers                                                 */
 /* ---------------------------------------------------------------- */
 
 const TIERS = [
@@ -625,7 +625,7 @@ const TIERS = [
     features: [
       "LMS + level-of-care curricula (ISE/PON, IOP, vocational)",
       "In-facility + remote delivery",
-      "Gamified engagement — streaks, badges, goals",
+      "Gamified engagement - streaks, badges, goals",
       "Member ↔ mentor messaging with mood check-ins",
       "Center dashboard, roster & moderation",
     ],
@@ -683,7 +683,7 @@ export default function Centers() {
             </h1>
             <p className="max-w-[580px] text-[16px]/[1.65] font-medium text-white/[.88] lg:text-[19px]">
               Member engagement, mentorship, learning programs, and accountable
-              giving — the platform behind My Struggle&apos;s centers, built
+              giving - the platform behind My Struggle&apos;s centers, built
               for yours.
             </p>
             <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -704,7 +704,7 @@ export default function Centers() {
         </div>
       </section>
 
-      {/* ENGAGEMENT CURVE — the money section */}
+      {/* ENGAGEMENT CURVE - the money section */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1100px] px-5 py-16 lg:px-6 lg:py-[110px]">
           <div className="mx-auto max-w-[720px] text-center">
@@ -745,7 +745,7 @@ export default function Centers() {
               <span className="script text-[42px] lg:text-[56px]">approach</span>
             </h2>
             <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-ink-600 lg:text-[17px]">
-              Every claim is cited and framed honestly — hover a footnote marker
+              Every claim is cited and framed honestly - hover a footnote marker
               for the source. These are population-level findings, not
               guarantees.
             </p>
@@ -807,7 +807,7 @@ export default function Centers() {
               <span className="script text-[44px] lg:text-[60px]">team</span>
             </h2>
             <p className="mt-4 text-base/[1.7] text-ink-600 lg:text-[17px]">
-              The same software our own outreach centers run every day —
+              The same software our own outreach centers run every day -
               messaging, learning, giving, and operations that talk to each
               other.
             </p>
@@ -857,7 +857,7 @@ export default function Centers() {
               A learning management system organized by level of care. Assign the
               ISE / PON, IOP, and vocational tracks; deliver in-facility and
               remote; and let streaks, badges, and milestones do the work of
-              engagement — the mechanic the research says moves outcomes.
+              engagement - the mechanic the research says moves outcomes.
             </p>
           </div>
           <div className="mt-10 lg:mt-[52px]">
@@ -921,7 +921,7 @@ export default function Centers() {
             </div>
             <p className="mt-1.5 text-[13px]/[1.6] text-ink-600">
               Check-ins, course activity, and community presence have softened
-              over three weeks — the earliest measurable relapse signal there is.
+              over three weeks - the earliest measurable relapse signal there is.
             </p>
 
             {/* declining engagement bars */}
@@ -950,7 +950,7 @@ export default function Centers() {
               </span>
             </div>
             <p className="mt-3 text-[11px]/[1.5] text-ink-400">
-              A prompt to reach out — never an automated clinical decision.
+              A prompt to reach out - never an automated clinical decision.
               Recovery isn&apos;t linear.
             </p>
           </div>
@@ -971,12 +971,12 @@ export default function Centers() {
             <p className="text-[17px]/[1.75] text-ink-600">
               Every client gets a personal QR giving page. Half of each gift
               reaches them immediately as cash at your center; half is held for
-              their reentry — released directly the day they step back into
+              their reentry - released directly the day they step back into
               society.
             </p>
             <p className="text-[17px]/[1.75] text-ink-600">
               Your giving desk verifies every redemption, and every dollar is
-              accounted for in the dashboard — accountable for donors,
+              accounted for in the dashboard - accountable for donors,
               dignified for the person receiving it.
             </p>
             <Link
@@ -1056,7 +1056,7 @@ export default function Centers() {
             <span className="script text-[42px] lg:text-[56px]">join</span>
           </h2>
           <p className="max-w-[640px] text-[17px]/[1.75] text-ink-600">
-            Your clients join a moderated, recovery-first social feed — wins,
+            Your clients join a moderated, recovery-first social feed - wins,
             jobs, and support requests. Crisis language is held automatically,
             and your staff approve what goes public.
           </p>
@@ -1069,7 +1069,7 @@ export default function Centers() {
         </div>
       </section>
 
-      {/* REACH THE COMMUNITY — the ad product */}
+      {/* REACH THE COMMUNITY - the ad product */}
       <section className="bg-canvas">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1fr_minmax(320px,440px)] lg:gap-[64px] lg:px-6 lg:py-[110px]">
           <div className="flex flex-col gap-5">
@@ -1080,17 +1080,17 @@ export default function Centers() {
             </h2>
             <p className="text-[17px]/[1.75] text-ink-600">
               Promote your services, alumni events, and openings with sponsored
-              placements in the community feed — member-safe by design, because
+              placements in the community feed - member-safe by design, because
               trust is the whole product.
             </p>
             <ul className="flex flex-col gap-3">
               {[
-                "Recovery-relevant only — services, alumni events, fair-chance jobs, programs.",
-                "Clearly labeled as sponsored — never disguised as a peer post.",
+                "Recovery-relevant only - services, alumni events, fair-chance jobs, programs.",
+                "Clearly labeled as sponsored - never disguised as a peer post.",
                 "Frequency-capped and spaced, so the feed stays a recovery space first.",
-                "Coarse, non-clinical targeting only — metro, care phase, interests. Never diagnosis or health status.",
-                "Member controls — dismiss, report, and reduce sponsored content anytime.",
-                "Aggregate analytics only — impressions, clicks, CTR. Never per-member profiles.",
+                "Coarse, non-clinical targeting only - metro, care phase, interests. Never diagnosis or health status.",
+                "Member controls - dismiss, report, and reduce sponsored content anytime.",
+                "Aggregate analytics only - impressions, clicks, CTR. Never per-member profiles.",
               ].map((t) => (
                 <li key={t} className="flex gap-2.5 text-[15px]/[1.6] text-ink-600">
                   <span className="mt-[7px] h-1.5 w-1.5 flex-none rounded-full bg-blue-primary" />
@@ -1100,7 +1100,7 @@ export default function Centers() {
             </ul>
             <p className="text-[13px]/[1.6] text-ink-400">
               Members in a flagged or at-risk state are never served sponsored
-              content — they see support resources instead.
+              content - they see support resources instead.
             </p>
           </div>
 
@@ -1128,7 +1128,7 @@ export default function Centers() {
               </div>
               <div className="mt-3 text-[14px]/[1.6] font-medium text-ink-900">
                 One year, one room, one thousand comebacks. Join our alumni
-                dinner — dinner&apos;s on us, and so is the ride.
+                dinner - dinner&apos;s on us, and so is the ride.
               </div>
               <div className="mt-3 aspect-[16/9] rounded-xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)]" />
               <div className="mt-3 flex items-center gap-2">
@@ -1157,7 +1157,7 @@ export default function Centers() {
             </h2>
             <p className="mx-auto mt-4 max-w-[600px] text-base/[1.7] text-white/75 lg:text-[17px]">
               The engagement your members live becomes the evidence your board
-              and your grants need — measured over the year-plus that counts.
+              and your grants need - measured over the year-plus that counts.
             </p>
           </div>
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4 lg:gap-6">
@@ -1191,7 +1191,7 @@ export default function Centers() {
         </div>
       </section>
 
-      {/* HOW IT ALL CONNECTS — Danielle across five phases */}
+      {/* HOW IT ALL CONNECTS - Danielle across five phases */}
       <section className="bg-white">
         <div className="mx-auto max-w-[860px] px-5 py-16 lg:px-6 lg:py-[110px]">
           <div className="mx-auto max-w-[700px] text-center">
@@ -1202,7 +1202,7 @@ export default function Centers() {
             </h2>
             <p className="mx-auto mt-4 max-w-[580px] text-base/[1.7] text-ink-600 lg:text-[17px]">
               Danielle&apos;s community life, goals, giving, and learning all
-              become your center&apos;s outcome data — automatically.
+              become your center&apos;s outcome data - automatically.
             </p>
           </div>
 
@@ -1380,7 +1380,7 @@ export default function Centers() {
               <span className="font-bold text-ink-900">
                 outcomes-data licensing
               </span>{" "}
-              are available as add-ons to any tier. Pricing is custom — ask us.
+              are available as add-ons to any tier. Pricing is custom - ask us.
             </p>
           </div>
         </div>
@@ -1400,7 +1400,7 @@ export default function Centers() {
             {[
               {
                 t: "Consent-first",
-                d: "Members opt in to what they share. Nothing is published without their say — and staff approve what goes public.",
+                d: "Members opt in to what they share. Nothing is published without their say - and staff approve what goes public.",
               },
               {
                 t: "De-identified outcomes",
@@ -1438,7 +1438,7 @@ export default function Centers() {
             </h2>
             <p className="mx-auto mt-4 max-w-[540px] text-base/[1.7] text-ink-600 lg:text-[17px]">
               Tell us about your center and we&apos;ll set up a walkthrough. No
-              pressure, no obligation — just a look at what the platform can do.
+              pressure, no obligation - just a look at what the platform can do.
             </p>
           </div>
           <div className="mt-10 rounded-2xl border border-sky-tint bg-canvas p-6 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:mt-[52px] lg:p-9">
@@ -1458,7 +1458,7 @@ export default function Centers() {
             .
           </h2>
           <p className="max-w-[560px] text-[16px]/[1.7] text-white/75 lg:text-[18px]">
-            One call is all it takes to see it working — with your programs and
+            One call is all it takes to see it working - with your programs and
             your people in mind.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">

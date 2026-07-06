@@ -1,6 +1,6 @@
-// Platform data store — in-memory singleton with JSON file persistence.
+// Platform data store - in-memory singleton with JSON file persistence.
 // Dev: persists to .data/db.json. Vercel: persists to /tmp (per-instance,
-// resets on cold start — demo-grade). Swap this module for Supabase/Postgres
+// resets on cold start - demo-grade). Swap this module for Supabase/Postgres
 // later; the API route handlers are the stable contract.
 
 import { randomUUID, scryptSync, randomBytes } from "crypto";
@@ -77,24 +77,24 @@ interface DB {
   jobApplications: JobApplication[];
   resumes: Resume[];
   resumeSections: ResumeSection[];
-  // continuum of care (seed v7 — docs/14 / requirements/11 §A/B/K)
+  // continuum of care (seed v7 - docs/14 / requirements/11 §A/B/K)
   careEpisodes: CareEpisode[];
   phaseTransitions: PhaseTransition[];
   continuumEvents: ContinuumEvent[];
-  // community ad product (seed v8 — docs/15 §B / requirements/12 §B/E)
+  // community ad product (seed v8 - docs/15 §B / requirements/12 §B/E)
   sponsoredPlacements: SponsoredPlacement[];
   placementEvents: PlacementEvent[];
   demoLeads: DemoLead[];
-  // continuum care channels + consent + follow-up (seed v9 — docs/14 §D/§C/§G)
+  // continuum care channels + consent + follow-up (seed v9 - docs/14 §D/§C/§G)
   careChannels: CareChannel[];
   careMessages: CareMessage[];
   consentGrants: ConsentGrant[];
   followUps: FollowUpCheckin[];
-  // employer accounts + job posts (seed v10 — recovery-friendly hiring).
+  // employer accounts + job posts (seed v10 - recovery-friendly hiring).
   // Employers are stored in `users` (role "employer"); jobPosts are their
   // openings, wired into the community Hiring rail + public /jobs board.
   jobPosts: JobPost[];
-  // engagement backend (seed v11 — notifications, member blocks, community
+  // engagement backend (seed v11 - notifications, member blocks, community
   // events + RSVP). One notification inbox per user; blocks are user-driven;
   // events carry RSVPs whose going=true emits a "community" continuum_event.
   notifications: Notification[];
@@ -105,7 +105,7 @@ interface DB {
   postReports: PostReport[];
 }
 
-/** Bump when the seed shape/volume changes — stale .data/db.json is discarded
+/** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
 const SEED_VERSION = 12;
 
@@ -124,7 +124,7 @@ declare global {
   var __msAdKill: boolean | undefined;
 }
 
-/** True when the platform-wide ad kill switch is engaged — /serve returns []
+/** True when the platform-wide ad kill switch is engaged - /serve returns []
  *  for everyone while on. Not persisted to db.json (an operational toggle). */
 export function isAdKillSwitchOn(): boolean {
   return globalThis.__msAdKill === true;
@@ -157,7 +157,7 @@ export function getAdConfig(): AdConfig {
   return c ? { ...DEFAULT_AD_CONFIG, ...c } : { ...DEFAULT_AD_CONFIG };
 }
 
-/** ms_admin updates the ad config (additive patch — only given keys change). */
+/** ms_admin updates the ad config (additive patch - only given keys change). */
 export function setAdConfig(patch: Partial<AdConfig>): AdConfig {
   const next: AdConfig = { ...getAdConfig(), ...patch };
   globalThis.__msAdConfig = next;
@@ -180,10 +180,10 @@ export function uid(): string {
 // Fixed PRNG seed + fixed epoch → the same rich dataset every boot.
 // Never use Date.now() inside seed(); everything hangs off EPOCH.
 
-const EPOCH = 1751500000000; // ~2026-07-03 — fixed so output is stable
+const EPOCH = 1751500000000; // ~2026-07-03 - fixed so output is stable
 const DAY = 86400e3;
 
-/** mulberry32 — tiny deterministic PRNG, returns floats in [0, 1). */
+/** mulberry32 - tiny deterministic PRNG, returns floats in [0, 1). */
 function mulberry32(a: number): () => number {
   return function () {
     a |= 0;
@@ -212,14 +212,14 @@ const FIRST_NAMES = [
 
 const AVATAR_PALETTE = ["#2E7CD6", "#4E5B9B", "#0B2545", "#12B76A", "#4E7BC4"];
 
-// Dignified, person-first story sentences — composed 2–3 at a time.
+// Dignified, person-first story sentences - composed 2–3 at a time.
 const STORY_SENTENCES = [
   "I'm showing up for myself every day, and it's starting to show.",
   "After a hard season, I found the center and a mentor who believed in me before I did.",
   "I'm studying for my GED and I haven't missed a class in weeks.",
   "I started my first steady job this year and I'm proud of every shift.",
   "My savings account is small but growing, and it's mine.",
-  "I check in with my mentor every week — that consistency changed everything.",
+  "I check in with my mentor every week - that consistency changed everything.",
   "I'm working toward my own place, one week at a time.",
   "Getting my ID and paperwork sorted was the first win; now I'm stacking them.",
   "I'm learning to budget and it feels good to see a plan on paper.",
@@ -260,7 +260,7 @@ const POST_BODIES_WIN = [
   "Passed my practice test! The real one is next month and I'm ready.",
   "First paycheck from the new job. Straight to savings (mostly).",
   "Got my ID sorted after months of paperwork. Door's open now.",
-  "Hit a 14-day check-in streak — longest one yet.",
+  "Hit a 14-day check-in streak - longest one yet.",
   "My mentor said my budget plan was the best they'd seen. Framing that.",
   "Interview went great. They said they'd call this week!",
   "Finished the financial literacy course. Certificate and everything.",
@@ -280,27 +280,27 @@ const COMMENT_BODIES = [
   "This made my day. Keep going!",
   "You earned every bit of this.",
   "We see you. Keep showing up!",
-  "Inspiring — thank you for sharing.",
+  "Inspiring - thank you for sharing.",
   "One day at a time. You've got this.",
   "The whole center is cheering for you.",
   "Love this. Congratulations!",
 ];
 
 const SESSION_NOTES = [
-  "Reviewed weekly budget together — on track.",
+  "Reviewed weekly budget together - on track.",
   "Talked through job interview prep.",
   "Checked in on housing application progress.",
   "Celebrated the check-in streak; set next week's goal.",
   "Worked on GED study plan.",
   "Discussed transportation options for the new job.",
-  "Quiet week — mostly listened. Follow up Friday.",
+  "Quiet week - mostly listened. Follow up Friday.",
 ];
 
 const DONATION_AMOUNTS = [5, 10, 10, 15, 20, 25, 25, 25, 30, 40, 50, 50, 75, 100];
 
-// ── community-expansion templates (seed v6 — dignified voice) ───────────
+// ── community-expansion templates (seed v6 - dignified voice) ───────────
 
-/** BARC-10 self-check domains — warm, non-clinical framing. */
+/** BARC-10 self-check domains - warm, non-clinical framing. */
 const BARC_DOMAINS = [
   "sobriety",
   "self-care",
@@ -377,7 +377,7 @@ const GOAL_TEMPLATES: {
   {
     domain: "other",
     title: "Volunteer at the center monthly",
-    why: "This place gave me my start — I want to give back.",
+    why: "This place gave me my start - I want to give back.",
     milestones: ["Talk to staff about helping", "First volunteer shift"],
   },
 ];
@@ -410,7 +410,7 @@ const RESUME_HEADLINES = [
   "Hardworking and dependable",
   "Reliable team member ready to work",
   "Quick learner with steady hands",
-  "Dependable — on time, every time",
+  "Dependable - on time, every time",
 ];
 
 const RESUME_EXPERIENCE_ITEMS = [
@@ -454,9 +454,9 @@ const JOB_ROLES = [
 
 const JOB_NOTES = [
   "Follow up by phone this week.",
-  "Manager seemed friendly — send a thank-you note.",
+  "Manager seemed friendly - send a thank-you note.",
   "They asked about weekend availability. I said yes.",
-  "Bus route works — 20 minutes door to door.",
+  "Bus route works - 20 minutes door to door.",
 ];
 
 /** Circle-flavored post bodies, keyed by circle id. */
@@ -483,7 +483,7 @@ const CIRCLE_POST_BODIES: Record<string, string[]> = {
     "Win of the week: paid a bill early. Small thing, big feeling.",
   ],
   "circle-laveen-alumni": [
-    "Alumni meetup Saturday — who's coming?",
+    "Alumni meetup Saturday - who's coming?",
     "Came back to the center to say thanks. Left with three new friends.",
   ],
   "circle-south-phoenix-alumni": [
@@ -499,7 +499,7 @@ function seed(): DB {
   const int = (min: number, max: number): number =>
     min + Math.floor(rnd() * (max - min + 1));
 
-  // Deterministic ids — counter-based, can never collide with runtime uuids.
+  // Deterministic ids - counter-based, can never collide with runtime uuids.
   let idSeq = 0;
   const did = (): string => `seed-${(idSeq++).toString(36)}`;
 
@@ -565,7 +565,7 @@ function seed(): DB {
     slug: "danielle",
     memberNumber: "039521464",
     story:
-      "I earned my GED, started my first job, and moved into transitional housing — three milestones in eight months. Right now I'm working toward $175 a week for my hallway house, the last step before a place of my own.",
+      "I earned my GED, started my first job, and moved into transitional housing - three milestones in eight months. Right now I'm working toward $175 a week for my hallway house, the last step before a place of my own.",
     consentPublic: true,
     balances: { cash: 64, credits: 58, savings: 240 },
     streak: 12,
@@ -751,7 +751,7 @@ function seed(): DB {
       authorName: "Marcus",
       authorRole: "mentor",
       avatarColor: "#4E5B9B",
-      body: "One year sober today. To everyone at the center who never gave up on me — this one's for you. Now I get to walk it with my mentees.",
+      body: "One year sober today. To everyone at the center who never gave up on me - this one's for you. Now I get to walk it with my mentees.",
       kind: "milestone",
       status: "approved",
       hearts: [danielle.id, tyrell.id],
@@ -793,7 +793,7 @@ function seed(): DB {
         : kind === "win"
           ? pick(POST_BODIES_WIN)
           : pick(POST_BODIES_MILESTONE);
-    // Community channel — weighted toward general/recovery; jobs/housing
+    // Community channel - weighted toward general/recovery; jobs/housing
     // give the desktop community's filters real content.
     const topicRoll = rnd();
     const topic =
@@ -904,25 +904,25 @@ function seed(): DB {
         senderId: marcus.id,
         senderName: "Marcus",
         kind: "text",
-        body: "Hey Tyrell — haven't seen you check in this week. No pressure, just thinking of you. Coffee Friday?",
+        body: "Hey Tyrell - haven't seen you check in this week. No pressure, just thinking of you. Coffee Friday?",
         createdAt: now - 6 * 86400e3,
       },
     ],
   };
 
-  // ── LMS: courses + enrollments (added in seed v3 — keep AFTER all v2
+  // ── LMS: courses + enrollments (added in seed v3 - keep AFTER all v2
   //    sections so earlier PRNG draws and seed-* ids stay byte-identical) ─
   const courses: Course[] = [
-    { id: "course-ise-1", title: "ISE Course 1 — Honesty", program: "PON", lessonCount: 6 },
-    { id: "course-ise-2", title: "ISE Course 2 — Hope", program: "PON", lessonCount: 6 },
-    { id: "course-ise-3", title: "ISE Course 3 — Decision", program: "PON", lessonCount: 6 },
+    { id: "course-ise-1", title: "ISE Course 1 - Honesty", program: "PON", lessonCount: 6 },
+    { id: "course-ise-2", title: "ISE Course 2 - Hope", program: "PON", lessonCount: 6 },
+    { id: "course-ise-3", title: "ISE Course 3 - Decision", program: "PON", lessonCount: 6 },
     { id: "course-forklift", title: "Forklift Certification", program: "VOC", lessonCount: 8 },
     { id: "course-docs-id", title: "Documents & ID Recovery", program: "NAV", lessonCount: 4 },
     { id: "course-relapse-basics", title: "Relapse Prevention Basics", program: "IOP", lessonCount: 5 },
   ];
 
   // Danielle mirrors her demo cards: ISE Course 3 in progress (lesson 3 is
-  // next — 2/6 done, the closest integers get to the demo's 45%), Forklift
+  // next - 2/6 done, the closest integers get to the demo's 45%), Forklift
   // just started, Documents & ID fully complete.
   const enrollments: Enrollment[] = [
     {
@@ -967,7 +967,7 @@ function seed(): DB {
     }
   }
 
-  // ── Community expansion (added in seed v6 — keep AFTER all v5 sections
+  // ── Community expansion (added in seed v6 - keep AFTER all v5 sections
   //    so earlier PRNG draws and seed-* ids stay byte-identical) ─────────
 
   // ── circles ──────────────────────────────────────────────────────────
@@ -977,7 +977,7 @@ function seed(): DB {
       name: "Job Seekers",
       kind: "topic",
       description:
-        "Applications, interviews, first days — we keep each other going.",
+        "Applications, interviews, first days - we keep each other going.",
       staffModerated: false,
     },
     {
@@ -998,7 +998,7 @@ function seed(): DB {
       id: "circle-gratitude",
       name: "Gratitude Circle",
       kind: "topic",
-      description: "Daily gratitude and wins of the week — big or small, they count.",
+      description: "Daily gratitude and wins of the week - big or small, they count.",
       staffModerated: false,
     },
     {
@@ -1026,7 +1026,7 @@ function seed(): DB {
     { id: did(), circleId: "circle-laveen-alumni", memberId: danielle.id, joinedAt: now - 35 * DAY },
   ];
 
-  // Housing goal — linked to her existing "Hallway house" QR funding request.
+  // Housing goal - linked to her existing "Hallway house" QR funding request.
   const danielleHousingRequest = requests.find(
     (r) => r.memberId === danielle.id && r.label === "Hallway house"
   )!;
@@ -1202,7 +1202,7 @@ function seed(): DB {
     },
   ];
 
-  // BARC-10 trend — three self-checks over three months, trending up.
+  // BARC-10 trend - three self-checks over three months, trending up.
   const barcScores = (vals: number[]): Record<string, number> =>
     Object.fromEntries(BARC_DOMAINS.map((d, i) => [d, vals[i]]));
   const barcChecks: BarcSelfCheck[] = [
@@ -1229,7 +1229,7 @@ function seed(): DB {
     },
   ];
 
-  // ── generated breadth — circles, goals, profiles, résumés, BARC ───────
+  // ── generated breadth - circles, goals, profiles, résumés, BARC ───────
 
   // ~120 members with 1–2 circle memberships, weighted toward their
   // center's alumni circle plus one topic circle.
@@ -1380,11 +1380,11 @@ function seed(): DB {
     });
   }
 
-  // ── circle posts (~20) — same shape as existing posts + circleId ──────
+  // ── circle posts (~20) - same shape as existing posts + circleId ──────
   // Main-feed posts keep circleId undefined; circle posts are scoped.
   type CirclePost = Post & { circleId: string };
 
-  // Danielle's circle posts (hand-written — flagship storyline).
+  // Danielle's circle posts (hand-written - flagship storyline).
   const daniellePosts: CirclePost[] = [
     {
       id: did(),
@@ -1456,11 +1456,11 @@ function seed(): DB {
     posts.push(cp);
   }
 
-  // ── Continuum of Care (added in seed v7 — keep AFTER all v6 sections so
+  // ── Continuum of Care (added in seed v7 - keep AFTER all v6 sections so
   //    earlier PRNG draws and seed-* ids stay byte-identical) ─────────────
   // The spine: care_episodes + phase_transitions + continuum_events. Danielle
   // traverses ALL FIVE phases end to end; her continuum_events are DERIVED
-  // from her already-seeded artifacts (the "hooks in seed" idea — no module
+  // from her already-seeded artifacts (the "hooks in seed" idea - no module
   // is rewritten), then enriched with her ongoing community rhythm so the
   // ribbon + sparkline read as a living 14-month timeline.
 
@@ -1501,10 +1501,10 @@ function seed(): DB {
     "phase",
   ];
   const BREADTH_REASONS = [
-    "Assessment complete — welcomed them into the next step of their care.",
+    "Assessment complete - welcomed them into the next step of their care.",
     "Great progress this week; ready to move forward together.",
     "Stepped down a level after hitting their goals. Proud of them.",
-    "Discharge planning underway — housing and work goals set.",
+    "Discharge planning underway - housing and work goals set.",
     "Graduated to alumni. Still showing up, still supported.",
     "Reconnected after a quiet stretch; back on track.",
   ];
@@ -1526,7 +1526,7 @@ function seed(): DB {
     levelOfCare: "iop",
     startedAt: dStart,
     phaseChangedAt: dContinuingAt,
-    endedAt: undefined, // continuing is indefinite — the relationship stays open
+    endedAt: undefined, // continuing is indefinite - the relationship stays open
     referralSource: "community",
     dischargeType: "completed",
   };
@@ -1551,7 +1551,7 @@ function seed(): DB {
       toLoc: "iop",
       changedBy: sarah.id,
       reason:
-        "Assessment done — Danielle's a great fit for our IOP cohort. Welcome to the program.",
+        "Assessment done - Danielle's a great fit for our IOP cohort. Welcome to the program.",
       at: dInProgramAt,
     },
     {
@@ -1562,7 +1562,7 @@ function seed(): DB {
       fromLoc: "iop",
       changedBy: sarah.id,
       reason:
-        "Danielle finished her IOP hours. We started planning her step-down together — housing and work first.",
+        "Danielle finished her IOP hours. We started planning her step-down together - housing and work first.",
       at: dTransitionAt,
     },
     {
@@ -1649,10 +1649,10 @@ function seed(): DB {
     if (b.memberId === danielle.id) emitSeed("checkin", 3, b.takenAt, b.id);
   }
 
-  // (7) one phase event (weight 5) per transition — the outcomes markers.
+  // (7) one phase event (weight 5) per transition - the outcomes markers.
   for (const t of danielleTransitions) emitSeed("phase", 5, t.at, t.id);
 
-  // (8) ongoing rhythm across the full 14-month arc — her day-to-day
+  // (8) ongoing rhythm across the full 14-month arc - her day-to-day
   //     community life, check-ins, and mentor touches (not re-listing a
   //     specific artifact) so the sparkline spans every month and looks alive.
   for (let t = dStart + 5 * DAY; t < now; t += int(8, 14) * DAY) {
@@ -1746,7 +1746,7 @@ function seed(): DB {
     }
   }
 
-  // ── Community Ad Product (added in seed v8 — keep AFTER all v7 sections
+  // ── Community Ad Product (added in seed v8 - keep AFTER all v7 sections
   //    so earlier PRNG draws and seed-* ids stay byte-identical) ──────────
   // Sponsored placements sold to the two seed centers, running in the
   // community feed. Every timestamp hangs off EPOCH (never Date.now()).
@@ -1769,7 +1769,7 @@ function seed(): DB {
           id: did(),
           placementId,
           kind,
-          memberId: pick(members).id, // internal cap/dedup only — never surfaced
+          memberId: pick(members).id, // internal cap/dedup only - never surfaced
           occurredAt: now - int(0, 14) * DAY - int(0, 23) * 3600e3,
         });
       }
@@ -1780,13 +1780,13 @@ function seed(): DB {
     push("report", reports);
   };
 
-  // (1) APPROVED + running — Laveen alumni event, targeted to alumni (continuing).
+  // (1) APPROVED + running - Laveen alumni event, targeted to alumni (continuing).
   const bbq: SponsoredPlacement = {
     id: did(),
     orgId: laveen.id,
     orgName: laveen.name,
-    title: "Laveen Alumni BBQ — Saturday",
-    body: "Alumni, families, and mentors — join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
+    title: "Laveen Alumni BBQ - Saturday",
+    body: "Alumni, families, and mentors - join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
     ctaLabel: "RSVP",
     ctaUrl: "https://example.org/laveen/alumni-bbq",
     kind: "alumni_event",
@@ -1799,13 +1799,13 @@ function seed(): DB {
     approvedBy: sarah.id,
     createdAt: now - 10 * DAY,
   };
-  // (2) APPROVED + running — fair-chance job opening, coarse employment interest.
+  // (2) APPROVED + running - fair-chance job opening, coarse employment interest.
   const job: SponsoredPlacement = {
     id: did(),
     orgId: southPhoenix.id,
     orgName: southPhoenix.name,
-    title: "Warehouse Associates — Desert Logistics, fair-chance employer",
-    body: "Desert Logistics is hiring warehouse associates and welcomes applicants in recovery — a fair-chance employer that hires on who you are today. Steady hours, weekly pay.",
+    title: "Warehouse Associates - Desert Logistics, fair-chance employer",
+    body: "Desert Logistics is hiring warehouse associates and welcomes applicants in recovery - a fair-chance employer that hires on who you are today. Steady hours, weekly pay.",
     ctaLabel: "Apply",
     ctaUrl: "https://example.org/desert-logistics/warehouse",
     kind: "job_opening",
@@ -1818,7 +1818,7 @@ function seed(): DB {
     approvedBy: sarah.id,
     createdAt: now - 15 * DAY,
   };
-  // (3) APPROVED + running — IOP program starting, community-wide by metro.
+  // (3) APPROVED + running - IOP program starting, community-wide by metro.
   const iop: SponsoredPlacement = {
     id: did(),
     orgId: laveen.id,
@@ -1837,13 +1837,13 @@ function seed(): DB {
     approvedBy: sarah.id,
     createdAt: now - 7 * DAY,
   };
-  // (4) PENDING_REVIEW — waiting in the ms_admin queue (recovery-relevant, clean).
+  // (4) PENDING_REVIEW - waiting in the ms_admin queue (recovery-relevant, clean).
   const pending: SponsoredPlacement = {
     id: did(),
     orgId: southPhoenix.id,
     orgName: southPhoenix.name,
     title: "Free resume workshop for members",
-    body: "Bring your work history — our navigators will help you build a fair-chance-ready resume in one sitting. Coffee provided.",
+    body: "Bring your work history - our navigators will help you build a fair-chance-ready resume in one sitting. Coffee provided.",
     ctaLabel: "Save my seat",
     ctaUrl: "https://example.org/south-phoenix/resume-workshop",
     kind: "service",
@@ -1853,12 +1853,12 @@ function seed(): DB {
     budgetCents: 10000,
     createdAt: now - 1 * DAY,
   };
-  // (5) REJECTED — kept as the ms_admin console's rejected example.
+  // (5) REJECTED - kept as the ms_admin console's rejected example.
   const rejected: SponsoredPlacement = {
     id: did(),
     orgId: southPhoenix.id,
     orgName: southPhoenix.name,
-    title: "Recovery social — happy hour mocktails and more",
+    title: "Recovery social - happy hour mocktails and more",
     body: "Join us after work for drinks and connection. Wine and beer available for guests.",
     ctaLabel: "RSVP",
     ctaUrl: "https://example.org/south-phoenix/social",
@@ -1923,7 +1923,7 @@ function seed(): DB {
       orgName: "Desert Bloom Treatment Center",
       contactName: "Yolanda Price",
       email: "yprice@desertbloomtc.example.org",
-      message: "Closed the loop — signed for the platform tier. Following up on ad-product add-on next quarter.",
+      message: "Closed the loop - signed for the platform tier. Following up on ad-product add-on next quarter.",
       source: "centers-page",
       status: "closed",
       createdAt: now - 40 * DAY - 4 * 3600e3,
@@ -1940,7 +1940,7 @@ function seed(): DB {
     },
   ];
 
-  // ── Care Channels + Consent + Follow-up cadence (added in seed v9 — keep
+  // ── Care Channels + Consent + Follow-up cadence (added in seed v9 - keep
   //    AFTER all v8 sections so earlier PRNG draws and seed-* ids stay
   //    byte-identical) ──────────────────────────────────────────────────
   // In-program engagement comms (NOT clinical), a granular revocable consent
@@ -2007,20 +2007,20 @@ function seed(): DB {
   const laveenAnnId = "channel-ann-laveen";
 
   const GROUP_STAFF_MSGS = [
-    "Morning, cohort! Reminder: group meets Tuesday at 5:30. Doors open at 5:15 — come grab coffee first.",
+    "Morning, cohort! Reminder: group meets Tuesday at 5:30. Doors open at 5:15 - come grab coffee first.",
     "This week we're on coping skills. Please finish Lesson 2 in the Learn tab before Tuesday.",
-    "Proud of the energy in group yesterday. Keep leaning on each other this week — that's the whole point.",
+    "Proud of the energy in group yesterday. Keep leaning on each other this week - that's the whole point.",
     "Small assignment: jot down three things that went right this week. We'll share a few Tuesday.",
   ];
   const GROUP_PEER_MSGS = [
     "See everyone Tuesday. This group keeps me steady.",
-    "Finished the lesson early this week — it actually helped.",
+    "Finished the lesson early this week - it actually helped.",
     "Rough couple days but I'm still here. Thanks for the check-ins.",
     "Anyone want to carpool Tuesday? I've got room for two.",
     "Grateful for this cohort. Didn't think I'd say that a month ago.",
-    "Did my three good things — first time I could name that many.",
+    "Did my three good things - first time I could name that many.",
     "Made it to every group this month. Small win, but I'll take it.",
-    "Thanks Sarah — the bus pass made this week possible.",
+    "Thanks Sarah - the bus pass made this week possible.",
   ];
 
   // 8 distinct Laveen peers (reuse seeded member names) for the roster.
@@ -2056,7 +2056,7 @@ function seed(): DB {
     mkMsg(groupChannelId, a.author, a.body, at, "approved");
   }
 
-  // ── Danielle's 1:1 channel (Sarah ↔ Danielle) — ~6 reminders/check-ins ─
+  // ── Danielle's 1:1 channel (Sarah ↔ Danielle) - ~6 reminders/check-ins ─
   careChannels.push({
     id: oneToOneId,
     centerId: laveen.id,
@@ -2066,9 +2066,9 @@ function seed(): DB {
     createdAt: dInProgramAt,
   });
   const oneToOne: { author: User; body: string }[] = [
-    { author: sarah, body: "Hi Danielle — welcome to the cohort. I'm your point of contact any time you need something." },
+    { author: sarah, body: "Hi Danielle - welcome to the cohort. I'm your point of contact any time you need something." },
     { author: danielle, body: "Thank you. Nervous, but I'm here." },
-    { author: sarah, body: "You missed group Tuesday — everything okay? No pressure, just checking on you." },
+    { author: sarah, body: "You missed group Tuesday - everything okay? No pressure, just checking on you." },
     { author: danielle, body: "Bus ran late and I got discouraged. I'll be there Thursday, promise." },
     { author: sarah, body: "That's all I needed to hear. Left a bus pass for you at the front desk." },
     { author: danielle, body: "You're the best. See you Thursday." },
@@ -2092,7 +2092,7 @@ function seed(): DB {
   mkMsg(
     laveenAnnId,
     sarah,
-    "Alumni BBQ this Saturday at noon — food, music, and familiar faces. Bring someone you're walking beside.",
+    "Alumni BBQ this Saturday at noon - food, music, and familiar faces. Bring someone you're walking beside.",
     now - 4 * DAY,
     "approved"
   );
@@ -2100,7 +2100,7 @@ function seed(): DB {
   mkMsg(
     "channel-ann-south-phoenix",
     spStaff,
-    "New evening IOP track opens Monday — daytime spots still available too. Talk to us about the right fit.",
+    "New evening IOP track opens Monday - daytime spots still available too. Talk to us about the right fit.",
     now - 6 * DAY,
     "approved"
   );
@@ -2222,7 +2222,7 @@ function seed(): DB {
     }
   }
 
-  // ── Employer accounts + job posts (added in seed v10 — keep AFTER all v9
+  // ── Employer accounts + job posts (added in seed v10 - keep AFTER all v9
   //    sections so earlier PRNG draws and seed-* ids stay byte-identical) ───
   // Four recovery-friendly employers (fair-chance businesses + a peer-support
   // provider) each posting real openings members can see on the community
@@ -2296,7 +2296,7 @@ function seed(): DB {
       "Laveen, AZ",
       "full-time",
       "$17–$19/hr",
-      "Pick, pack, and keep our floor moving. We hire on who you are today — no experience needed, we train. Steady daytime hours, weekly pay, and a team that has your back. Bus route stops at our door.",
+      "Pick, pack, and keep our floor moving. We hire on who you are today - no experience needed, we train. Steady daytime hours, weekly pay, and a team that has your back. Bus route stops at our door.",
       3
     ),
     mkJob(
@@ -2305,7 +2305,7 @@ function seed(): DB {
       "Laveen, AZ",
       "full-time",
       "$19–$22/hr",
-      "Certified or in training — we'll help you finish your cert. Move product safely across the warehouse floor. Fair-chance employer; we welcome applicants rebuilding their story.",
+      "Certified or in training - we'll help you finish your cert. Move product safely across the warehouse floor. Fair-chance employer; we welcome applicants rebuilding their story.",
       9
     ),
     mkJob(
@@ -2332,7 +2332,7 @@ function seed(): DB {
       "Tolleson, AZ",
       "full-time",
       "$18/hr",
-      "Help us pack fresh meals for the Valley. Reliable people welcome — we count on each other. Second-chance friendly, with a clear path to lead roles for those who stick with it.",
+      "Help us pack fresh meals for the Valley. Reliable people welcome - we count on each other. Second-chance friendly, with a clear path to lead roles for those who stick with it.",
       7
     ),
     mkJob(
@@ -2356,9 +2356,9 @@ function seed(): DB {
     ),
   ];
 
-  // ── Engagement backend (added in seed v11 — keep AFTER all v10 sections so
+  // ── Engagement backend (added in seed v11 - keep AFTER all v10 sections so
   //    earlier PRNG draws and seed-* ids stay byte-identical) ───────────────
-  // Notifications inbox, member blocks (user-driven — left empty), and center
+  // Notifications inbox, member blocks (user-driven - left empty), and center
   // community events with RSVP. Danielle anchors the demo: a full inbox across
   // kinds (mix read/unread) and an RSVP to the Laveen Alumni BBQ. Every
   // timestamp hangs off EPOCH (never Date.now()).
@@ -2393,47 +2393,47 @@ function seed(): DB {
 
   const spMentor = mentors.find((m) => m.centerId === southPhoenix.id) ?? marcus;
 
-  // Laveen (Danielle's center) — a weekly meeting, the Alumni BBQ, a workshop.
+  // Laveen (Danielle's center) - a weekly meeting, the Alumni BBQ, a workshop.
   const laveenMeeting = mkEvent(
     laveen,
     sarah,
     "Tuesday Alumni Meeting",
-    "Our weekly alumni check-in — coffee, wins of the week, and a few minutes to set a goal together. Everyone welcome, no pressure to share.",
+    "Our weekly alumni check-in - coffee, wins of the week, and a few minutes to set a goal together. Everyone welcome, no pressure to share.",
     now + 2 * DAY + 17.5 * 3600e3,
     1.5,
-    "Laveen Center — Community Room",
+    "Laveen Center - Community Room",
     "meeting"
   );
   const laveenBbq = mkEvent(
     laveen,
     sarah,
     "Laveen Alumni BBQ",
-    "Alumni, families, and mentors — join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
+    "Alumni, families, and mentors - join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
     now + 4 * DAY + 12 * 3600e3,
     3,
-    "Cesar Chavez Park — Ramada 3",
+    "Cesar Chavez Park - Ramada 3",
     "celebration"
   );
   mkEvent(
     laveen,
     marcus,
     "Resume & Interview Workshop",
-    "Bring your work history — our navigators help you build a fair-chance-ready resume and practice interview answers in one sitting. Coffee provided.",
+    "Bring your work history - our navigators help you build a fair-chance-ready resume and practice interview answers in one sitting. Coffee provided.",
     now + 9 * DAY + 18 * 3600e3,
     2,
-    "Laveen Center — Learning Lab",
+    "Laveen Center - Learning Lab",
     "workshop"
   );
 
-  // South Phoenix — a meeting, a workshop, a community gathering.
+  // South Phoenix - a meeting, a workshop, a community gathering.
   mkEvent(
     southPhoenix,
     spMentor,
-    "New in Recovery — Welcome Circle",
+    "New in Recovery - Welcome Circle",
     "A warm first step for anyone in their early weeks. Peer-led, confidential, and yours to attend as often as you need.",
     now + 3 * DAY + 18 * 3600e3,
     1.5,
-    "South Phoenix Center — Circle Room",
+    "South Phoenix Center - Circle Room",
     "meeting"
   );
   mkEvent(
@@ -2443,7 +2443,7 @@ function seed(): DB {
     "A judgment-free hour on saving your first $100, reading a pay stub, and building a simple plan on paper. Snacks and bus passes available.",
     now + 6 * DAY + 17 * 3600e3,
     1.5,
-    "South Phoenix Center — Room B",
+    "South Phoenix Center - Room B",
     "workshop"
   );
   mkEvent(
@@ -2453,11 +2453,11 @@ function seed(): DB {
     "Food, music, and tables from local fair-chance employers, housing navigators, and health partners. Come for lunch, leave with a next step.",
     now + 11 * DAY + 12 * 3600e3,
     3,
-    "South Mountain Park — Ramada 1",
+    "South Mountain Park - Ramada 1",
     "community"
   );
 
-  // ── event RSVPs — Danielle attends the Alumni BBQ + Tuesday meeting; a
+  // ── event RSVPs - Danielle attends the Alumni BBQ + Tuesday meeting; a
   //    handful of Laveen alumni fill out the celebration roster. ────────────
   const eventRsvps: EventRsvp[] = [
     {
@@ -2485,10 +2485,10 @@ function seed(): DB {
     });
   }
 
-  // ── member blocks — user-driven, seeded empty. ──────────────────────────
+  // ── member blocks - user-driven, seeded empty. ──────────────────────────
   const memberBlocks: MemberBlock[] = [];
 
-  // ── notifications — Danielle's inbox across kinds, mix read/unread. ──────
+  // ── notifications - Danielle's inbox across kinds, mix read/unread. ──────
   const danielleGedPost = posts.find(
     (p) => p.authorId === danielle.id && p.kind === "win"
   );
@@ -2527,7 +2527,7 @@ function seed(): DB {
   mkNotif(
     "comment",
     "New comment on your post",
-    "Rosa commented: “So proud of you — that door is wide open now!”",
+    "Rosa commented: “So proud of you - that door is wide open now!”",
     now - 6 * 3600e3,
     false,
     "post",
@@ -2545,7 +2545,7 @@ function seed(): DB {
   mkNotif(
     "follow_up",
     "A check-in is due",
-    "Your 180-day check-in with Laveen Center is coming up. No pressure — we just like hearing how you're doing.",
+    "Your 180-day check-in with Laveen Center is coming up. No pressure - we just like hearing how you're doing.",
     now - 1 * DAY,
     false,
     "followup",
@@ -2554,7 +2554,7 @@ function seed(): DB {
   mkNotif(
     "job",
     "New job match",
-    "Sun Valley Warehouse posted a Warehouse Associate role in Laveen — fair-chance, $17–$19/hr.",
+    "Sun Valley Warehouse posted a Warehouse Associate role in Laveen - fair-chance, $17–$19/hr.",
     now - 2 * DAY,
     true,
     "job",
@@ -2563,7 +2563,7 @@ function seed(): DB {
   mkNotif(
     "event",
     "You're invited: Laveen Alumni BBQ",
-    "Saturday at noon — food, music, and familiar faces. Tap to RSVP.",
+    "Saturday at noon - food, music, and familiar faces. Tap to RSVP.",
     now - 2 * DAY - 4 * 3600e3,
     true,
     "event",
@@ -2597,7 +2597,7 @@ function seed(): DB {
     undefined
   );
 
-  // ── post reports — a couple of open reports so the moderation queue is
+  // ── post reports - a couple of open reports so the moderation queue is
   //    never empty (seed v12). Appended after all v11 sections so earlier
   //    seed-* ids stay byte-identical. Reporters are flagship members. ───────
   const flaggedForReport = posts.filter((p) => p.status === "flagged");
@@ -2691,7 +2691,7 @@ export function save(): void {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(globalThis.__msdb ?? db()));
   } catch {
-    // read-only FS — in-memory only, acceptable for demo
+    // read-only FS - in-memory only, acceptable for demo
   }
 }
 
@@ -2764,7 +2764,7 @@ export function addMessage(
 
 /** The single write path into the continuum heartbeat. Every module hook
  *  (posts, lessons, donations, sessions, BARC, goals, phase changes) calls
- *  this — one row, many readers (score, timeline, export). Live events use
+ *  this - one row, many readers (score, timeline, export). Live events use
  *  Date.now(); seed events are EPOCH-anchored. Modules are extended with a
  *  one-line call, never rewritten. */
 export function emitContinuumEvent(
@@ -2789,7 +2789,7 @@ export function emitContinuumEvent(
 /** Fire-and-forget notification into a user's inbox. The single write path for
  *  live notifications (mirrors emitContinuumEvent). Guards `d.notifications`,
  *  unshifts newest-first, persists. Returns null when there is no valid target
- *  (empty userId) — call sites additionally skip self-notification (never notify
+ *  (empty userId) - call sites additionally skip self-notification (never notify
  *  a user about their OWN action) by comparing target vs. actor before calling. */
 export function emitNotification(
   userId: string,

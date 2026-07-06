@@ -11,7 +11,7 @@ interface CommunityStats {
 const fmt = (n: number) => n.toLocaleString("en-US");
 
 /**
- * Live stat band for /giving — fetches public community stats client-side
+ * Live stat band for /giving - fetches public community stats client-side
  * and renders them as three tnum figures. Skeletons while loading; keeps
  * the last good numbers on network hiccups.
  */

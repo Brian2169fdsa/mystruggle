@@ -22,7 +22,7 @@ function sameDay(a: number, b: number): boolean {
 
 /**
  * Complete a lesson: +10 points, level recompute, streak bump on the first
- * completion of the day. Idempotent — repeat completes never re-award.
+ * completion of the day. Idempotent - repeat completes never re-award.
  */
 export async function POST(req: Request) {
   const user = await getSessionUser();

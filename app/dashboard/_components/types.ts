@@ -50,10 +50,10 @@ export type AdminMember = {
 /** White card shell used across every dashboard section. */
 export const CARD = "rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
-/** Skeleton block — soft sky-tint pulse used while live data loads. */
+/** Skeleton block - soft sky-tint pulse used while live data loads. */
 export const SKELETON = "animate-pulse rounded-2xl bg-sky-tint";
 
-/** $1,240 / $123.50 — cents only when they exist. */
+/** $1,240 / $123.50 - cents only when they exist. */
 export function fmtMoney(n: number): string {
   const opts =
     Math.round(n * 100) % 100 === 0

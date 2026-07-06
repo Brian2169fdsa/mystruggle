@@ -18,7 +18,7 @@ import type { CareEpisode } from "@/app/lib/types";
 // Saturating normalizer constant for the engagement score. score =
 // 100 * raw / (raw + K), where raw = summed event weights in the trailing
 // 90-day window. K is the "half-saturation" weight: at raw = K the score is
-// 50, and it approaches (but never reaches) 100 as engagement climbs — so a
+// 50, and it approaches (but never reaches) 100 as engagement climbs - so a
 // very active member lands ~70–85 and inactivity decays toward 0. K = 40 was
 // tuned against the seed so Danielle (dense, multi-module) reads as healthy.
 const SCORE_K = 40;
@@ -81,7 +81,7 @@ export async function GET(req: Request) {
   // wall clock. Seed data is anchored to a fixed EPOCH, so a raw Date.now()
   // window would treat it as stale; anchoring to the dataset's leading edge
   // makes the rolling windows render live. In production the newest event ≈
-  // real now, so behavior is identical — and score decay stays honest because
+  // real now, so behavior is identical - and score decay stays honest because
   // an inactive member's events fall outside the window measured from that
   // shared leading edge.
   const latest = d.continuumEvents.reduce(

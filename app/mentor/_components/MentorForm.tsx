@@ -24,14 +24,14 @@ type FieldErrors = Partial<
   Record<"name" | "phone" | "email" | "areas" | "availability", string>
 >;
 
-/** Inline field error — amber (concern), never red on a person. */
+/** Inline field error - amber (concern), never red on a person. */
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return <div className="mt-1.5 text-[12px] font-semibold text-amber-ink">{msg}</div>;
 }
 
 /**
- * Mentor application card — ports the prototype's DCLogic Component state:
+ * Mentor application card - ports the prototype's DCLogic Component state:
  * lived-experience multi-select chips, availability radio pills, and the
  * submitted → success view with "Back to the form". Submits to the real
  * intake API (/api/mentor-applications) for staff review.
@@ -87,14 +87,14 @@ export default function MentorForm() {
 
       const data = await res.json().catch(() => null);
       if (res.status === 409) {
-        setNotice("You're already on our list — a coordinator will call you.");
+        setNotice("You're already on our list - a coordinator will call you.");
       } else if (res.status === 400 && data?.errors) {
         setFieldErrors(data.errors as FieldErrors);
       } else {
-        setNotice(data?.error ?? "Something went wrong — please try again.");
+        setNotice(data?.error ?? "Something went wrong - please try again.");
       }
     } catch {
-      setNotice("We couldn't reach the center just now — please try again.");
+      setNotice("We couldn't reach the center just now - please try again.");
     } finally {
       setSending(false);
     }
@@ -108,7 +108,7 @@ export default function MentorForm() {
             ✓
           </div>
           <div className="text-[24px] font-extrabold tracking-[-0.02em] text-ink-900">
-            Thank you — we&apos;ll call you.
+            Thank you - we&apos;ll call you.
           </div>
           <div className="max-w-[340px] text-[15px]/[1.7] text-ink-600">
             A Laveen Center coordinator will reach out within one week.
@@ -163,7 +163,7 @@ export default function MentorForm() {
             <div className={FIELD_LABEL}>
               Lived-experience areas{" "}
               <span className="text-[12px] font-normal text-ink-600">
-                — select all that apply
+                - select all that apply
               </span>
             </div>
             <div className="flex flex-wrap gap-2.5">
@@ -220,7 +220,7 @@ export default function MentorForm() {
             <div className={FIELD_LABEL}>
               Tell us a little about your story{" "}
               <span className="text-[12px] font-normal text-ink-600">
-                — optional
+                - optional
               </span>
             </div>
             <textarea

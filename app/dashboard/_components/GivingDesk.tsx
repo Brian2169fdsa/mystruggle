@@ -5,10 +5,10 @@ import { ScanLine } from "lucide-react";
 import { CARD, SKELETON, fmtMoney } from "./types";
 import type { AdminMember, GivingStep, OverviewData } from "./types";
 
-/** Daily cash redemption cap (docs/04 guardrails — mirrors the API). */
+/** Daily cash redemption cap (docs/04 guardrails - mirrors the API). */
 const DAILY_CAP = 100;
 
-/** The flow's own step — includes the member-lookup "scan" step that the
+/** The flow's own step - includes the member-lookup "scan" step that the
  *  page-level GivingStep type doesn't model. */
 type DeskStep = "scan" | "amount" | "pin" | "done";
 
@@ -20,7 +20,7 @@ type DeskMember = {
   cash: number;
 };
 
-/** Warm inline error — amber, never red on a person. */
+/** Warm inline error - amber, never red on a person. */
 function InlineError({ msg }: { msg: string }) {
   return (
     <div className="mt-3 rounded-xl bg-amber-bg px-4 py-2.5 text-[13px] font-semibold text-amber-ink">
@@ -58,7 +58,7 @@ export default function GivingDesk({
     newCash: number;
     capRemaining: number;
   } | null>(null);
-  // What the API told us each member redeemed today — starts optimistic at
+  // What the API told us each member redeemed today - starts optimistic at
   // $0 and is corrected from every redeem response.
   const [redeemedByMember, setRedeemedByMember] = useState<
     Record<string, number>
@@ -71,7 +71,7 @@ export default function GivingDesk({
   async function lookupMember() {
     const num = memberInput.trim();
     if (!/^\d{4,}$/.test(num)) {
-      setScanError("Enter the member # from the ID card — digits only.");
+      setScanError("Enter the member # from the ID card - digits only.");
       return;
     }
     setLooking(true);
@@ -83,7 +83,7 @@ export default function GivingDesk({
       const m = data.members.find((x) => x.memberNumber === num);
       if (!m) {
         setScanError(
-          `No member card matches #${num} — double-check the number and try again.`
+          `No member card matches #${num} - double-check the number and try again.`
         );
         return;
       }
@@ -99,7 +99,7 @@ export default function GivingDesk({
       setAmountError(null);
       setDeskStep("amount");
     } catch {
-      setScanError("Couldn't reach the roster — try again in a moment.");
+      setScanError("Couldn't reach the roster - try again in a moment.");
     } finally {
       setLooking(false);
     }
@@ -153,7 +153,7 @@ export default function GivingDesk({
         error?: string;
       };
       if (!res.ok || !data.ok) {
-        setPinError(data.error ?? "Something went wrong — try again.");
+        setPinError(data.error ?? "Something went wrong - try again.");
         return;
       }
       setRedeemedByMember((prev) => ({
@@ -168,7 +168,7 @@ export default function GivingDesk({
       });
       setDeskStep("done");
     } catch {
-      setPinError("Couldn't reach the server — try again in a moment.");
+      setPinError("Couldn't reach the server - try again in a moment.");
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +184,7 @@ export default function GivingDesk({
     setPinDigits("");
     setPinError(null);
     setResult(null);
-    // redeemedByMember is kept — the cap note stays honest between runs.
+    // redeemedByMember is kept - the cap note stays honest between runs.
   }
 
   const scan = deskStep === "scan";
@@ -192,7 +192,7 @@ export default function GivingDesk({
   const pin = deskStep === "pin";
   const done = deskStep === "done";
 
-  // Quick chips — $10 / $40 / All-$cash.
+  // Quick chips - $10 / $40 / All-$cash.
   const chips = member
     ? [
         { label: "$10", value: 10 },
@@ -242,7 +242,7 @@ export default function GivingDesk({
     />
   );
 
-  // LIVE split utilization — real held balances from /api/admin/overview.
+  // LIVE split utilization - real held balances from /api/admin/overview.
   const heldTotal = overview
     ? overview.cashHeld + overview.creditsHeld + overview.savingsHeld
     : 0;
@@ -288,7 +288,7 @@ export default function GivingDesk({
                 ${result.amount} cash recorded for {member.name}
               </div>
               <div className="max-w-[380px] text-sm/[1.7] text-ink-600">
-                Ledger entry created with dual record — {member.name}&apos;s
+                Ledger entry created with dual record - {member.name}&apos;s
                 card scan + your staff PIN. Their app balance updated
                 instantly: cash now{" "}
                 <strong className="text-ink-900">${result.newCash}</strong> ·
@@ -322,7 +322,7 @@ export default function GivingDesk({
                     Scan member ID card
                   </div>
                   <div className="text-[13px] text-ink-600">
-                    Card scan simulated — enter the member # printed on the
+                    Card scan simulated - enter the member # printed on the
                     card.
                   </div>
                   <form
@@ -572,7 +572,7 @@ export default function GivingDesk({
               </div>
               <div>
                 <div className="tnum text-[26px] font-extrabold text-blue-primary">
-                  {overview ? overview.donations.toLocaleString("en-US") : "—"}
+                  {overview ? overview.donations.toLocaleString("en-US") : "-"}
                 </div>
                 <div className="text-[11px] font-semibold text-ink-600">
                   gifts
@@ -582,7 +582,7 @@ export default function GivingDesk({
                 <div className="tnum text-[26px] font-extrabold text-success">
                   {overview
                     ? overview.weeklyRecurring.toLocaleString("en-US")
-                    : "—"}
+                    : "-"}
                 </div>
                 <div className="text-[11px] font-semibold text-ink-600">
                   weekly recurring

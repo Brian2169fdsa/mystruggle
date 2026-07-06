@@ -26,7 +26,7 @@ export function circleDb(): ReturnType<typeof db> & {
   };
 }
 
-/** A post that may live inside a circle — circleId is runtime-additive. */
+/** A post that may live inside a circle - circleId is runtime-additive. */
 export type CirclePost = Post & { circleId?: string };
 
 export function findCircle(id: string): Circle | undefined {
@@ -44,7 +44,7 @@ export function circleMemberCount(circleId: string): number {
     .length;
 }
 
-/** Read access — topic/cohort circles are open reads for everyone; alumni
+/** Read access - topic/cohort circles are open reads for everyone; alumni
  *  circles are center-private: that center's people (any role) or staff. */
 export function canReadCircle(circle: Circle, user: User | null): boolean {
   if (circle.kind !== "alumni") return true;

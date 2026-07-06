@@ -1,4 +1,4 @@
-// /community/u/[slug] — a member's public profile (docs/13 Part A).
+// /community/u/[slug] - a member's public profile (docs/13 Part A).
 // Consent-first: renders only what buildPublicProfile() releases; a member
 // with consent off (or no profile details yet) gets the warm private card.
 
@@ -35,8 +35,8 @@ export async function generateMetadata({
   const profile = buildPublicProfile(findMemberBySlug(slug));
   return {
     title: profile
-      ? `${profile.name} — My Struggle Community`
-      : "Member profile — My Struggle",
+      ? `${profile.name} - My Struggle Community`
+      : "Member profile - My Struggle",
     description: "A member of the My Struggle recovery community.",
   };
 }
@@ -46,7 +46,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-/** "2025-05-03" → "May 2025" (no timezone math — parse the string). */
+/** "2025-05-03" → "May 2025" (no timezone math - parse the string). */
 function journeyLabel(iso: string): string | null {
   const m = /^(\d{4})-(\d{2})/.exec(iso);
   if (!m) return null;
@@ -54,7 +54,7 @@ function journeyLabel(iso: string): string | null {
   return month ? `${month} ${m[1]}` : null;
 }
 
-/** One recovery-capital ring — conic gradient, % in the middle. */
+/** One recovery-capital ring - conic gradient, % in the middle. */
 function CapitalRing({
   label,
   pct,
@@ -86,7 +86,7 @@ function CapitalRing({
   );
 }
 
-/** Journey highlight card — icon + value + label. */
+/** Journey highlight card - icon + value + label. */
 function MilestoneCard({
   icon: Icon,
   value,
@@ -120,7 +120,7 @@ function SectionLabel({ children }: { children: string }) {
   );
 }
 
-/** Read-only post card — mirrors the community card, hearts view-only. */
+/** Read-only post card - mirrors the community card, hearts view-only. */
 function ProfilePostCard({ post }: { post: ProfilePost }) {
   const milestone = post.kind === "milestone";
   return (
@@ -173,7 +173,7 @@ function PrivateCard() {
         This member keeps their profile private.
       </h1>
       <p className="mt-2.5 text-[14px]/[1.65] font-medium text-ink-600">
-        Every member chooses exactly what to share — and private is a
+        Every member chooses exactly what to share - and private is a
         perfectly good choice. The journey counts either way.
       </p>
       <Link
@@ -200,7 +200,7 @@ function ProfileBody({
       {/* cover band, overlapping avatar, identity, actions, sticky tabs */}
       <ProfileHeader profile={profile} memberId={memberId} journey={journey} />
 
-      {/* ── Journey — milestone highlights + rings (each consent-gated) ── */}
+      {/* ── Journey - milestone highlights + rings (each consent-gated) ── */}
       <section
         id="journey"
         className="flex scroll-mt-[132px] flex-col gap-6 lg:scroll-mt-[148px]"
@@ -229,7 +229,7 @@ function ProfileBody({
           </div>
         )}
 
-        {/* recovery-capital rings — only when the member made them public */}
+        {/* recovery-capital rings - only when the member made them public */}
         {profile.recoveryCapital && (
           <div className="rounded-2xl bg-white px-6 py-7 shadow-[0_1px_3px_rgba(11,37,69,.06)] sm:px-10">
             <h2 className="text-center text-[13px] font-bold tracking-[.12em] text-blue-primary">
@@ -253,7 +253,7 @@ function ProfileBody({
               />
             </div>
             <p className="mt-5 text-center text-[12px] font-medium text-ink-600">
-              Grown from {profile.name}&rsquo;s own activity — never a clinical
+              Grown from {profile.name}&rsquo;s own activity - never a clinical
               score.
             </p>
           </div>
@@ -261,13 +261,13 @@ function ProfileBody({
 
         {!m && !profile.recoveryCapital && (
           <div className="rounded-2xl bg-white px-6 py-8 text-center text-[14px] font-medium text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-            {profile.name} keeps these details close for now — and that&rsquo;s
+            {profile.name} keeps these details close for now - and that&rsquo;s
             a perfectly good choice.
           </div>
         )}
       </section>
 
-      {/* ── About — what the member chose to share about themselves ── */}
+      {/* ── About - what the member chose to share about themselves ── */}
       <section id="about" className="scroll-mt-[132px] lg:scroll-mt-[148px]">
         <SectionLabel>ABOUT</SectionLabel>
         <div className="rounded-2xl bg-white px-6 py-7 shadow-[0_1px_3px_rgba(11,37,69,.06)] sm:px-8">
@@ -302,7 +302,7 @@ function ProfileBody({
         </div>
       </section>
 
-      {/* ── Wins — the member's shared posts (read-only) ── */}
+      {/* ── Wins - the member's shared posts (read-only) ── */}
       <section id="wins" className="scroll-mt-[132px] lg:scroll-mt-[148px]">
         <SectionLabel>WINS &amp; POSTS</SectionLabel>
         {profile.posts.length > 0 ? (
@@ -313,7 +313,7 @@ function ProfileBody({
           </div>
         ) : (
           <div className="rounded-2xl bg-white px-6 py-8 text-center text-[14px] font-medium text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-            Nothing shared yet — the journey is still being written.
+            Nothing shared yet - the journey is still being written.
           </div>
         )}
       </section>

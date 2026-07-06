@@ -20,9 +20,9 @@ import { toSafeUser } from "../../lib/types";
 import CommunityTabBar from "../_components/CommunityTabBar";
 
 export const metadata: Metadata = {
-  title: "Menu — Community — My Struggle",
+  title: "Menu - Community - My Struggle",
   description:
-    "Everything in one place — your profile, circles, events, giving page, and more across the My Struggle community.",
+    "Everything in one place - your profile, circles, events, giving page, and more across the My Struggle community.",
 };
 
 type Shortcut = {
@@ -56,7 +56,7 @@ function ShortcutCard({ s }: { s: Shortcut }) {
 }
 
 /**
- * /community/menu — the mobile "Menu" surface reached from the community tab
+ * /community/menu - the mobile "Menu" surface reached from the community tab
  * bar. Profile at the top, big shortcut cards to every community destination,
  * small footer links. Works on desktop too (centered, max-w 680px).
  */

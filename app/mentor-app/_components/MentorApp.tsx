@@ -33,7 +33,7 @@ const MOOD_WORDS: Record<number, string> = {
   5: "great",
 };
 
-// Real session-log wiring — Danielle's flagship member number (roster demo).
+// Real session-log wiring - Danielle's flagship member number (roster demo).
 const DANIELLE_MEMBER_NUMBER = "039521464";
 const DEMO_NOTE = "Prepped for Thursday's interview. Confidence way up.";
 
@@ -85,7 +85,7 @@ export default function MentorApp() {
   const [cheerSent, setCheerSent] = useState(false);
   const [mood, setMood] = useState<number | null>(null);
 
-  // "I'm concerned" — quiet escalation to the care team.
+  // "I'm concerned" - quiet escalation to the care team.
   const [concernOpen, setConcernOpen] = useState(false);
   const [concernNote, setConcernNote] = useState("");
   const [concernSending, setConcernSending] = useState(false);
@@ -94,7 +94,7 @@ export default function MentorApp() {
     "sent" | "duplicate" | null
   >(null);
 
-  // Live chat state — real threads when signed in as a mentor.
+  // Live chat state - real threads when signed in as a mentor.
   const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
   const [meRole, setMeRole] = useState<string | null>(null);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
@@ -152,7 +152,7 @@ export default function MentorApp() {
       (t.other?.name ?? "").toLowerCase().startsWith(firstName.toLowerCase())
     ) ?? null;
 
-  /** Danielle's real member id — from the loaded threads when possible,
+  /** Danielle's real member id - from the loaded threads when possible,
    *  otherwise resolved once via the roster API by member number. */
   const resolveDanielleId = useCallback(async (): Promise<string | null> => {
     if (danielleIdRef.current) return danielleIdRef.current;
@@ -222,7 +222,7 @@ export default function MentorApp() {
     setConcernOpen(true);
   };
 
-  /** Send the concern to the care team — mentor session required; signed-out
+  /** Send the concern to the care team - mentor session required; signed-out
    *  viewers get a gentle sign-in prompt inside the sheet, never an error. */
   const sendConcern = async () => {
     if (!signedIn || (meRole !== "mentor" && meRole !== "staff")) {
@@ -255,13 +255,13 @@ export default function MentorApp() {
         setConcernNeedSignIn(true);
       }
     } catch {
-      /* quiet by design — the sheet simply stays open */
+      /* quiet by design - the sheet simply stays open */
     } finally {
       setConcernSending(false);
     }
   };
 
-  /** Save from the log sheet — optimistic banner always; real POST when
+  /** Save from the log sheet - optimistic banner always; real POST when
    *  signed in as a mentor (401/signed-out keeps the local demo behavior). */
   const saveSession = () => {
     setLogOpen(false);
@@ -283,12 +283,12 @@ export default function MentorApp() {
         });
         if (res.ok) loadSessions(memberId);
       } catch {
-        /* banner already shown — demo-grade */
+        /* banner already shown - demo-grade */
       }
     })();
   };
 
-  /** Tyrell — roster card + amber nudge: real thread when signed in. */
+  /** Tyrell - roster card + amber nudge: real thread when signed in. */
   const openTyrell = () => {
     setCameFrom("roster");
     setActiveThread(signedIn ? findThread("Tyrell") : null);
@@ -326,7 +326,7 @@ export default function MentorApp() {
     }
   };
 
-  /** Cheer from mentee detail — banner always; real message when signed in. */
+  /** Cheer from mentee detail - banner always; real message when signed in. */
   const sendCheer = () => {
     setCheerSent(true);
     const t = findThread("Danielle");
@@ -336,7 +336,7 @@ export default function MentorApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kind: "cheer",
-          body: "Keep going — proud of you!",
+          body: "Keep going - proud of you!",
         }),
       }).catch(() => {});
     }
@@ -381,7 +381,7 @@ export default function MentorApp() {
             <div className="hairline" />
 
             <div className="flex flex-1 flex-col gap-3.5 p-5">
-              {/* Amber nudge banner — soft signal, opens thread */}
+              {/* Amber nudge banner - soft signal, opens thread */}
               <div
                 onClick={openTyrell}
                 className="flex cursor-pointer items-center gap-3 rounded-2xl border-[1.5px] border-gold-border bg-amber-bg px-[18px] py-3.5"
@@ -432,7 +432,7 @@ export default function MentorApp() {
                 </div>
               </div>
 
-              {/* Tyrell — amber border, never red on a person */}
+              {/* Tyrell - amber border, never red on a person */}
               <div
                 onClick={openTyrell}
                 className={`cursor-pointer rounded-2xl border-[1.5px] border-gold-border bg-white p-5 hover:bg-amber-bg ${CARD_SHADOW}`}
@@ -538,7 +538,7 @@ export default function MentorApp() {
               {cheerSent && (
                 <div className="flex justify-center">
                   <span className="inline-flex h-10 items-center gap-2 rounded-full bg-gold-bg px-5 text-[13px] font-bold text-gold-ink">
-                    <Diamond size={12} fill="currentColor" /> Cheer sent —
+                    <Diamond size={12} fill="currentColor" /> Cheer sent -
                     Danielle will see it on her Home
                   </span>
                 </div>
@@ -619,7 +619,7 @@ export default function MentorApp() {
                     </div>
                   </div>
                 </div>
-                {/* Journal: privacy note only — content is never visible to mentors */}
+                {/* Journal: privacy note only - content is never visible to mentors */}
                 <div className="flex items-center gap-3.5 border-b border-canvas px-5 py-4">
                   <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full bg-sky-tint text-blue-primary">
                     <Pencil size={14} strokeWidth={2.5} />
@@ -648,7 +648,7 @@ export default function MentorApp() {
                 </div>
               </div>
 
-              {/* Sessions summary — updates after a save */}
+              {/* Sessions summary - updates after a save */}
               <div
                 className={`rounded-2xl bg-white px-5 py-[18px] ${CARD_SHADOW}`}
               >
@@ -671,7 +671,7 @@ export default function MentorApp() {
                 )}
               </div>
 
-              {/* Deliberately quiet — a text link, not a button */}
+              {/* Deliberately quiet - a text link, not a button */}
               <div className="mt-auto pb-2 text-center">
                 {concernResult === "sent" ? (
                   <span className="text-[13px] font-semibold text-ink-600">
@@ -680,7 +680,7 @@ export default function MentorApp() {
                   </span>
                 ) : concernResult === "duplicate" ? (
                   <span className="text-[13px] font-semibold text-ink-600">
-                    You already raised this — the care team is on it.
+                    You already raised this - the care team is on it.
                   </span>
                 ) : (
                   <span
@@ -695,7 +695,7 @@ export default function MentorApp() {
           </div>
         )}
 
-        {/* ============ CHAT — THREAD LIST (signed in) ============ */}
+        {/* ============ CHAT - THREAD LIST (signed in) ============ */}
         {view === "chatlist" && (
           <div className="flex flex-1 flex-col">
             <div className="bg-white px-5 pb-3.5 pt-[18px]">
@@ -703,7 +703,7 @@ export default function MentorApp() {
                 Messages
               </div>
               <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-                Your mentees — a small nudge can change a whole day.
+                Your mentees - a small nudge can change a whole day.
               </div>
             </div>
             <div className="hairline" />
@@ -746,7 +746,7 @@ export default function MentorApp() {
           </div>
         )}
 
-        {/* ============ THREAD — real conversation when signed in ============ */}
+        {/* ============ THREAD - real conversation when signed in ============ */}
         {view === "thread" && activeThread && activeThread.other && viewerId && (
           <ChatThread
             threadId={activeThread.id}
@@ -757,7 +757,7 @@ export default function MentorApp() {
           />
         )}
 
-        {/* ============ THREAD — static demo (signed out) ============ */}
+        {/* ============ THREAD - static demo (signed out) ============ */}
         {view === "thread" && !(activeThread && activeThread.other && viewerId) && (
           <div className="flex flex-1 flex-col">
             <div className="flex items-center gap-3.5 bg-white px-5 py-3.5">
@@ -785,7 +785,7 @@ export default function MentorApp() {
                   href="/login"
                   className="flex min-h-[44px] items-center justify-center rounded-2xl border-[1.5px] border-sky-tint-2 bg-sky-tint px-5 py-3 text-center text-[13px] font-bold text-blue-primary hover:bg-sky-tint-2"
                 >
-                  This is a preview — sign in as a mentor to send real
+                  This is a preview - sign in as a mentor to send real
                   messages →
                 </a>
               )}
@@ -795,7 +795,7 @@ export default function MentorApp() {
               </div>
               <div className="flex justify-end">
                 <div className="max-w-[270px] rounded-2xl rounded-tr-[6px] bg-blue-primary px-[17px] py-[13px] text-sm/[1.55] font-medium text-white">
-                  Hey T — been thinking about you. No pressure, no agenda. You
+                  Hey T - been thinking about you. No pressure, no agenda. You
                   good?
                 </div>
               </div>
@@ -880,7 +880,7 @@ export default function MentorApp() {
           </div>
         )}
 
-        {/* ============ ME — my mentoring analytics ============ */}
+        {/* ============ ME - my mentoring analytics ============ */}
         {view === "me" && <MeTab signedIn={signedIn} meRole={meRole} />}
 
         {/* ============ TAB BAR (hidden on detail) ============ */}
@@ -894,7 +894,7 @@ export default function MentorApp() {
           />
         )}
 
-        {/* ============ CONCERN SHEET — quiet escalation ============ */}
+        {/* ============ CONCERN SHEET - quiet escalation ============ */}
         {concernOpen && (
           <ConcernSheet
             name="Danielle"

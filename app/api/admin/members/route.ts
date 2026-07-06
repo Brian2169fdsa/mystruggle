@@ -3,7 +3,7 @@ import { db } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 import type { SupportRequest } from "@/app/lib/types";
 
-/** Staff roster view — members with balances, requests, streaks, mentor.
+/** Staff roster view - members with balances, requests, streaks, mentor.
  *  `requests` stays inline per row (the dashboard detail pane reads it from
  *  this payload); lookups are pre-indexed so 500 members stays O(n).
  *  Staff-only (was demo-open; P0 gap closed). */

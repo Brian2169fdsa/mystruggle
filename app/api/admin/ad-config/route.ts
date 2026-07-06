@@ -8,8 +8,8 @@ import type { AdConfig } from "@/app/lib/store";
  * "ms_admin" role in this codebase, so STAFF acts as ms_admin (getRoleUser()
  * with no args = staff-only). Mirrors /api/admin/placements' auth shape.
  *
- * GET  — the current config: { frequencyEveryN, blockedTerms }.
- * POST — { frequencyEveryN?, blockedTerms? }; validates + persists via the store
+ * GET  - the current config: { frequencyEveryN, blockedTerms }.
+ * POST - { frequencyEveryN?, blockedTerms? }; validates + persists via the store
  *        helper. frequencyEveryN is read live by /api/placements/serve. The
  *        blockedTerms are stored for a future merge into ad-policy.ts's fixed
  *        content screen (that screen is NOT rewired this pass).

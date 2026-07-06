@@ -27,7 +27,7 @@ const SOCIALS = [
 const WORDMARK_WHITE =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2843%29-1920w.png";
 
-/** Full navy-deep footer (guide §4) — used on every marketing page. */
+/** Full navy-deep footer (guide §4) - used on every marketing page. */
 export default function Footer() {
   return (
     <footer className="bg-navy-deep">

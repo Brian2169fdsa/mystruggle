@@ -31,22 +31,22 @@ export function nextLesson(
   return null;
 }
 
-/** Full interactive member portal — phone shell + tab router + overlays. */
+/** Full interactive member portal - phone shell + tab router + overlays. */
 export default function MemberApp() {
   const [tab, setTab] = useState<TabKey>("home");
   const [lessonOpen, setLessonOpen] = useState(false);
-  // My Plan (docs/13 Part C) — full-screen view within the shell, same
+  // My Plan (docs/13 Part C) - full-screen view within the shell, same
   // pattern as lessonOpen. Not a 6th tab.
   const [planOpen, setPlanOpen] = useState(false);
-  // Recovery goals (enriched) — null until signed in + loaded.
+  // Recovery goals (enriched) - null until signed in + loaded.
   const [planGoals, setPlanGoals] = useState<PlanGoal[] | null>(null);
   const [celebrating, setCelebrating] = useState(false);
   const [lessonDone, setLessonDone] = useState(false);
   const [quiz, setQuiz] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([
     { label: "Mood check-in with Marcus", done: true },
-    { label: "Job interview at ABC Painting — 2:00 pm", done: false },
-    { label: "ISE Course 3 · Lesson 2 — 12 min video", done: false },
+    { label: "Job interview at ABC Painting - 2:00 pm", done: false },
+    { label: "ISE Course 3 · Lesson 2 - 12 min video", done: false },
   ]);
   const [heart3, setHeart3] = useState(false); // local fallback shared-win post
   const [vidCat, setVidCat] = useState("All");
@@ -65,7 +65,7 @@ export default function MemberApp() {
   } | null>(null);
   // Which real course the lesson player has open (null = demo lesson).
   const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
-  // Last real completion — feeds the celebration copy + the win post body.
+  // Last real completion - feeds the celebration copy + the win post body.
   const [lastWin, setLastWin] = useState<{
     courseTitle: string;
     lesson: number;
@@ -97,7 +97,7 @@ export default function MemberApp() {
             enrollments: cData.enrollments ?? [],
           });
       } catch {
-        // offline / signed out — keep demo behavior
+        // offline / signed out - keep demo behavior
       }
     })();
     return () => {
@@ -183,7 +183,7 @@ export default function MemberApp() {
           });
         }
       } catch {
-        // offline — celebrate locally anyway; server catches up next time
+        // offline - celebrate locally anyway; server catches up next time
       }
     }
     setLessonDone(true);
@@ -198,8 +198,8 @@ export default function MemberApp() {
     // Post the win to the live community feed when signed in;
     // fall back to the local card when signed out (or offline).
     const winBody = lastWin
-      ? `Just completed Lesson ${lastWin.lesson} of ${lastWin.courseTitle} — +10 points and the streak lives on.`
-      : "Just completed Lesson 2 of ISE Course 3 — made a decision. +10 points and the streak lives on.";
+      ? `Just completed Lesson ${lastWin.lesson} of ${lastWin.courseTitle} - +10 points and the streak lives on.`
+      : "Just completed Lesson 2 of ISE Course 3 - made a decision. +10 points and the streak lives on.";
     try {
       const res = await fetch("/api/posts", {
         method: "POST",

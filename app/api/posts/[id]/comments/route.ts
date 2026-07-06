@@ -34,9 +34,9 @@ export async function POST(
     );
   }
 
-  // @mention notifications — non-fatal, must never block the comment response.
+  // @mention notifications - non-fatal, must never block the comment response.
   // SAFETY: comments carrying crisis language are skipped entirely (mirrors the
-  // feed's crisis hold in /api/posts) — no @mention pings out of a crisis post.
+  // feed's crisis hold in /api/posts) - no @mention pings out of a crisis post.
   try {
     if (!isCrisisText(text)) {
       const authorFirst = user.name.split(/\s+/)[0];

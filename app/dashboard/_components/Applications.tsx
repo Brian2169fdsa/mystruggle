@@ -14,7 +14,7 @@ const STATUS_CHIP: Record<
 };
 
 /**
- * Mentor application queue — website intake awaiting staff review.
+ * Mentor application queue - website intake awaiting staff review.
  * Self-fetching (GET /api/mentor-applications, staff cookie), polls every
  * 15s, advances status new → contacted → approved via PUT.
  */
@@ -92,7 +92,7 @@ export default function Applications() {
 
       {apps && !error && apps.length === 0 && (
         <div className={CARD + " px-[30px] py-8 text-center text-[13px] font-semibold text-ink-400"}>
-          No applications yet — share the Become a Mentor page.
+          No applications yet - share the Become a Mentor page.
         </div>
       )}
 
@@ -171,7 +171,7 @@ export default function Applications() {
                       ✓ Approve
                     </button>
                     <div className="mt-1.5 text-[11px] text-ink-400">
-                      Approval creates their mentor account during onboarding —
+                      Approval creates their mentor account during onboarding -
                       manual for now
                     </div>
                   </div>

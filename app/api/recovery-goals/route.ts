@@ -13,7 +13,7 @@ import {
 
 // ── defensive store access ─────────────────────────────────────────────
 // The expansion arrays (recoveryGoals / goalMilestones) may be seeded by a
-// concurrent seed pass or absent entirely on a fresh store — always default
+// concurrent seed pass or absent entirely on a fresh store - always default
 // them in place so both orders of arrival work.
 type ExpansionStore = {
   recoveryGoals?: RecoveryGoal[];
@@ -79,7 +79,7 @@ function goalsFor(memberId: string): RecoveryGoal[] {
 }
 
 /**
- * GET — the signed-in member's recovery goals (milestones + progress +
+ * GET - the signed-in member's recovery goals (milestones + progress +
  * linked funding). Mentors/staff may pass ?memberId= to view a member's
  * shared goals: mentors (of that member) see visibility mentor/circle/public;
  * staff see all.
@@ -122,13 +122,13 @@ const VISIBILITIES: GoalVisibility[] = ["private", "mentor", "circle", "public"]
 const ACTIONS = ["achieve", "pause", "resume", "archive"] as const;
 
 /**
- * POST — member-only, multi-action (PATCH-style):
+ * POST - member-only, multi-action (PATCH-style):
  * - { title, domain, why?, targetDate?, visibility?, linkedRequestId? |
  *     createRequest: { label, weeklyTarget } }  → create a goal, optionally
  *     creating a linked funding request (same shape as POST /api/requests).
  * - { goalId, action: "achieve" | "pause" | "resume" | "archive" }
  *     Achieving sets achievedAt and awards +25 points (gamification tie-in,
- *     docs/07 — level recomputed on the same ladder as lesson completions).
+ *     docs/07 - level recomputed on the same ladder as lesson completions).
  * - { goalId, milestone: { title } }             → add a milestone.
  * - { milestoneId, done: boolean }               → toggle a milestone.
  */
@@ -206,7 +206,7 @@ export async function POST(req: Request) {
         goal.status = "achieved";
         goal.achievedAt = Date.now();
         // Gamification tie-in (docs/07): achieving a recovery goal awards
-        // +25 points and recomputes the level — idempotent (once per goal).
+        // +25 points and recomputes the level - idempotent (once per goal).
         user.points = (user.points ?? 0) + 25;
         user.level = levelFor(user.points);
         awarded = true;
@@ -254,7 +254,7 @@ export async function POST(req: Request) {
     }
     linkedRequestId = owned.id;
   } else if (body.createRequest) {
-    // Same contract as POST /api/requests — one call creates both halves.
+    // Same contract as POST /api/requests - one call creates both halves.
     const label = String(body.createRequest.label ?? "").trim();
     const weeklyTarget = Math.floor(Number(body.createRequest.weeklyTarget ?? 0));
     if (!label || weeklyTarget < 1 || weeklyTarget > 10_000) {

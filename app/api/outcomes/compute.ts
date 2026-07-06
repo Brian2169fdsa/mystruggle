@@ -1,25 +1,25 @@
-// Outcomes data product — computed "materialized views" (docs/14 § data
+// Outcomes data product - computed "materialized views" (docs/14 § data
 // product; requirements/11 §H). This module is the ONE place the three MVs are
 // computed, so the GET route and the CSV export stay in lockstep.
 //
 // TWO DATA PLANES (the P0 trust boundary):
-//   • center   — identified, consented, single-center. A staff member may see
+//   • center   - identified, consented, single-center. A staff member may see
 //                identifiable rows for THEIR OWN center.
-//   • licensed — de-identified, aggregated, licensable. ONLY aggregate counters
+//   • licensed - de-identified, aggregated, licensable. ONLY aggregate counters
 //                ever leave this path. To make that structurally true (not just
 //                a promise), the licensed path first projects every member into
 //                a `MemberOutcome` frame that carries NO name / memberNumber /
-//                slug / user id — only numbers and timestamps — and every
+//                slug / user id - only numbers and timestamps - and every
 //                aggregate below reads that frame, never a `User`. A leaked
 //                name is therefore impossible by construction, not by review.
 //
 // De-identification rules (docs/10 §6 governance / requirements/11 §H):
 //   • Minimum cohort size k ≥ 11: any bucket/cohort with fewer than 11 members
-//     is suppressed (returned null with a "<11 — suppressed" note). No small
+//     is suppressed (returned null with a "<11 - suppressed" note). No small
 //     cell can single out a person.
 //   • Research opt-out: members who opt out of research use are excluded from
 //     the licensed plane while keeping full platform use. There is no
-//     `researchOptOut` field on `User` yet — the filter HOOK is wired below and
+//     `researchOptOut` field on `User` yet - the filter HOOK is wired below and
 //     documented; today every member is treated as opted-in.
 //   • Governance gate: outcomes LICENSING to a third party is blocked until the
 //     docs/10 §5 counsel items (Part 2 / BAA, IRB-grade governance) are signed
@@ -36,7 +36,7 @@ import type {
   User,
 } from "@/app/lib/types";
 
-/** Saturating engagement normalizer — identical to /api/continuum so a member's
+/** Saturating engagement normalizer - identical to /api/continuum so a member's
  *  score means the same thing on the ribbon and in the data product. score =
  *  100·raw/(raw+K), raw = summed event weights in the trailing 90 days. */
 export const SCORE_K = 40;
@@ -49,11 +49,11 @@ export const HORIZONS = [30, 60, 90, 180, 365] as const;
 /** De-identification minimum cohort size. Buckets smaller than this are
  *  suppressed on the licensed plane. */
 export const MIN_COHORT = 11;
-export const SUPPRESSED = "<11 — suppressed" as const;
+export const SUPPRESSED = "<11 - suppressed" as const;
 
 /** A follow-up touch (30/60/90/180/365d post-discharge). Not yet part of the
  *  shared schema (`app/lib/types.ts` is owned elsewhere), so it is declared
- *  locally and read defensively — treated as an empty stream until the module
+ *  locally and read defensively - treated as an empty stream until the module
  *  lands. When present, `status: "done"` counts as retained-in-recovery. */
 export interface FollowUp {
   id: string;
@@ -74,14 +74,14 @@ type ExpandedDB = ReturnType<typeof db> & {
 
 /** A member research opt-out. NO such field exists on `User` yet; this is the
  *  documented HOOK so the licensed plane already honors it the moment the field
- *  ships. Opting out removes a member from the licensed dataset only — full
+ *  ships. Opting out removes a member from the licensed dataset only - full
  *  platform use is unaffected (requirements/11 §H). */
 function optedIntoResearch(u: User): boolean {
   return (u as User & { researchOptOut?: boolean }).researchOptOut !== true;
 }
 
 /** De-identified per-member computation frame. Deliberately carries NO name,
- *  memberNumber, slug, or user id — the licensed aggregators only ever see
+ *  memberNumber, slug, or user id - the licensed aggregators only ever see
  *  this, so identifiable fields are structurally unreachable downstream. */
 export interface MemberOutcome {
   score: number;
@@ -108,14 +108,14 @@ export interface Frame {
 /** Read db() defensively and pre-compute every per-member outcome frame. */
 export function buildFrame(): Frame {
   const d = db() as ExpandedDB;
-  // Defensive init — these arrays may not be seeded in every environment.
+  // Defensive init - these arrays may not be seeded in every environment.
   const careEpisodes = (d.careEpisodes ??= []);
   const continuumEvents = (d.continuumEvents ??= []);
   const phaseTransitions = (d.phaseTransitions ??= []);
   const followUps = (d.followUps ??= []);
   const recoveryGoals = (d.recoveryGoals ??= []);
 
-  // Reporting anchor — seed data hangs off a fixed epoch, so window from the
+  // Reporting anchor - seed data hangs off a fixed epoch, so window from the
   // latest recorded event, not the wall clock (same pattern as /api/continuum).
   const latest = continuumEvents.reduce(
     (mx, e) => (e.occurredAt > mx ? e.occurredAt : mx),
@@ -208,7 +208,7 @@ export interface ScoreDistribution {
 }
 
 /** Roll per-member scores into a distribution (avg, median, quartile buckets).
- *  Returns NO per-member value — the aggregate view the funder trusts. */
+ *  Returns NO per-member value - the aggregate view the funder trusts. */
 export function scoreDistribution(
   list: MemberOutcome[],
   suppress: boolean
@@ -233,7 +233,7 @@ export function scoreDistribution(
     median: gate(n, median, suppress),
     buckets: ranges.map(([label, min, max]) => {
       const count = scores.filter((s) => s >= min && s <= max).length;
-      // Each non-empty bucket is itself a cohort — a bucket with 1–10 members
+      // Each non-empty bucket is itself a cohort - a bucket with 1–10 members
       // is a re-identification risk, so suppress the small-cell count too.
       return { label, min, max, count: gate(count, count, suppress && count > 0) };
     }),
@@ -257,7 +257,7 @@ export interface CareOutcomes {
     pct: number | null;
   }[];
   recoveryCapitalDelta: {
-    // density-derived proxy (see note) — 0–100, pre → during → post
+    // density-derived proxy (see note) - 0–100, pre → during → post
     pre: number | null;
     during: number | null;
     post: number | null;
@@ -295,7 +295,7 @@ export function careOutcomes(
 ): CareOutcomes {
   const n = list.length;
 
-  // (a) phase-transition rates — every from→to edge in the cohort's logs.
+  // (a) phase-transition rates - every from→to edge in the cohort's logs.
   const edge = new Map<string, number>();
   for (const o of list) {
     for (const t of o.transitions) {
@@ -310,7 +310,7 @@ export function careOutcomes(
     })
     .sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
 
-  // (b) completion by level-of-care — dischargeType "completed" among episodes
+  // (b) completion by level-of-care - dischargeType "completed" among episodes
   //     that reached a discharge, grouped by LOC.
   const completionByLoc = LOC_ORDER.map((loc) => {
     const inLoc = list.filter((o) => o.loc === loc && o.dischargeType);
@@ -328,7 +328,7 @@ export function careOutcomes(
   //     is "retained@H" if they have any continuum event on/after endedAt+H
   //     days (still showing up that far past discharge). A member is only
   //     ELIGIBLE for horizon H once refNow is at least H days past their
-  //     discharge — same eligibility gate as the existing signup-cohort report.
+  //     discharge - same eligibility gate as the existing signup-cohort report.
   const discharged = list.filter((o) => o.endedAt !== undefined);
   const fuByMember = new Map<string, FollowUp[]>();
   for (const f of followUps) {
@@ -343,7 +343,7 @@ export function careOutcomes(
       const endedAt = o.endedAt as number;
       if (refNow - endedAt < day * DAY) continue; // window not yet observable
       eligible++;
-      // followUps carry no memberId back to identity here — we only match on a
+      // followUps carry no memberId back to identity here - we only match on a
       // stripped id embedded in events; on the licensed frame followUps is [].
       const retainedByProxy = o.events.some(
         (e) => e.occurredAt >= endedAt + day * DAY
@@ -362,7 +362,7 @@ export function careOutcomes(
   //     density inside each phase window (bounded by the member's transition
   //     timestamps), mapped through the saturating normalizer to 0–100. This is
   //     an engagement-density stand-in for a BARC-10 recovery-capital score, NOT
-  //     a clinical measure — it exists to show the pre-care→during→post shape
+  //     a clinical measure - it exists to show the pre-care→during→post shape
   //     the platform can prove because it owns the pre-care window.
   const preD: number[] = [];
   const durD: number[] = [];
@@ -414,7 +414,7 @@ export interface Efficacy {
   }[];
 }
 
-/** Bucket members into engagement quartiles and show outcome per bucket — the
+/** Bucket members into engagement quartiles and show outcome per bucket - the
  *  "higher engagement → better outcomes" story as a monotone table. ILLUSTRATIVE
  *  (a directional bucket table, not a fitted causal model). */
 export function efficacy(
@@ -481,16 +481,16 @@ export const GOVERNANCE = {
 export type Plane = "center" | "licensed";
 
 /** LICENSED plane: de-identified, aggregated, k≥11-suppressed. Structurally
- *  aggregate-only — it maps to `MemberOutcome` frames (no identity) and reads
+ *  aggregate-only - it maps to `MemberOutcome` frames (no identity) and reads
  *  nothing else, so no name/id/memberNumber/slug can appear in the output. */
 export function buildLicensed(frame: Frame) {
-  // research opt-out hook (documented above) — licensed dataset only.
+  // research opt-out hook (documented above) - licensed dataset only.
   const consented = frame.members.filter(optedIntoResearch);
   const list: MemberOutcome[] = consented
     .map((m) => frame.outcomeByMember.get(m.id)!)
     .filter(Boolean);
 
-  // followUps deliberately NOT passed through here — the licensed frame has no
+  // followUps deliberately NOT passed through here - the licensed frame has no
   // per-member follow-up rows; retention falls back to the activity proxy.
   return {
     plane: "licensed" as const,
@@ -522,7 +522,7 @@ export function buildCenter(frame: Frame, centerId: string | undefined) {
     deidentified: false,
     centerId: centerId ?? null,
     governance: GOVERNANCE,
-    // identifiable roster — THEIR OWN CENTER ONLY. Not suppressed (single
+    // identifiable roster - THEIR OWN CENTER ONLY. Not suppressed (single
     // center, consented, identified plane).
     members: centerMembers.map((m) => {
       const o = frame.outcomeByMember.get(m.id)!;

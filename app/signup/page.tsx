@@ -11,7 +11,7 @@ const inputCls =
   "box-border h-[52px] w-full rounded-xl border-[1.5px] border-sky-tint-2 bg-white px-4 text-[15px] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none";
 
 /**
- * Account creation — role picker, member/mentor fields, and (for members)
+ * Account creation - role picker, member/mentor fields, and (for members)
  * the QR reveal moment on success. Standalone page, minimal /give-style header.
  */
 export default function SignupPage() {
@@ -66,7 +66,7 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      {/* MINIMAL HEADER — wordmark + hairline */}
+      {/* MINIMAL HEADER - wordmark + hairline */}
       <div className="bg-white">
         <div className="flex h-[60px] items-center justify-center">
           <Link href="/">
@@ -266,7 +266,7 @@ export default function SignupPage() {
                       className="box-border w-full resize-y rounded-xl border-[1.5px] border-sky-tint-2 bg-white px-4 py-3.5 text-[15px]/[1.6] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none"
                     />
                     <span className="text-[12px]/[1.6] font-medium text-ink-600">
-                      Shared publicly only with your consent — you control this
+                      Shared publicly only with your consent - you control this
                       anytime.
                     </span>
                   </label>
@@ -279,7 +279,7 @@ export default function SignupPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-[12px]/[1.6] font-medium text-ink-600">
-                      A goal donors can fund each week — you can add or change
+                      A goal donors can fund each week - you can add or change
                       goals later.
                     </p>
                     <div className="mt-3 grid grid-cols-[1fr_120px] gap-2.5">

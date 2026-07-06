@@ -7,15 +7,15 @@ import LeftRail from "../_components/rails/LeftRail";
 import CirclesBrowser from "../_components/CirclesBrowser";
 
 export const metadata: Metadata = {
-  title: "Circles — My Struggle Community",
+  title: "Circles - My Struggle Community",
   description:
-    "Browse the community's circles — small peer-led and staff-supported spaces like Job Seekers, Parents in Recovery, and center alumni circles.",
+    "Browse the community's circles - small peer-led and staff-supported spaces like Job Seekers, Parents in Recovery, and center alumni circles.",
 };
 
 /**
- * /community/circles — the circles directory. Circles are our groups:
+ * /community/circles - the circles directory. Circles are our groups:
  * peer-led or staff-supported spaces members join to walk a stretch of the
- * road together. Alumni circles of other centers appear locked here — the
+ * road together. Alumni circles of other centers appear locked here - the
  * directory lists them, but their feeds stay private to their center.
  */
 export default function CirclesPage() {
@@ -39,7 +39,7 @@ export default function CirclesPage() {
             </h1>
             <div className="hairline mt-3 w-16 rounded-full" />
             <p className="mt-3 max-w-[560px] text-[14.5px]/[1.65] font-medium text-ink-600">
-              Small spaces to walk together — some peer-led, some watched over
+              Small spaces to walk together - some peer-led, some watched over
               by the care team. Join the ones that fit where you are today.
             </p>
           </header>

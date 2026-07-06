@@ -7,13 +7,13 @@ import LeftRail from "../_components/rails/LeftRail";
 import EventsList from "../_components/EventsList";
 
 export const metadata: Metadata = {
-  title: "Events — My Struggle Community",
+  title: "Events - My Struggle Community",
   description:
     "Upcoming meetups, celebrations, and workshops across the My Struggle recovery community. RSVP and save your seat.",
 };
 
 /**
- * /community/events — the community calendar. Upcoming events grouped by day,
+ * /community/events - the community calendar. Upcoming events grouped by day,
  * each with a one-tap RSVP (POST /api/events/[id]/rsvp). Signed-out members
  * are warmly invited to sign in before RSVPing.
  */
@@ -36,7 +36,7 @@ export default function EventsPage() {
             </h1>
             <div className="hairline mt-3 w-16 rounded-full" />
             <p className="mt-3 max-w-[560px] text-[14.5px]/[1.65] font-medium text-ink-600">
-              Meetups, milestone celebrations, and workshops — the moments we
+              Meetups, milestone celebrations, and workshops - the moments we
               show up for each other. Save your seat with one tap.
             </p>
           </header>

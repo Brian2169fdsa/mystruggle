@@ -34,7 +34,7 @@ function enrichEvent(event: CommunityEvent, viewerId?: string) {
   };
 }
 
-/** GET — every community event, upcoming (soonest) first, then past.
+/** GET - every community event, upcoming (soonest) first, then past.
  *  Open to all; iRsvped reflects the signed-in viewer when present. */
 export async function GET() {
   const user = await getSessionUser();
@@ -50,7 +50,7 @@ export async function GET() {
   return NextResponse.json({ events });
 }
 
-/** POST — create an event. Mentors and staff only (staff pass every gate). */
+/** POST - create an event. Mentors and staff only (staff pass every gate). */
 export async function POST(req: Request) {
   const user = await getRoleUser("mentor");
   if (!user) {

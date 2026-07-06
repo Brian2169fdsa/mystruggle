@@ -7,13 +7,13 @@ import LeftRail from "../_components/rails/LeftRail";
 import DirectoryGrid from "../_components/DirectoryGrid";
 
 export const metadata: Metadata = {
-  title: "Discover people — My Struggle Community",
+  title: "Discover people - My Struggle Community",
   description:
-    "Meet members of the My Struggle recovery community who share a public profile — search by name or interest and find your people.",
+    "Meet members of the My Struggle recovery community who share a public profile - search by name or interest and find your people.",
 };
 
 /**
- * /community/discover — a searchable directory of members who have chosen to
+ * /community/discover - a searchable directory of members who have chosen to
  * share a public profile. Consent-first: nobody appears here unless they've
  * opened their profile publicly (see DirectoryGrid for the gating detail).
  */

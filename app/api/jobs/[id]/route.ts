@@ -24,7 +24,7 @@ async function ownedJob(id: string) {
   return { job };
 }
 
-/** PATCH — owner-only: close or reopen a post. Body { status: "open"|"closed" }. */
+/** PATCH - owner-only: close or reopen a post. Body { status: "open"|"closed" }. */
 export async function PATCH(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
@@ -47,7 +47,7 @@ export async function PATCH(
   return NextResponse.json({ job: found.job });
 }
 
-/** DELETE — owner-only: remove a post entirely. */
+/** DELETE - owner-only: remove a post entirely. */
 export async function DELETE(
   _req: Request,
   ctx: { params: Promise<{ id: string }> }

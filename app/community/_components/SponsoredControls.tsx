@@ -2,7 +2,7 @@
 
 // A tiny, non-intrusive control at the foot of the feed. Members can learn why
 // sponsored placements appear and dial them down. The feed stays a recovery
-// space first (docs/15 §"The Community Ad Product" — member controls). The
+// space first (docs/15 §"The Community Ad Product" - member controls). The
 // "reduce" preference is remembered locally in `ms-reduce-sponsored`.
 
 import { useState } from "react";
@@ -34,7 +34,7 @@ export default function SponsoredControls({
     try {
       window.localStorage.setItem(REDUCE_STORAGE_KEY, next ? "1" : "0");
     } catch {
-      /* private mode / storage disabled — keep the in-memory preference */
+      /* private mode / storage disabled - keep the in-memory preference */
     }
     onChange(next);
   };
@@ -53,7 +53,7 @@ export default function SponsoredControls({
       {open && (
         <div className="mx-auto mt-1 max-w-[520px] rounded-2xl border border-sky-tint-2 bg-white px-5 py-4 text-left shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <p className="text-[13px]/[1.6] font-medium text-ink-600">
-            These keep the platform free. Centers only — recovery-relevant, never
+            These keep the platform free. Centers only - recovery-relevant, never
             sold your data.
           </p>
           <label className="mt-3 flex cursor-pointer items-center justify-between gap-3">

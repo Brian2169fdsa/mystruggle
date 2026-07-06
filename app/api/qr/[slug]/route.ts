@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { findMemberBySlug } from "@/app/lib/store";
 
-/** Per-member QR code as SVG — resolves to the public giving page. */
+/** Per-member QR code as SVG - resolves to the public giving page. */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ slug: string }> }

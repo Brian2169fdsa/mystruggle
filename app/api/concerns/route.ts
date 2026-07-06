@@ -3,7 +3,7 @@ import { db, findUserById, save, uid } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 import type { Concern } from "@/app/lib/types";
 
-/** Open concerns queue — staff only. Open first, then newest, with the
+/** Open concerns queue - staff only. Open first, then newest, with the
  *  mentor's and member's first names (and member number) resolved. */
 export async function GET() {
   const me = await getRoleUser(); // staff only
@@ -29,12 +29,12 @@ export async function GET() {
   return NextResponse.json({ concerns });
 }
 
-/** Raise a concern (mentor or staff) — or, with {id, status:"resolved"},
+/** Raise a concern (mentor or staff) - or, with {id, status:"resolved"},
  *  resolve one (staff only). Quiet by design: never surfaces on the member. */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
 
-  // ── resolve path — staff only ──────────────────────────────────────
+  // ── resolve path - staff only ──────────────────────────────────────
   if (typeof body?.id === "string") {
     const staff = await getRoleUser();
     if (!staff) {
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ concern });
   }
 
-  // ── create path — mentor (or staff) only ───────────────────────────
+  // ── create path - mentor (or staff) only ───────────────────────────
   const me = await getRoleUser("mentor");
   if (!me) {
     return NextResponse.json(
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
   );
   if (duplicate) {
     return NextResponse.json(
-      { error: "You already raised this — the care team is on it." },
+      { error: "You already raised this - the care team is on it." },
       { status: 409 }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-// Inline comment thread for a feed post — big-social reading pattern,
+// Inline comment thread for a feed post - big-social reading pattern,
 // recovery voice. Collapsed to the latest two comments by default; the full
 // list is already on the posts payload (GET /api/posts ships each post's
 // comments array), so "View more" is a local expand, not a fetch.
@@ -98,7 +98,7 @@ export default function CommentThread({
         body: JSON.stringify({ body: text }),
       });
       if (res.status === 401) {
-        // Session expired mid-write — roll back, keep their words, ask warmly.
+        // Session expired mid-write - roll back, keep their words, ask warmly.
         onChange({ ...post, comments: post.comments });
         setDraft(text);
         showNudge();
@@ -126,7 +126,7 @@ export default function CommentThread({
     <div className="mt-3 flex flex-col gap-2.5 border-t border-canvas pt-3.5">
       {comments.length === 0 && (
         <div className="text-[13px] font-medium text-ink-600">
-          No comments yet — say something kind.
+          No comments yet - say something kind.
         </div>
       )}
 
@@ -182,7 +182,7 @@ export default function CommentThread({
 
       {nudge && (
         <span className="text-[12px] font-semibold text-indigo-brand">
-          This one needs an account —{" "}
+          This one needs an account -{" "}
           <Link href="/login" className="underline">
             sign in
           </Link>{" "}

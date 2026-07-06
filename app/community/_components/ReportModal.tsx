@@ -102,7 +102,7 @@ export default function ReportModal({
         }),
       });
       if (res.status === 401) {
-        // Signed out — a gentle invitation, never a scold.
+        // Signed out - a gentle invitation, never a scold.
         setNeedsSignIn(true);
       } else if (res.ok) {
         setDone(true);
@@ -111,7 +111,7 @@ export default function ReportModal({
         setError(true);
       }
     } catch {
-      // A true network failure still leaves them heard — the report matters
+      // A true network failure still leaves them heard - the report matters
       // more than the round trip, so we thank them rather than turn them away.
       setDone(true);
     } finally {
@@ -144,7 +144,7 @@ export default function ReportModal({
               💙
             </div>
             <h2 className="mt-4 text-[19px] font-extrabold text-ink-900">
-              Thank you — our team will take a look.
+              Thank you - our team will take a look.
             </h2>
             <p className="mt-2 text-[14px]/[1.6] font-medium text-ink-600">
               Looking out for each other is how this community stays safe. You
@@ -168,7 +168,7 @@ export default function ReportModal({
               Sign in to report
             </h2>
             <p className="mt-2 text-[14px]/[1.6] font-medium text-ink-600">
-              Sign in to report — it helps us keep everyone safe. Your report
+              Sign in to report - it helps us keep everyone safe. Your report
               stays private, and we&apos;ll take it from there.
             </p>
             <Link
@@ -198,7 +198,7 @@ export default function ReportModal({
                     Report this post
                   </h2>
                   <p className="text-[12px] font-medium text-ink-600">
-                    This is private — {authorName} won't be told it was you.
+                    This is private - {authorName} won't be told it was you.
                   </p>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export default function ReportModal({
 
             {error && (
               <p className="mt-2 text-[12px] font-semibold text-amber-ink">
-                We couldn't send that just now — please try again.
+                We couldn't send that just now - please try again.
               </p>
             )}
 
@@ -264,7 +264,7 @@ export default function ReportModal({
               <LifeBuoy size={16} className="flex-none text-blue-primary" />
               <p className="text-[12px]/[1.5] font-medium text-ink-600">
                 In immediate danger or crisis? Call or text{" "}
-                <span className="font-bold text-ink-900">988</span> — it's free,
+                <span className="font-bold text-ink-900">988</span> - it's free,
                 confidential, and available 24/7.
               </p>
             </div>

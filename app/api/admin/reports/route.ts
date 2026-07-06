@@ -3,10 +3,10 @@ import { db } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 
 /** Center-dashboard Reports data computed from live store data. Read-only.
- *  Staff-only (was demo-open; P0 gap closed — gated like the other admin
+ *  Staff-only (was demo-open; P0 gap closed - gated like the other admin
  *  routes behind the staff session role).
  *
- *  RETENTION PROXY — there is no real activity/attendance log yet, so
+ *  RETENTION PROXY - there is no real activity/attendance log yet, so
  *  "retained at N months" is a documented stand-in:
  *    - A member counts as "still active" when streak > 0 OR points > 200
  *      (an idle account has neither a live check-in streak nor meaningful
@@ -15,7 +15,7 @@ import { getRoleUser } from "@/app/lib/auth";
  *      been enrolled at least N months (now - createdAt >= N months).
  *    - Cohort pct = active eligible members / eligible members. If nobody
  *      in a cohort has reached a horizon yet, that horizon is null and the
- *      UI renders it as "—".
+ *      UI renders it as "-".
  *  Replace with real session/check-in history once an activity log exists.
  */
 
@@ -39,7 +39,7 @@ export async function GET() {
   const d = db();
   const members = d.users.filter((u) => u.role === "member");
 
-  // REPORTING ANCHOR — seeded demo data can be anchored earlier than the
+  // REPORTING ANCHOR - seeded demo data can be anchored earlier than the
   // wall clock (it was generated relative to its own "now"). Anchor the
   // 12-month giving window and the retention horizons to the latest
   // recorded activity so the report stays meaningful across reseeds; with

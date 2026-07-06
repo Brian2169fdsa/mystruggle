@@ -78,7 +78,7 @@ export default function LeadForm() {
           ✓
         </div>
         <div className="text-[22px] font-bold text-ink-900">
-          Thanks — we&apos;ll reach out within two business days.
+          Thanks - we&apos;ll reach out within two business days.
         </div>
         <p className="max-w-[440px] text-[15px]/[1.7] text-ink-600">
           A member of our team will follow up to schedule a walkthrough built

@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import PrototypeMap from "../components/PrototypeMap";
 
 export const metadata = {
-  title: "Donate Today — My Struggle",
+  title: "Donate Today - My Struggle",
 };
 
 const WAYS = [
@@ -39,7 +39,7 @@ const WAYS = [
   },
 ];
 
-// First six diamonds blue, last six indigo — exactly as in the prototype.
+// First six diamonds blue, last six indigo - exactly as in the prototype.
 const COVERS = [
   "Halfway house placement",
   "Job training",
@@ -80,7 +80,7 @@ const TIERS = [
   {
     name: "Pro",
     price: "$200",
-    desc: "Sponsors a member's full journey — housing goal included.",
+    desc: "Sponsors a member's full journey - housing goal included.",
     cta: "Choose Pro",
     featured: false,
   },
@@ -91,7 +91,7 @@ export default function Donate() {
     <>
       <Nav />
 
-      {/* HERO — full screen */}
+      {/* HERO - full screen */}
       <section className="relative flex min-h-screen items-center overflow-hidden bg-navy-deep">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -136,7 +136,7 @@ export default function Donate() {
               </div>
               <div className="text-[17px]/[1.7] text-ink-600">
                 Danielle earned her GED, started her first job, and moved into
-                transitional housing — three milestones in eight months. Right
+                transitional housing - three milestones in eight months. Right
                 now she&apos;s working toward $175 a week for her hallway house,
                 the last step before a place of her own. This is what a gift
                 looks like: a real person, a real week, a real next step.
@@ -178,7 +178,7 @@ export default function Donate() {
             </div>
           </div>
           <div className="text-[17px]/[1.75] text-ink-600">
-            Behind that number are members — people one mentor, one program,
+            Behind that number are members - people one mentor, one program,
             one steady week of support away from a different life. Your
             donation doesn&apos;t go into a general fund. It goes to a person,
             a center, a program you can see.{" "}
@@ -223,7 +223,7 @@ export default function Donate() {
         </div>
       </section>
 
-      {/* WHAT DONATIONS COVER — 12-ITEM GRID */}
+      {/* WHAT DONATIONS COVER - 12-ITEM GRID */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="text-center">
@@ -332,7 +332,7 @@ export default function Donate() {
               </div>
               <div className="max-w-[560px] text-[15px]/[1.7] text-white/80">
                 $175 a week keeps her hallway house on track. Give straight to
-                her journey — 50% cash at our centers, 50% held for her
+                her journey - 50% cash at our centers, 50% held for her
                 reentry.
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-5">
@@ -366,7 +366,7 @@ export default function Donate() {
             </div>
             <div className="mt-2 text-[14px]/[1.65] text-ink-600">
               Use our Amazon Associates link and a portion of every purchase
-              supports the centers — at no cost to you.
+              supports the centers - at no cost to you.
             </div>
             <a
               href="https://amzn.to/4gQuaR8"
@@ -384,7 +384,7 @@ export default function Donate() {
               housing. I&apos;ve never felt a donation like that.&rdquo;
             </div>
             <div className="mt-4 text-[14px] font-bold tracking-[.08em] text-indigo-brand">
-              — ASHLEY J., MONTHLY DONOR
+              - ASHLEY J., MONTHLY DONOR
             </div>
           </div>
         </div>

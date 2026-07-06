@@ -1,6 +1,6 @@
-// Continuum of Care — CENTER↔CLIENT communication layer (docs/14 §D IN-PROGRAM,
+// Continuum of Care - CENTER↔CLIENT communication layer (docs/14 §D IN-PROGRAM,
 // requirements/11 §D). EXPANSION, additive. These are ENGAGEMENT comms, NOT
-// clinical notes / therapy delivery — no PHI ever lives here (docs/10 hard line).
+// clinical notes / therapy delivery - no PHI ever lives here (docs/10 hard line).
 //
 // The shared types (CareChannel / CareMessage) live in app/lib/types and are
 // seeded by the store. We import them here and still access the store
@@ -17,7 +17,7 @@ type CareDB = ReturnType<typeof rawDb> & {
   careMessages?: CareMessage[];
 };
 
-/** Defensive store accessor — guarantees the two collections exist even if the
+/** Defensive store accessor - guarantees the two collections exist even if the
  *  seed hasn't populated them yet. */
 export function careDb(): CareDB & {
   careChannels: CareChannel[];
@@ -32,7 +32,7 @@ export function careDb(): CareDB & {
   };
 }
 
-/** Crisis-held messages are never broadcast — only "ok" messages are shown. */
+/** Crisis-held messages are never broadcast - only "ok" messages are shown. */
 export function visibleMessages(channelId: string): CareMessage[] {
   return careDb()
     .careMessages.filter(
@@ -52,7 +52,7 @@ export function canRead(c: CareChannel, user: User, isStaff: boolean): boolean {
   if (c.kind === "one_to_one") return c.memberId === user.id;
   // program_group + announcement are readable by the center's people. Without a
   // separate membership table (not in the contract), center affiliation is the
-  // grant — the demo center has exactly one cohort group + one announcement.
+  // grant - the demo center has exactly one cohort group + one announcement.
   return !!user.centerId && c.centerId === user.centerId;
 }
 
@@ -76,7 +76,7 @@ export function channelsForMember(user: User): CareChannel[] {
   return careDb().careChannels.filter((c) => canRead(c, user, false));
 }
 
-/** "Unread-ish" — messages from someone else that arrived after the viewer last
+/** "Unread-ish" - messages from someone else that arrived after the viewer last
  *  spoke here. No read-receipts in the store, so this is a warm approximation. */
 export function unreadish(channelId: string, viewerId: string): number {
   const msgs = visibleMessages(channelId);
@@ -85,7 +85,7 @@ export function unreadish(channelId: string, viewerId: string): number {
   return msgs.filter((m) => m.senderId !== viewerId && m.createdAt > lastMine).length;
 }
 
-/** Client-facing message shape — enough for a ChatThread-style renderer. */
+/** Client-facing message shape - enough for a ChatThread-style renderer. */
 export function toClientMessage(m: CareMessage) {
   return {
     id: m.id,
@@ -102,10 +102,10 @@ export type ClientCareMessage = ReturnType<typeof toClientMessage>;
 
 /** The banner + care-record disclaimer that rides on every care channel. */
 export const CARE_NOTICE =
-  "Messages here are for support & scheduling — never clinical records.";
+  "Messages here are for support & scheduling - never clinical records.";
 
 /** Crisis resources returned when a message is held. Never dismissive. */
 export const CRISIS_RESOURCES = {
-  line: "988 Suicide & Crisis Lifeline — call or text 988",
+  line: "988 Suicide & Crisis Lifeline - call or text 988",
   note: "You matter, and you're not alone. A member of your care team will reach out today.",
 };

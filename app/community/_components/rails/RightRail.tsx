@@ -1,6 +1,6 @@
 "use client";
 
-// Right rail of /community — community stats, the support board, recovery
+// Right rail of /community - community stats, the support board, recovery
 // anniversaries, member suggestions, recovery-friendly jobs, and the 50/50
 // giving explainer. Self-fetching; refreshes every 30s.
 
@@ -267,7 +267,7 @@ function AnniversariesCard({ rows }: { rows: AnniversaryRow[] }) {
         ))}
       </ul>
       <p className="mt-2 border-t border-sky-tint pt-2.5 text-[12px] font-medium text-ink-400">
-        Cheer them on — every year is earned.
+        Cheer them on - every year is earned.
       </p>
     </div>
   );
@@ -373,7 +373,7 @@ function HiringCard({ jobs }: { jobs: JobRow[] | null }) {
         </ul>
       ) : (
         <p className="mt-2.5 text-[13px]/[1.6] font-medium text-ink-600">
-          Fair-chance employers post steady work here. New roles land often —
+          Fair-chance employers post steady work here. New roles land often -
           check back soon.
         </p>
       )}
@@ -405,7 +405,7 @@ function GivingCard() {
         How giving works
       </h2>
       <p className="mt-2 text-[13px] font-medium leading-relaxed text-white/90">
-        Every gift splits 50/50 — half reaches them today, half is held for
+        Every gift splits 50/50 - half reaches them today, half is held for
         their reentry.
       </p>
       <Link

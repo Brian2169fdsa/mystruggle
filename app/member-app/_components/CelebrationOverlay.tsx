@@ -26,7 +26,7 @@ const CONFETTI: {
 export default function CelebrationOverlay({
   shareWin,
   keepPrivate,
-  courseTitle = "ISE Course 3 — Decision",
+  courseTitle = "ISE Course 3 - Decision",
   streakDay = 12,
 }: {
   shareWin: () => void;

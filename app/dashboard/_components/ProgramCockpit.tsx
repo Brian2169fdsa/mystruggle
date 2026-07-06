@@ -78,7 +78,7 @@ export default function ProgramCockpit() {
       try {
         const res = await fetch("/api/admin/cohort");
         if (res.status === 401) {
-          // Session lapsed — a reload will re-gate; stop retrying.
+          // Session lapsed - a reload will re-gate; stop retrying.
           if (!stop) setCohorts([]);
           return;
         }
@@ -234,7 +234,7 @@ export default function ProgramCockpit() {
     <div className="flex flex-col gap-5">
       {header}
 
-      {/* Cohort selector — pills, mirrors the filter-pill pattern */}
+      {/* Cohort selector - pills, mirrors the filter-pill pattern */}
       <div className="flex flex-wrap items-center gap-2.5">
         {list.map((c) => {
           const on = c.cohortId === selected?.cohortId;

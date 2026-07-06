@@ -114,7 +114,7 @@ function SignedInGive({
     }
     setFormError("");
     setPosting(true);
-    // Optimistic add — replaced (or removed) once the API answers.
+    // Optimistic add - replaced (or removed) once the API answers.
     const tempId = `temp-${Date.now()}`;
     addRequest({
       id: tempId,
@@ -138,11 +138,11 @@ function SignedInGive({
         replaceRequest(tempId, data.request);
       } else {
         replaceRequest(tempId, null);
-        setFormError(data?.error ?? "Couldn't save that request — try again.");
+        setFormError(data?.error ?? "Couldn't save that request - try again.");
       }
     } catch {
       replaceRequest(tempId, null);
-      setFormError("Couldn't save that request — try again.");
+      setFormError("Couldn't save that request - try again.");
     } finally {
       setPosting(false);
     }
@@ -150,7 +150,7 @@ function SignedInGive({
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-5">
-      {/* QR card — real per-member QR resolving to /p/[slug] */}
+      {/* QR card - real per-member QR resolving to /p/[slug] */}
       <div className="flex items-center gap-5 rounded-2xl bg-navy-deep p-6 shadow-[0_8px_24px_rgba(11,37,69,.25)]">
         <div className="h-[120px] w-[120px] flex-none rounded-xl bg-white p-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -186,7 +186,7 @@ function SignedInGive({
         </div>
       </div>
 
-      {/* Balances — real numbers from the session */}
+      {/* Balances - real numbers from the session */}
       <div className="grid grid-cols-2 gap-3.5">
         <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="text-[12px] font-bold text-ink-600">Cash</div>
@@ -229,13 +229,13 @@ function SignedInGive({
         </button>
       </div>
 
-      {/* Support requests — real progress */}
+      {/* Support requests - real progress */}
       <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
         MY SUPPORT REQUESTS
       </div>
       {requests.length === 0 && (
         <div className="rounded-2xl bg-white px-5 py-4 text-[13px] text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-          No requests yet — ask for support below and it appears on your
+          No requests yet - ask for support below and it appears on your
           giving page.
         </div>
       )}

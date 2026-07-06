@@ -11,9 +11,9 @@ import LeftRail from "./_components/rails/LeftRail";
 import RightRail from "./_components/rails/RightRail";
 
 export const metadata: Metadata = {
-  title: "Community — My Struggle",
+  title: "Community - My Struggle",
   description:
-    "The My Struggle recovery community — wins, milestones, and support requests from members rebuilding, together.",
+    "The My Struggle recovery community - wins, milestones, and support requests from members rebuilding, together.",
 };
 
 /** Feed skeleton shown while the client column hydrates (useSearchParams). */
@@ -41,7 +41,7 @@ function FeedFallback() {
 }
 
 /**
- * /community — the desktop social recovery community.
+ * /community - the desktop social recovery community.
  * Three columns on lg+: channel rail · feed · community rail. Below lg the
  * rails collapse, the feed's horizontal topic chip row takes over, and a
  * fixed bottom tab bar (CommunityTabBar) provides app-like navigation.

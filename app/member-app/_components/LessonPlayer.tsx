@@ -11,7 +11,7 @@ export default function LessonPlayer({
   quiz,
   setQuiz,
   completeLesson,
-  courseTitle = "ISE Course 3 — Decision",
+  courseTitle = "ISE Course 3 - Decision",
   lessonNumber = 2,
   lessonCount = 6,
 }: {
@@ -63,10 +63,10 @@ export default function LessonPlayer({
 
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="text-[19px] font-extrabold tracking-[-0.02em] text-ink-900">
-          Made a decision — what it actually means
+          Made a decision - what it actually means
         </div>
 
-        {/* Journal — private */}
+        {/* Journal - private */}
         <div className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="flex items-center justify-between">
             <span className="text-[12px] font-bold tracking-[.12em] text-indigo-brand">
@@ -131,7 +131,7 @@ export default function LessonPlayer({
         <div className="pb-3 text-center text-[12px] font-medium text-ink-400">
           {lessonNumber < lessonCount
             ? `Lesson ${lessonNumber + 1} unlocks when this one's done`
-            : "Last lesson — the course completes when this one's done"}
+            : "Last lesson - the course completes when this one's done"}
         </div>
       </div>
     </div>

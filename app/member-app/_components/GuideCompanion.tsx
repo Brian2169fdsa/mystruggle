@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// The Guide — plan-aware AI companion for the member app. Fetches the member's
+// The Guide - plan-aware AI companion for the member app. Fetches the member's
 // own plan context from /api/guide (goals, program, engagement streak, BARC
 // trend, next follow-up) and surfaces it so the Guide visibly "knows them,"
 // then lets them chat with the deterministic, context-grounded companion.
@@ -34,7 +34,7 @@ type GuideContext = {
 
 type ChatTurn = { role: "member" | "guide"; text: string; crisis?: boolean };
 
-/** The Guide avatar — script "M" on indigo→blue gradient tile. */
+/** The Guide avatar - script "M" on indigo→blue gradient tile. */
 function GuideAvatar() {
   return (
     <div className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4E5B9B,#2E7CD6)] font-script text-[20px] text-white">
@@ -113,14 +113,14 @@ export default function GuideCompanion() {
           ...t,
           {
             role: "guide",
-            text: "I'm here — try that once more and I'll help.",
+            text: "I'm here - try that once more and I'll help.",
           },
         ]);
       }
     } catch {
       setTurns((t) => [
         ...t,
-        { role: "guide", text: "I couldn't reach your plan just now. I'm still here — try again in a moment." },
+        { role: "guide", text: "I couldn't reach your plan just now. I'm still here - try again in a moment." },
       ]);
     } finally {
       setSending(false);
@@ -151,7 +151,7 @@ export default function GuideCompanion() {
           <div className="h-px flex-1 bg-[#E2E8F0]" />
         </div>
 
-        {/* ── Plan-aware context card — the Guide "knows you" ── */}
+        {/* ── Plan-aware context card - the Guide "knows you" ── */}
         {state === "ready" && ctx && (
           <div className="rounded-2xl border-[1.5px] border-[#F0E6C8] bg-[linear-gradient(180deg,#FFFDF6,#FFFFFF)] p-4 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
             <div className="flex items-center gap-2.5">
@@ -166,7 +166,7 @@ export default function GuideCompanion() {
               </div>
             </div>
 
-            {/* Stat chips — gold streak accent is app-only gamification */}
+            {/* Stat chips - gold streak accent is app-only gamification */}
             <div className="mt-3.5 flex flex-wrap gap-2">
               {ctx.activity.streak > 0 && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FBF3D9] px-3 py-1.5 text-[12px] font-bold text-[#8A6D1E]">
@@ -231,12 +231,12 @@ export default function GuideCompanion() {
           <div className="max-w-[290px] rounded-2xl rounded-tl-md bg-white px-[18px] py-3.5 text-[14px]/[1.6] font-medium text-ink-900 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
             {state === "ready" ? (
               <>
-                Hi {name} — I&apos;m The Guide, and I know where you are on your
+                Hi {name} - I&apos;m The Guide, and I know where you are on your
                 journey{primaryGoal ? ` toward "${primaryGoal.title}"` : ""}. Ask
                 me anything, or tap a card below.
               </>
             ) : state === "signedout" ? (
-              <>Hi — I&apos;m The Guide. Sign in and I&apos;ll walk your journey with you.</>
+              <>Hi - I&apos;m The Guide. Sign in and I&apos;ll walk your journey with you.</>
             ) : (
               <>Getting your plan together…</>
             )}
@@ -263,7 +263,7 @@ export default function GuideCompanion() {
               >
                 {turn.crisis && (
                   <div className="mb-1 text-[11px] font-extrabold uppercase tracking-[.08em] text-heart-red">
-                    You matter — reach out now
+                    You matter - reach out now
                   </div>
                 )}
                 {turn.text}

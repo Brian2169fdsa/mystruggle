@@ -13,7 +13,7 @@ import type {
 const SCOPES: AudienceScope[] = ["community", "geo", "circle", "phase"];
 
 /** Build a coarse, NON-CLINICAL targeting object from request input. Only
- *  metro/phase/interestTags/circleId are ever read — there is no code path
+ *  metro/phase/interestTags/circleId are ever read - there is no code path
  *  and no schema field for health/diagnosis/substance targeting, so a center
  *  cannot express it even if they tried. */
 function sanitizeTargeting(raw: unknown): PlacementTargeting {
@@ -35,12 +35,12 @@ function sanitizeTargeting(raw: unknown): PlacementTargeting {
 
 /**
  * Center staff placement API (staff acts as the center's ad manager).
- * POST — two modes:
+ * POST - two modes:
  *   • create: body without `action` → validate + screenPlacement → new
  *     pending_review (or draft) placement for the staff's own centerId.
  *   • lifecycle (PATCH-style): body {id, action:"submit"|"pause"|"resume"} →
  *     move an owned placement through its lifecycle.
- * GET — the staff's own center's placements + AGGREGATE event counts only.
+ * GET - the staff's own center's placements + AGGREGATE event counts only.
  */
 export async function POST(req: Request) {
   const staff = await getRoleUser(); // no-arg = staff-only (staff = the center)
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // HARD CONTENT POLICY — the stopgap keyword screen (a Claude review gate is
+  // HARD CONTENT POLICY - the stopgap keyword screen (a Claude review gate is
   // the future upgrade). Off-policy content (gambling/alcohol/predatory/MLM/
   // scam) is rejected before the placement ever enters the review queue.
   const screen = screenPlacement(title, text, ctaUrl);

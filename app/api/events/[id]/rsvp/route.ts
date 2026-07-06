@@ -16,7 +16,7 @@ function eventStore() {
   return d as ReturnType<typeof db> & Required<EngagementStore>;
 }
 
-/** Decorate an event with its RSVP count + whether this viewer RSVP'd —
+/** Decorate an event with its RSVP count + whether this viewer RSVP'd -
  *  the same shape GET /api/events returns. */
 function enrichEvent(event: CommunityEvent, viewerId?: string) {
   const d = eventStore();
@@ -28,8 +28,8 @@ function enrichEvent(event: CommunityEvent, viewerId?: string) {
   };
 }
 
-/** POST — { going: boolean }. Add or remove the signed-in member's RSVP.
- *  going=true emits a "community" continuum_event (weight 2) — an RSVP is an
+/** POST - { going: boolean }. Add or remove the signed-in member's RSVP.
+ *  going=true emits a "community" continuum_event (weight 2) - an RSVP is an
  *  engagement signal. Idempotent: RSVP'ing twice keeps one row. */
 export async function POST(
   req: Request,

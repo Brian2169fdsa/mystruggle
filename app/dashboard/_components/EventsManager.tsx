@@ -167,7 +167,7 @@ export default function EventsManager() {
       });
       if (res.status === 404) {
         setApiPending(true);
-        setFormError("Events service is still coming online — try again shortly.");
+        setFormError("Events service is still coming online - try again shortly.");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as {
@@ -200,7 +200,7 @@ export default function EventsManager() {
       setEnds("");
       setLocation("");
       setKind("meeting");
-      setOkMsg("Event created — members can see it in their community now.");
+      setOkMsg("Event created - members can see it in their community now.");
     } catch {
       setFormError("Something went wrong creating this event.");
     } finally {
@@ -228,7 +228,7 @@ export default function EventsManager() {
           Events
         </div>
         <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-          Meetings, celebrations, workshops, and community gatherings — the
+          Meetings, celebrations, workshops, and community gatherings - the
           moments that hold a journey together.
         </div>
       </div>
@@ -391,7 +391,7 @@ export default function EventsManager() {
             " px-[30px] py-12 text-center text-[13px] font-semibold text-ink-400"
           }
         >
-          No events scheduled yet — create the first one above.
+          No events scheduled yet - create the first one above.
         </div>
       )}
 

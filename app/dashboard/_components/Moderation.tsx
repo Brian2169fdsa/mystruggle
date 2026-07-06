@@ -11,7 +11,7 @@ const VERDICTS: Record<
 > = {
   approved: { label: "✓ APPROVED", bg: "#E8F8F0", color: "#12B76A" },
   flagged: {
-    label: "⚑ FLAGGED — EDIT REQUESTED",
+    label: "⚑ FLAGGED - EDIT REQUESTED",
     bg: "#FFF9EC",
     color: "#A16207",
   },
@@ -26,12 +26,12 @@ const AI_REVIEW: Record<PostStatus, { text: string; bg: string; color: string }>
     color: "#2E7CD6",
   },
   pending: {
-    text: "Needs review — held from the community feed until a staff decision.",
+    text: "Needs review - held from the community feed until a staff decision.",
     bg: "#FFF9EC",
     color: "#A16207",
   },
   flagged: {
-    text: "Needs review — flagged for staff attention; author asked to edit.",
+    text: "Needs review - flagged for staff attention; author asked to edit.",
     bg: "#FFF9EC",
     color: "#A16207",
   },
@@ -100,7 +100,7 @@ export default function Moderation({
         </div>
       </div>
 
-      {/* CRISIS — real held posts, pinned above the queue.
+      {/* CRISIS - real held posts, pinned above the queue.
           Crisis red lives only here. No Approve: these never reach the feed;
           a human must follow up, then mark handled. */}
       {crisisQueue.map((p) => (
@@ -110,7 +110,7 @@ export default function Moderation({
         >
           <div className="flex items-center gap-3">
             <span className="inline-flex h-[26px] items-center rounded-full bg-heart-red px-3 text-[11px] font-extrabold text-white">
-              CRISIS — HELD
+              CRISIS - HELD
             </span>
             <span className="text-[13px] font-semibold text-ink-600">
               {p.authorName} · held from feed · {relTime(p.createdAt)}

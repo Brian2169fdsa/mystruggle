@@ -9,7 +9,7 @@
 //     presence) and GET /api/requests/board (already filtered to consenting
 //     members with a public slug).
 //   • each candidate is then hydrated through GET /api/profile?slug=…, which
-//     runs buildPublicProfile() — returning null unless the member BOTH
+//     runs buildPublicProfile() - returning null unless the member BOTH
 //     consented AND created profile details. Anything private (BARC, balances,
 //     email, last name) is never in that projection, so it can never surface
 //     here. Non-consenting members simply never appear.
@@ -20,7 +20,7 @@ import { Search, Sparkles, Users } from "lucide-react";
 import { AvatarTile } from "./ui";
 import type { PublicProfile } from "@/app/api/profile/profile-lib";
 
-/** The public-safe subset we render — a projection of PublicProfile. */
+/** The public-safe subset we render - a projection of PublicProfile. */
 type DirMember = Pick<
   PublicProfile,
   | "slug"
@@ -291,7 +291,7 @@ export default function DirectoryGrid() {
             <Sparkles className="h-6 w-6" aria-hidden />
           </div>
           <h2 className="mt-5 text-[19px] font-extrabold text-ink-900">
-            No one by that name — yet
+            No one by that name - yet
           </h2>
           <p className="mx-auto mt-2 max-w-[420px] text-[14px]/[1.65] font-medium text-ink-600">
             Try another name or interest. Every member&rsquo;s journey looks a

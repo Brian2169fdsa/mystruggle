@@ -19,7 +19,7 @@ type FeedResponse = {
 // null = still loading, false = signed out, true = signed in
 type Auth = boolean | null;
 
-/** A single notification row — kind icon, title, body, relative time. */
+/** A single notification row - kind icon, title, body, relative time. */
 function Row({
   n,
   onMark,
@@ -81,7 +81,7 @@ function Row({
 }
 
 /**
- * Full notifications view — shared Nav/Footer marketing layout. Groups items
+ * Full notifications view - shared Nav/Footer marketing layout. Groups items
  * into "New" (unread) and "Earlier" (read), with per-item and bulk mark-read,
  * a warm empty state, and graceful signed-out / loading handling.
  */
@@ -209,7 +209,7 @@ export default function NotificationsPage() {
                   You&apos;re all caught up
                 </div>
                 <p className="mx-auto mt-2 max-w-[420px] text-[15px]/[1.6] text-ink-600">
-                  Nothing needs you right now. Keep going — we&apos;ll let you
+                  Nothing needs you right now. Keep going - we&apos;ll let you
                   know the moment someone reaches out.
                 </p>
               </div>

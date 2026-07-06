@@ -6,10 +6,10 @@ import type { Resume, ResumeSection } from "../../lib/types";
 import ResumeDoc from "../ResumeDoc";
 
 /**
- * /resume/print — print-optimized view of the member's résumé.
+ * /resume/print - print-optimized view of the member's résumé.
  * Renders ONLY the document: no nav, no PrototypeMap, white background,
  * @media print margins. "Download PDF" on /resume opens this route with
- * ?auto=1, which triggers window.print() — the browser's Save-as-PDF is
+ * ?auto=1, which triggers window.print() - the browser's Save-as-PDF is
  * the PDF export (a pdf library is a later upgrade).
  */
 
@@ -67,7 +67,7 @@ export default function ResumePrintPage() {
         }
       `}</style>
 
-      {/* Screen-only toolbar — hidden when printing */}
+      {/* Screen-only toolbar - hidden when printing */}
       <div className="mx-auto flex w-full max-w-[820px] items-center justify-between gap-3 px-5 py-4 print:hidden">
         <Link
           href="/resume"

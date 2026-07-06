@@ -1,4 +1,4 @@
-// /api/profile — member profiles + BARC-10 self-checks (docs/13 Part A).
+// /api/profile - member profiles + BARC-10 self-checks (docs/13 Part A).
 //
 // GET  ?slug=…  PUBLIC, consent-gated exactly like /api/members/[slug]:
 //               { profile } only when the member consented AND created
@@ -7,7 +7,7 @@
 // GET  (none)   Session member's own full view: user + details + BARC trend.
 // POST          Session member updates profile details, or records a BARC
 //               self-check ({ barc: { scores } }). BARC results are private
-//               to the member + supporting staff — never public.
+//               to the member + supporting staff - never public.
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
@@ -30,7 +30,7 @@ const defaultDetails = (userId: string): ProfileDetails => ({
   showMilestones: true,
 });
 
-/** Private trend projection — totals over time, member-eyes only. */
+/** Private trend projection - totals over time, member-eyes only. */
 const trendOf = (checks: BarcSelfCheck[]) =>
   checks.map((c) => ({ id: c.id, takenAt: c.takenAt, total: c.total }));
 
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ profile });
   }
 
-  // Own profile — session required.
+  // Own profile - session required.
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: "Sign in to see your profile." }, { status: 401 });
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  // ── BARC-10 self-check — warm self-reflection, never clinical ────────
+  // ── BARC-10 self-check - warm self-reflection, never clinical ────────
   if (body.barc !== undefined) {
     const barc = body.barc as { scores?: unknown } | null;
     const scores = validateBarcScores(barc?.scores);
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "A check-in needs all 10 areas, each rated 0–5. Take your time — there are no wrong answers.",
+            "A check-in needs all 10 areas, each rated 0–5. Take your time - there are no wrong answers.",
         },
         { status: 400 }
       );
@@ -144,7 +144,7 @@ export async function POST(req: Request) {
   if (body.tagline !== undefined) {
     if (typeof body.tagline !== "string" || body.tagline.length > 140) {
       return NextResponse.json(
-        { error: "Taglines are short — 140 characters or fewer." },
+        { error: "Taglines are short - 140 characters or fewer." },
         { status: 400 }
       );
     }

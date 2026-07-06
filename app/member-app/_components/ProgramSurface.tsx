@@ -39,7 +39,7 @@ export type CareMsg = {
 
 const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
-/** Per-kind presentation — icon, tint, and the human label under the title. */
+/** Per-kind presentation - icon, tint, and the human label under the title. */
 const KIND_META: Record<
   CareKind,
   { label: string; Icon: typeof Users; tint: string; ink: string }
@@ -64,7 +64,7 @@ const KIND_META: Record<
   },
 };
 
-/* ── Pinned "My Program" card — sits above The Guide in the Chat tab ─────── */
+/* ── Pinned "My Program" card - sits above The Guide in the Chat tab ─────── */
 
 export function ProgramCard({
   onOpen,
@@ -104,7 +104,7 @@ export function ProgramCard({
     };
   }, []);
 
-  // Still checking — render nothing to avoid a flash.
+  // Still checking - render nothing to avoid a flash.
   if (state === null) return null;
 
   return (
@@ -172,13 +172,13 @@ export function ProgramCard({
       )}
 
       <div className="mt-3 text-[11px]/[1.45] font-medium text-ink-400">
-        For support &amp; scheduling — never clinical records.
+        For support &amp; scheduling - never clinical records.
       </div>
     </div>
   );
 }
 
-/* ── Full-height conversation — reuses the ChatThread bubble look ────────── */
+/* ── Full-height conversation - reuses the ChatThread bubble look ────────── */
 
 export function CareThread({
   channel,
@@ -228,7 +228,7 @@ export function CareThread({
         const data = await res.json();
         if (alive && Array.isArray(data.messages)) merge(data.messages);
       } catch {
-        /* transient — next poll retries */
+        /* transient - next poll retries */
       }
     };
     load(0);
@@ -323,7 +323,7 @@ export function CareThread({
       {/* Persistent non-clinical banner */}
       <div className="flex items-center gap-2 bg-sky-tint px-4 py-2 text-[11px]/[1.4] font-semibold text-indigo-brand">
         <ShieldCheck size={13} strokeWidth={2.4} className="flex-none" />
-        Messages here are for support &amp; scheduling — never clinical records.
+        Messages here are for support &amp; scheduling - never clinical records.
       </div>
       <div className="hairline" />
 
@@ -337,8 +337,8 @@ export function CareThread({
         {messages !== null && messages.length === 0 && (
           <div className="py-8 text-center text-[13px] font-medium text-ink-400">
             {channel.kind === "announcement"
-              ? "No announcements yet — your care team will post here."
-              : "No messages yet — say hello. It matters more than you know."}
+              ? "No announcements yet - your care team will post here."
+              : "No messages yet - say hello. It matters more than you know."}
           </div>
         )}
 
@@ -397,7 +397,7 @@ export function CareThread({
         </div>
       )}
 
-      {/* Composer — only where the viewer may post; announcements are read-only */}
+      {/* Composer - only where the viewer may post; announcements are read-only */}
       {channel.canPost ? (
         <form
           onSubmit={send}

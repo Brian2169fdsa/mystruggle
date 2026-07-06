@@ -17,7 +17,7 @@ type OwnDetails = {
 
 type CheckPoint = { id?: string; takenAt: number; total: number };
 
-/** BARC-10 areas, framed warmly — reflection, never diagnosis. */
+/** BARC-10 areas, framed warmly - reflection, never diagnosis. */
 const BARC_DOMAINS: { key: string; label: string }[] = [
   { key: "housing", label: "My housing situation" },
   { key: "employment", label: "Work & daily structure" },
@@ -71,7 +71,7 @@ function ToggleRow({
   );
 }
 
-/** Editable profile card — optimistic POSTs to /api/profile. */
+/** Editable profile card - optimistic POSTs to /api/profile. */
 function MyProfileCard({
   slug,
   details,
@@ -190,7 +190,7 @@ function MyProfileCard({
       <div className="mt-4 flex flex-col border-t border-canvas pt-2.5">
         <ToggleRow
           label="Show my recovery rings publicly"
-          hint="Three rings grown from your own activity — never a clinical score."
+          hint="Three rings grown from your own activity - never a clinical score."
           on={details.recoveryCapitalPublic}
           onToggle={() =>
             saveDetails({ recoveryCapitalPublic: !details.recoveryCapitalPublic })
@@ -216,7 +216,7 @@ function MyProfileCard({
   );
 }
 
-/** BARC-10 self-check — 10 quick 0–5 tap scales, warm and private. */
+/** BARC-10 self-check - 10 quick 0–5 tap scales, warm and private. */
 function SelfCheckCard({
   checks,
   submitCheck,
@@ -246,7 +246,7 @@ function SelfCheckCard({
           : check.total === prevTotal
             ? "holding steady. That counts."
             : "thanks for being honest with yourself. Every check-in counts.";
-    setResult(`${check.total}/50 — ${word}`);
+    setResult(`${check.total}/50 - ${word}`);
     setScores({});
     setOpen(false);
   };
@@ -256,7 +256,7 @@ function SelfCheckCard({
   return (
     <div className="rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
       <p className="text-[13px]/[1.6] font-medium text-ink-600">
-        10 quick sliders. Just for you — and the staff who support you. Never
+        10 quick sliders. Just for you - and the staff who support you. Never
         public.
       </p>
 
@@ -343,7 +343,7 @@ function SelfCheckCard({
               disabled={!answered || saving}
               className="inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full bg-blue-primary px-6 text-[13px] font-bold text-white transition-colors hover:bg-blue-hover disabled:cursor-default disabled:opacity-40"
             >
-              {saving ? "Saving…" : "Done — save my check-in"}
+              {saving ? "Saving…" : "Done - save my check-in"}
             </button>
             <button
               type="button"
@@ -355,7 +355,7 @@ function SelfCheckCard({
           </div>
           {!answered && (
             <p className="text-[11px] font-medium text-ink-400">
-              Tap a number for each area — there are no wrong answers.
+              Tap a number for each area - there are no wrong answers.
             </p>
           )}
         </div>
@@ -389,7 +389,7 @@ const JOURNEY: {
     lineColor: "#2E7CD6",
   },
   {
-    title: "Transitional — you are here",
+    title: "Transitional - you are here",
     sub: "Hallway house · $175/week goal",
     state: "current",
     lineColor: "#E2E8F0",
@@ -401,7 +401,7 @@ const JOURNEY: {
 function levelProgress(level: string, points: number) {
   const lv = level.toLowerCase();
   if (lv === "gold")
-    return { from: "Gold", to: "Top level — well done", pct: 100 };
+    return { from: "Gold", to: "Top level - well done", pct: 100 };
   if (lv === "silver")
     return {
       from: "Silver",
@@ -459,7 +459,7 @@ export default function MeTab({
         });
         setChecks(data.checks ?? []);
       } catch {
-        // offline — the rest of the tab still works
+        // offline - the rest of the tab still works
       }
     })();
     return () => {
@@ -467,7 +467,7 @@ export default function MeTab({
     };
   }, [userId]);
 
-  /** Optimistic profile-details save — revert on failure. */
+  /** Optimistic profile-details save - revert on failure. */
   const saveDetails = (patch: Partial<OwnDetails>) => {
     setDetails((prev) => {
       if (!prev) return prev;
@@ -583,7 +583,7 @@ export default function MeTab({
               )}
             </div>
 
-            {/* My profile — public-profile details, consent toggles */}
+            {/* My profile - public-profile details, consent toggles */}
             {details && (
               <>
                 <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
@@ -597,7 +597,7 @@ export default function MeTab({
               </>
             )}
 
-            {/* Check in with yourself — BARC-10, private, never diagnostic */}
+            {/* Check in with yourself - BARC-10, private, never diagnostic */}
             <div className="mt-1.5 text-[12px] font-bold tracking-[.12em] text-blue-primary">
               CHECK IN WITH YOURSELF
             </div>
@@ -649,7 +649,7 @@ export default function MeTab({
                 </div>
               ) : (
                 <p className="text-[14px]/[1.6] font-medium text-ink-600">
-                  No support requests yet — your mentor can help you set one up
+                  No support requests yet - your mentor can help you set one up
                   when you're ready.
                 </p>
               )}
@@ -702,7 +702,7 @@ export default function MeTab({
               </div>
             </div>
           ))}
-          {/* Course Champ — unlocked by completing the lesson */}
+          {/* Course Champ - unlocked by completing the lesson */}
           <div
             className={
               "rounded-2xl border-[1.5px] bg-white px-2 py-3.5 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)] " +

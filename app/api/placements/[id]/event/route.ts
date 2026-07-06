@@ -13,13 +13,13 @@ const KINDS: PlacementEvent["kind"][] = [
 /**
  * Record an interaction with a placement: impression / click / dismiss /
  * report. The viewer's memberId is stored SERVER-SIDE ONLY (frequency cap +
- * dedup) and is NEVER surfaced to advertiser reads — GET /api/placements and
+ * dedup) and is NEVER surfaced to advertiser reads - GET /api/placements and
  * GET /api/admin/placements return aggregate counts, never per-member rows.
  *
  * A "report" is ALSO a moderation signal: because a report is stored as a
  * PlacementEvent with kind "report", it naturally increments the placement's
  * aggregate report count, and GET /api/admin/placements surfaces any placement
- * with report > 0 in the ms_admin review queue — no separate field needed.
+ * with report > 0 in the ms_admin review queue - no separate field needed.
  */
 export async function POST(
   req: Request,
@@ -47,12 +47,12 @@ export async function POST(
     id: uid(),
     placementId: placement.id,
     kind,
-    memberId: user?.id, // internal only — cap/dedup; never exposed to advertiser
+    memberId: user?.id, // internal only - cap/dedup; never exposed to advertiser
     occurredAt: Date.now(),
   };
   db().placementEvents.push(event);
   save();
 
-  // Aggregate-only acknowledgement — no per-member data echoed back.
+  // Aggregate-only acknowledgement - no per-member data echoed back.
   return NextResponse.json({ ok: true, kind });
 }

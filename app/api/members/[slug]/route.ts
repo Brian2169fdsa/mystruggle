@@ -14,7 +14,7 @@ export async function GET(
     return NextResponse.json({ error: "Member not found." }, { status: 404 });
   }
   if (!member.consentPublic) {
-    // Generic org-giving state — page exists but shows no personal info.
+    // Generic org-giving state - page exists but shows no personal info.
     return NextResponse.json({ member: null, generic: true });
   }
   const pub: PublicMember = {

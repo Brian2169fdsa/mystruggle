@@ -6,26 +6,26 @@ import PrototypeMap from "../components/PrototypeMap";
 import GivingProof from "./GivingProof";
 
 export const metadata = {
-  title: "How Giving Works — My Struggle",
+  title: "How Giving Works - My Struggle",
   description:
-    "Give directly to one person's journey — half reaches them today, half is held safely for the day they re-enter society.",
+    "Give directly to one person's journey - half reaches them today, half is held safely for the day they re-enter society.",
 };
 
 const STEPS = [
   {
     n: "01",
     title: "Scan or visit",
-    desc: "Every member carries a personal QR code. Scan it with your phone camera — or visit their giving page — and give directly to their journey in under a minute.",
+    desc: "Every member carries a personal QR code. Scan it with your phone camera - or visit their giving page - and give directly to their journey in under a minute.",
   },
   {
     n: "02",
     title: "Half arrives today",
-    desc: "50% of your gift becomes cash they collect at their outreach center — whether they're unhoused or currently incarcerated, it reaches them right away.",
+    desc: "50% of your gift becomes cash they collect at their outreach center - whether they're unhoused or currently incarcerated, it reaches them right away.",
   },
   {
     n: "03",
     title: "Half waits for reentry",
-    desc: "50% is held safely for their return, released directly to them when they re-enter society — or right away if they already are.",
+    desc: "50% is held safely for their return, released directly to them when they re-enter society - or right away if they already are.",
   },
 ];
 
@@ -36,11 +36,11 @@ const SERVES = [
   },
   {
     title: "Currently incarcerated",
-    desc: "Gifts accumulate safely while they serve their time — and the reentry half is ready the day they walk out.",
+    desc: "Gifts accumulate safely while they serve their time - and the reentry half is ready the day they walk out.",
   },
   {
     title: "Re-entering now",
-    desc: "Both halves work for them immediately — first month's rent, deposits, work clothes. Everything a fresh start asks for.",
+    desc: "Both halves work for them immediately - first month's rent, deposits, work clothes. Everything a fresh start asks for.",
   },
 ];
 
@@ -50,7 +50,7 @@ const FAQ = [
     a: (
       <>
         Straight to one person. 50% of every gift goes to the member
-        immediately — cash they collect at their outreach center. The other
+        immediately - cash they collect at their outreach center. The other
         50% is held safely for their reentry and released directly to them
         when they step back into society: first month&apos;s rent, a deposit,
         work boots, a fresh start. If they&apos;re already re-entering, the
@@ -64,7 +64,7 @@ const FAQ = [
       <>
         Giving doesn&apos;t stop at a facility wall. The immediate half is
         cash they can collect through their outreach center while they serve
-        their time, and the reentry half keeps accumulating safely — so the
+        their time, and the reentry half keeps accumulating safely - so the
         day they walk out, there&apos;s something waiting to walk out with
         them.
       </>
@@ -74,7 +74,7 @@ const FAQ = [
     q: "When does the reentry half release?",
     a: (
       <>
-        The moment they re-enter society, it goes to them directly — no
+        The moment they re-enter society, it goes to them directly - no
         waiting period, no application. And if a member is already
         re-entering when you give, the held half releases to them right away.
       </>
@@ -97,7 +97,7 @@ export default function Giving() {
     <>
       <Nav />
 
-      {/* HERO — navy manifesto band with ghost 50/50 */}
+      {/* HERO - navy manifesto band with ghost 50/50 */}
       <section className="relative overflow-hidden bg-navy-deep">
         <div className="absolute -top-[30px] right-8 hidden whitespace-nowrap text-[260px]/[1] font-extrabold tracking-[-0.02em] text-white/[.04] lg:block">
           50/50
@@ -112,7 +112,7 @@ export default function Giving() {
               <span className="script text-[1.25em] text-[#A9B4E8]">home</span>.
             </h1>
             <p className="max-w-[560px] text-[16px]/[1.65] font-medium text-white/[.88] lg:text-[19px]">
-              Give directly to one person&apos;s journey — half reaches them
+              Give directly to one person&apos;s journey - half reaches them
               today, half is waiting when they step back into society.
             </p>
             <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -133,7 +133,7 @@ export default function Giving() {
         </div>
       </section>
 
-      {/* HOW IT WORKS — 01/02/03 */}
+      {/* HOW IT WORKS - 01/02/03 */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[110px]">
           <div className="mx-auto max-w-[640px] text-center">
@@ -224,7 +224,7 @@ export default function Giving() {
                       <strong className="text-ink-900">
                         Member ID + staff verification
                       </strong>{" "}
-                      — every redemption happens in person, with a real human
+                      - every redemption happens in person, with a real human
                       confirming it.
                     </>
                   ),
@@ -236,7 +236,7 @@ export default function Giving() {
                       <strong className="text-ink-900">
                         Routed through outreach centers
                       </strong>{" "}
-                      — gifts flow through the member&apos;s center, never
+                      - gifts flow through the member&apos;s center, never
                       into a void.
                     </>
                   ),
@@ -246,7 +246,7 @@ export default function Giving() {
                   text: (
                     <>
                       <strong className="text-ink-900">$100/day cash cap</strong>{" "}
-                      — daily limits keep members, donors, and staff safe.
+                      - daily limits keep members, donors, and staff safe.
                     </>
                   ),
                 },
@@ -328,7 +328,7 @@ export default function Giving() {
                 </span>
               </div>
               <div className="max-w-[620px] text-[15px]/[1.7] text-white/80">
-                GED earned, first job started, transitional housing secured —
+                GED earned, first job started, transitional housing secured -
                 and $175 a week keeps her hallway house on track, the last
                 step before a place of her own.
               </div>

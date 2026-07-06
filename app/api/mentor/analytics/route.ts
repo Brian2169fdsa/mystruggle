@@ -7,17 +7,17 @@ import type {
   Session,
 } from "@/app/lib/types";
 
-/** Mentor analytics — per-mentee journey signals + a roster rollup for the
+/** Mentor analytics - per-mentee journey signals + a roster rollup for the
  *  mentor app's "My mentoring" tab. Read-only.
  *
  *  SCOPE: a mentor sees ONLY their own mentees (users whose mentorId is the
  *  signed-in mentor). Staff may pass ?mentorId= to view any mentor's roster
- *  (staff supervise all surfaces); a mentor's own id always wins otherwise —
+ *  (staff supervise all surfaces); a mentor's own id always wins otherwise -
  *  the query param is ignored for non-staff so no mentor can ever read
  *  another mentor's mentees.
  *
  *  PRIVACY (docs/13): BARC self-check totals/trends are visible to assigned
- *  support only — the assigned mentor and staff. Because this route is
+ *  support only - the assigned mentor and staff. Because this route is
  *  scoped to the mentor's own mentees, including the BARC trend here honors
  *  that rule. Only the total and direction are shared, never the 10 domain
  *  scores; trend is shown with warm arrows, never red on a person.
@@ -25,7 +25,7 @@ import type {
 
 const DAY = 86_400_000;
 
-/** Expansion arrays are seeded by a separate rollout — access defensively. */
+/** Expansion arrays are seeded by a separate rollout - access defensively. */
 type ExpandedDB = ReturnType<typeof db> & {
   recoveryGoals?: RecoveryGoal[];
   barcChecks?: BarcSelfCheck[];
@@ -49,13 +49,13 @@ export async function GET(req: Request) {
   const goals = (d.recoveryGoals ??= []);
   const barcs = (d.barcChecks ??= []);
 
-  // Own mentees only — the strict scoping line for this whole route.
+  // Own mentees only - the strict scoping line for this whole route.
   const mentees = d.users.filter(
     (u) => u.role === "member" && u.mentorId === mentorId
   );
   const menteeIds = new Set(mentees.map((m) => m.id));
 
-  // REPORTING ANCHOR — same pattern as /api/admin/reports: seeded demo data
+  // REPORTING ANCHOR - same pattern as /api/admin/reports: seeded demo data
   // hangs off its own fixed epoch, so anchor "now" to the latest recorded
   // activity (fresh data makes this effectively Date.now()).
   const latestActivity = Math.max(
@@ -89,7 +89,7 @@ export async function GET(req: Request) {
       (s) => s.createdAt >= quarterStart
     ).length;
 
-    // Course progress — avg % complete across the mentee's enrollments.
+    // Course progress - avg % complete across the mentee's enrollments.
     const enrollments = d.enrollments.filter((e) => e.memberId === m.id);
     const pcts = enrollments.map((e) => {
       const total = courseById.get(e.courseId)?.lessonCount ?? 0;
@@ -106,7 +106,7 @@ export async function GET(req: Request) {
     ).length;
 
     // BARC trend from the last two self-checks. ±1 point on a 0–50 scale is
-    // noise, not a signal — treat it as flat.
+    // noise, not a signal - treat it as flat.
     const checks = barcs
       .filter((b) => b.memberId === m.id)
       .sort((a, b) => a.takenAt - b.takenAt);
@@ -131,8 +131,8 @@ export async function GET(req: Request) {
         now - p.createdAt <= 30 * DAY
     ).length;
 
-    // "Needs attention" — a quiet amber signal, never an alarm: paused
-    // streak, a stale next action (sessions were happening but stopped —
+    // "Needs attention" - a quiet amber signal, never an alarm: paused
+    // streak, a stale next action (sessions were happening but stopped -
     // none in 30 days), a dipping BARC trend, or an open concern. A mentee
     // with no logged sessions yet isn't flagged on that basis alone: absent
     // data is not a concern signal.

@@ -30,7 +30,7 @@ function toMs(v: number | string | null | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Reasons that signal member wellbeing get an amber (concern) chip — never a
+/** Reasons that signal member wellbeing get an amber (concern) chip - never a
  *  red "on a person". Everything else reads as a neutral sky chip. */
 const CONCERN = /(harm|safe|crisis|suicid|threat|danger)/i;
 
@@ -120,7 +120,7 @@ export default function ReportsQueue({
       </div>
       <div className="mt-0.5 text-[13px] font-medium text-ink-600">
         When a member flags a post, it lands here. Reviewing is care work, not
-        punishment — read with the whole person in mind.
+        punishment - read with the whole person in mind.
       </div>
     </div>
   );
@@ -151,7 +151,7 @@ export default function ReportsQueue({
   });
   const openCount = reports.filter((r) => r.status === "open").length;
 
-  // Warm empty state — nothing open to review.
+  // Warm empty state - nothing open to review.
   if (openCount === 0) {
     return (
       <div className="flex flex-col gap-5">
@@ -239,7 +239,7 @@ export default function ReportsQueue({
                   </>
                 ) : (
                   <div className="text-[13px] font-medium italic text-ink-400">
-                    This post is no longer available — it may have been removed.
+                    This post is no longer available - it may have been removed.
                   </div>
                 )}
               </div>
@@ -302,7 +302,7 @@ export default function ReportsQueue({
                       type="button"
                       onClick={() => act(r.id, "dismiss")}
                       disabled={busy}
-                      title="No action needed — close this report"
+                      title="No action needed - close this report"
                       className={
                         "inline-flex min-h-[44px] items-center gap-2 rounded-full border-[1.5px] px-5 text-[13px] font-bold " +
                         (busy

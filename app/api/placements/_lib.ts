@@ -1,5 +1,5 @@
 // Shared helpers for the community ad product API. AGGREGATE-ONLY analytics:
-// the functions here NEVER return per-member rows — memberId on a
+// the functions here NEVER return per-member rows - memberId on a
 // PlacementEvent is internal (frequency cap + dedup) and must never reach an
 // advertiser-facing read. This is the code-level guarantee behind the trust
 // rule "analytics are aggregate; no per-member profile is exposed."
@@ -11,7 +11,7 @@ import type {
   PlacementKind,
 } from "@/app/lib/types";
 
-/** Aggregate counts for one placement — the ONLY analytics shape an advertiser
+/** Aggregate counts for one placement - the ONLY analytics shape an advertiser
  *  (center) ever sees. No memberId, no per-event rows, no timestamps. */
 export interface PlacementStats {
   impressions: number;
@@ -40,14 +40,14 @@ export function aggregate(placementId: string): PlacementStats {
 }
 
 /** Advertiser-facing projection of a placement: the full record PLUS aggregate
- *  stats. Safe to return to the owning center — carries no per-member data. */
+ *  stats. Safe to return to the owning center - carries no per-member data. */
 export function withStats(p: SponsoredPlacement): SponsoredPlacement & {
   stats: PlacementStats;
 } {
   return { ...p, stats: aggregate(p.id) };
 }
 
-/** Public-safe shape shown to a member in the feed — "Sponsored by [orgName]".
+/** Public-safe shape shown to a member in the feed - "Sponsored by [orgName]".
  *  Deliberately drops targeting, budget, status, and every internal field. */
 export interface ServedPlacement {
   id: string;

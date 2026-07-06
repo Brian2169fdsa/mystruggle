@@ -121,7 +121,7 @@ export default function HomeTab({
               <div className="text-[13px] font-bold text-ink-900">My Center</div>
             </div>
           </div>
-          {/* MY PLAN — compact recovery-goal summary (docs/13 Part C),
+          {/* MY PLAN - compact recovery-goal summary (docs/13 Part C),
               signed in only. Sits between the rings and the tasks. */}
           {user && activeGoals.length > 0 && (
             <div className="mt-[18px] rounded-xl bg-canvas px-4 py-3.5">
@@ -211,7 +211,7 @@ export default function HomeTab({
           </span>
         </div>
 
-        {/* Local fallback win card — only when the celebration share
+        {/* Local fallback win card - only when the celebration share
             couldn't post to the API (signed out). */}
         {sharedWin && (
           <div className="rounded-2xl border-[1.5px] border-gold-border bg-white px-5 py-[18px] shadow-[0_2px_8px_rgba(234,179,8,.15)]">
@@ -230,7 +230,7 @@ export default function HomeTab({
               </div>
             </div>
             <div className="mt-3 text-[15px]/[1.6] font-medium text-ink-900">
-              Just finished Lesson 2 of ISE Course 3 — made a decision. +10
+              Just finished Lesson 2 of ISE Course 3 - made a decision. +10
               points and the streak lives on.
             </div>
             <div className="mt-3.5 flex items-center gap-4">

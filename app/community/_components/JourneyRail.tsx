@@ -1,9 +1,9 @@
 "use client";
 
-// Journey moments — a horizontally-scrolling rail at the top of the feed
+// Journey moments - a horizontally-scrolling rail at the top of the feed
 // column (the big-social "stories" pattern translated to recovery). Cards are
 // derived from data the community already has:
-//   1. "Share a moment" — the viewer's own card; opens the composer by
+//   1. "Share a moment" - the viewer's own card; opens the composer by
 //      dispatching COMPOSER_OPEN_EVENT ("ms:composer:open"), which Composer
 //      listens for (expand + focus). Signed-out visitors get a /login link.
 //   2. Win/milestone posts from GET /api/posts (kind === "win" | "milestone"),
@@ -25,7 +25,7 @@ import { AvatarTile, type FeedPost } from "./ui";
 const MAX_MOMENTS = 8; // moment cards, excluding the leading share card
 const MAX_EVENTS = 2;
 
-/* card geometry — ~118px wide, story-height, rounded-2xl */
+/* card geometry - ~118px wide, story-height, rounded-2xl */
 const CARD = "h-[150px] w-[118px] flex-none snap-start overflow-hidden rounded-2xl";
 
 function firstNameOf(full: string): string {
@@ -38,7 +38,7 @@ function excerptOf(body: string): string {
 }
 
 /** Smooth-scroll to the post when its anchor is on the page (falls back to
- *  the href — /community#post-{id} — when it isn't). */
+ *  the href - /community#post-{id} - when it isn't). */
 function jumpToPost(id: string) {
   return (e: MouseEvent) => {
     const el = document.getElementById(`post-${id}`);
@@ -65,7 +65,7 @@ function RailSkeleton() {
   );
 }
 
-/** Leading card — viewer color up top, blue + at the seam, warm label. */
+/** Leading card - viewer color up top, blue + at the seam, warm label. */
 function ShareCard({ viewer }: { viewer: SafeUser | null }) {
   const inner = (
     <>
@@ -97,7 +97,7 @@ function ShareCard({ viewer }: { viewer: SafeUser | null }) {
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent(COMPOSER_OPEN_EVENT))}
       className={cls}
-      aria-label="Share a moment — open the composer"
+      aria-label="Share a moment - open the composer"
     >
       {inner}
     </button>
@@ -204,8 +204,8 @@ export default function JourneyRail() {
     };
   }, []);
 
-  /* — moment derivation: wins & milestones first (newest first, as served),
-       then the most-hearted recent regular posts to fill the rail — */
+  /* - moment derivation: wins & milestones first (newest first, as served),
+       then the most-hearted recent regular posts to fill the rail - */
   const moments = useMemo(() => {
     const pool = (posts ?? []).filter(
       (p) => !blockedIds.has(p.authorId) && !p.hidden
@@ -217,7 +217,7 @@ export default function JourneyRail() {
     return [...wins, ...loved].slice(0, Math.max(0, MAX_MOMENTS - events.length));
   }, [posts, events.length, blockedIds]);
 
-  // Quiet start / signed-out fetch failure — take up no space at all.
+  // Quiet start / signed-out fetch failure - take up no space at all.
   if (!loading && !viewer && moments.length === 0 && events.length === 0) {
     return null;
   }

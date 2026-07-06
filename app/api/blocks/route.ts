@@ -18,7 +18,7 @@ function blockedFor(blockerId: string): string[] {
     .map((b) => b.blockedId);
 }
 
-/** GET — the ids the signed-in user has blocked. */
+/** GET - the ids the signed-in user has blocked. */
 export async function GET() {
   const user = await getSessionUser();
   if (!user) {
@@ -27,7 +27,7 @@ export async function GET() {
   return NextResponse.json({ blocked: blockedFor(user.id) });
 }
 
-/** POST — { targetId, action: "block" | "unblock" }. You cannot block
+/** POST - { targetId, action: "block" | "unblock" }. You cannot block
  *  yourself; blocking is idempotent (one row per blocker→blocked pair). */
 export async function POST(req: Request) {
   const user = await getSessionUser();

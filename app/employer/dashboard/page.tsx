@@ -1,6 +1,6 @@
 "use client";
 
-// Employer dashboard — post recovery-friendly openings and manage them
+// Employer dashboard - post recovery-friendly openings and manage them
 // (close / reopen / remove). Employer-only; anyone else is sent to /employer.
 
 import { useCallback, useEffect, useState } from "react";
@@ -140,7 +140,7 @@ export default function EmployerDashboard() {
         body: JSON.stringify({ status }),
       });
     } catch {
-      // optimistic — reload to reconcile on failure
+      // optimistic - reload to reconcile on failure
     }
     await loadJobs();
   }

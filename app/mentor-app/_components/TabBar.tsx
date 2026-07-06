@@ -10,7 +10,7 @@ export type MentorView =
   | "community"
   | "me";
 
-/** Bottom tab bar — shown everywhere except mentee detail. */
+/** Bottom tab bar - shown everywhere except mentee detail. */
 export default function TabBar({
   view,
   onMentees,

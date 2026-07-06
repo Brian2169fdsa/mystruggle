@@ -5,7 +5,7 @@ import type { JobApplication, JobAppStatus } from "@/app/lib/types";
 
 // ── defensive store access ─────────────────────────────────────────────
 // jobApplications may be seeded by a concurrent seed pass or absent on a
-// fresh store — always default the array in place.
+// fresh store - always default the array in place.
 type ExpansionStore = { jobApplications?: JobApplication[] };
 
 function appStore() {
@@ -24,13 +24,13 @@ const NEXT_STATUSES: Record<JobAppStatus, JobAppStatus[]> = {
 
 const OPEN_STATUSES: JobAppStatus[] = ["applied", "interview", "offer"];
 
-/** Today as an ISO date (YYYY-MM-DD) — string compare works for ISO dates. */
+/** Today as an ISO date (YYYY-MM-DD) - string compare works for ISO dates. */
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
 /**
- * GET — the signed-in member's job applications, plus staleCount: open
+ * GET - the signed-in member's job applications, plus staleCount: open
  * applications whose nextActionDate is in the past (Companion/UI nudges
  * "follow up" on those).
  */
@@ -56,7 +56,7 @@ export async function GET() {
 }
 
 /**
- * POST — member-only:
+ * POST - member-only:
  * - { company, role, notes?, nextActionDate? } → log a new application
  *   (starts at "applied").
  * - { id, status } → advance an application: applied→interview→offer, or

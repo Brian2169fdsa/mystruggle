@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, findUserById } from "@/app/lib/store";
 
-/** Public support-request board — active goals of consenting members only.
+/** Public support-request board - active goals of consenting members only.
  *  First names + slugs only (privacy rules per docs/10-COMPLIANCE). */
 export async function GET() {
   const d = db();

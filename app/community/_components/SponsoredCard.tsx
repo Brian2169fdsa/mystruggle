@@ -1,6 +1,6 @@
 "use client";
 
-// A sponsored placement rendered as a feed card — deliberately distinct from
+// A sponsored placement rendered as a feed card - deliberately distinct from
 // peer posts (docs/15 §"The Community Ad Product"): sky-tint background, indigo
 // hairline border, a bold SPONSORED chip and a "Sponsored by …" line up top, so
 // it is never disguised as a member post. Member controls (dismiss / report)
@@ -39,7 +39,7 @@ function kindLabel(kind: string): string {
 // same card scrolling in and out (or remounting during interleave) fires once.
 const impressed = new Set<string>();
 
-/** Best-effort analytics beacon. Silent on failure — never blocks the member. */
+/** Best-effort analytics beacon. Silent on failure - never blocks the member. */
 async function postEvent(id: string, kind: PlacementEventKind): Promise<void> {
   try {
     await fetch(`/api/placements/${id}/event`, {
@@ -49,7 +49,7 @@ async function postEvent(id: string, kind: PlacementEventKind): Promise<void> {
       keepalive: true, // survive the tab navigating away on a click
     });
   } catch {
-    /* analytics are non-critical — swallow */
+    /* analytics are non-critical - swallow */
   }
 }
 
@@ -65,7 +65,7 @@ export default function SponsoredCard({
   const [hidden, setHidden] = useState(false);
   const [reported, setReported] = useState(false);
 
-  /* — impression: fire once when the card first scrolls into view — */
+  /* - impression: fire once when the card first scrolls into view - */
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -78,7 +78,7 @@ export default function SponsoredCard({
     };
 
     if (typeof IntersectionObserver === "undefined") {
-      fire(); // very old client — count it on mount
+      fire(); // very old client - count it on mount
       return;
     }
     const io = new IntersectionObserver(
@@ -120,7 +120,7 @@ export default function SponsoredCard({
       aria-label={`Sponsored by ${placement.orgName}`}
       className="rounded-2xl border border-indigo-brand/30 bg-sky-tint px-6 py-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]"
     >
-      {/* label row — always visible, never disguised as a peer post */}
+      {/* label row - always visible, never disguised as a peer post */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex h-5 items-center rounded-full bg-indigo-brand px-2 text-[10px] font-extrabold uppercase tracking-[.08em] text-white">
           Sponsored
@@ -161,11 +161,11 @@ export default function SponsoredCard({
         </div>
       )}
 
-      {/* member controls — dismiss + report */}
+      {/* member controls - dismiss + report */}
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-sky-tint-2 pt-3">
         {reported ? (
           <span className="text-[13px] font-semibold text-indigo-brand">
-            Thanks — we&apos;ll review this.
+            Thanks - we&apos;ll review this.
           </span>
         ) : (
           <>

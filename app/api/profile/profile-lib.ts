@@ -1,18 +1,18 @@
 // Member-profile derivation shared by GET /api/profile and the public
 // /community/u/[slug] page. Owned by the profile module (docs/13 Part A).
 //
-// RECOVERY CAPITAL — how the three rings are derived (Part A + Part F):
+// RECOVERY CAPITAL - how the three rings are derived (Part A + Part F):
 // The rings are grown ONLY from the member's own activity on the platform.
 // They are NEVER a clinical score, never diagnostic, and never computed from
 // BARC self-checks (those stay private to the member + supporting staff).
 //
 //   personal  = normalize( points + streak*10 + completedLessons*20 )
-//               — courses, streaks, gamification points → personal capital
+//               - courses, streaks, gamification points → personal capital
 //   social    = normalize( posts+comments authored + hearts received
 //               + circleMemberships*10 )
-//               — community participation → social capital
+//               - community participation → social capital
 //   community = normalize( goalsAchieved*30 + fundedRequests*25 + savings/10 )
-//               — real-world outcomes + resources secured → community capital
+//               - real-world outcomes + resources secured → community capital
 //
 // normalize(raw) is a saturating curve round(100 * raw / (raw + K)) so every
 // ring lives in 0–100, always has room to grow, and never punishes anyone:
@@ -80,7 +80,7 @@ export interface RecoveryCapital {
   community: number; // 0–100
 }
 
-/** Saturating 0–100 normalizer — raw === K reads as 50%. */
+/** Saturating 0–100 normalizer - raw === K reads as 50%. */
 function normalize(raw: number, K: number): number {
   if (raw <= 0) return 0;
   return Math.round((100 * raw) / (raw + K));
@@ -89,14 +89,14 @@ function normalize(raw: number, K: number): number {
 export function deriveRecoveryCapital(member: User): RecoveryCapital {
   const d = db();
 
-  // personal — points, streaks, learning (activity, never clinical)
+  // personal - points, streaks, learning (activity, never clinical)
   const completedLessons = d.enrollments
     .filter((e) => e.memberId === member.id)
     .reduce((sum, e) => sum + e.completedLessons.length, 0);
   const personalRaw =
     (member.points ?? 0) + (member.streak ?? 0) * 10 + completedLessons * 20;
 
-  // social — showing up for and with the community
+  // social - showing up for and with the community
   let postsAuthored = 0;
   let commentsAuthored = 0;
   let heartsReceived = 0;
@@ -113,7 +113,7 @@ export function deriveRecoveryCapital(member: User): RecoveryCapital {
   const socialRaw =
     postsAuthored + commentsAuthored + heartsReceived + circles * 10;
 
-  // community — real-world outcomes and resources secured
+  // community - real-world outcomes and resources secured
   const goalsAchieved = recoveryGoals().filter(
     (g) => g.memberId === member.id && g.status === "achieved"
   ).length;
@@ -130,7 +130,7 @@ export function deriveRecoveryCapital(member: User): RecoveryCapital {
   };
 }
 
-// ── milestones (member-chosen visibility, all celebration — no clinical) ─
+// ── milestones (member-chosen visibility, all celebration - no clinical) ─
 
 export interface ProfileMilestones {
   level: string;

@@ -1,5 +1,5 @@
 // Browser (anon) Supabase client. Safe to import from client components:
-// it uses only the public `NEXT_PUBLIC_*` vars — the anon key is designed to
+// it uses only the public `NEXT_PUBLIC_*` vars - the anon key is designed to
 // ship to the browser, RLS is the security boundary (docs/13 §(a)). Never put
 // the service-role key here; that lives in `server.ts` (server-only).
 //

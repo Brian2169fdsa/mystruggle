@@ -4,7 +4,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import type { Resume, ResumeSection, ResumeSectionKind } from "@/app/lib/types";
 
 /**
- * /api/resumes — the member-owned Résumé Builder API (docs/13 Part D).
+ * /api/resumes - the member-owned Résumé Builder API (docs/13 Part D).
  *
  * GET  → { resume, sections } for the signed-in user's primary résumé.
  *        Creates an empty clean_blue default on first request.
@@ -24,7 +24,7 @@ const KINDS: ResumeSectionKind[] = [
   "projects",
 ];
 
-// The store's DB interface may not know about résumés yet — the seed data
+// The store's DB interface may not know about résumés yet - the seed data
 // lands from a concurrent workstream. Access defensively and create the
 // arrays on demand so both orders of arrival work.
 type ResumeTables = { resumes: Resume[]; resumeSections: ResumeSection[] };
@@ -36,7 +36,7 @@ function tables(): ResumeTables {
   return d as ResumeTables;
 }
 
-/** The user's primary résumé — created empty on first touch. */
+/** The user's primary résumé - created empty on first touch. */
 function primaryResumeFor(user: {
   id: string;
   name: string;

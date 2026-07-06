@@ -5,13 +5,13 @@ import { getRoleUser } from "@/app/lib/auth";
 /**
  * GET /api/admin/alumni  (staff-only, read-only)
  *
- * Post-discharge (CONTINUING phase) roster for the staff's center — the
+ * Post-discharge (CONTINUING phase) roster for the staff's center - the
  * licensed outcomes engine's front door (docs/14 alumni dashboard). Per
  * alumnus we return a rolling continuum score, months since discharge, the
  * 30/60/90/180/365 follow-up cadence, a relapse-risk signal, and last activity.
  *
  * Relapse risk is AMBER-ONLY by product rule: a drop in engagement (fewer
- * events in the last 30d than the prior 30d) surfaces as "watch" — never red on
+ * events in the last 30d than the prior 30d) surfaces as "watch" - never red on
  * a person. It is the earliest, kindest relapse warning that exists.
  *
  * Defensive: `follow_up_checkins` are seeded by a concurrent agent; when absent
@@ -180,7 +180,7 @@ export async function GET() {
     });
   }
 
-  // Watch first, then lowest score — the reach-out queue reads top-down.
+  // Watch first, then lowest score - the reach-out queue reads top-down.
   alumni.sort((a, b) => {
     if (a.relapseRisk !== b.relapseRisk) return a.relapseRisk === "watch" ? -1 : 1;
     return a.continuumScore - b.continuumScore;

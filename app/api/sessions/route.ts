@@ -6,7 +6,7 @@ import type { Session, SessionMode } from "@/app/lib/types";
 const MODES: SessionMode[] = ["in-person", "phone", "video"];
 const MINUTES = [15, 30, 45, 60];
 
-/** Defensive access — works whether or not the seeded sessions array
+/** Defensive access - works whether or not the seeded sessions array
  *  landed yet (store reseed is rolling out separately). */
 function sessionStore(): Session[] {
   const d = db() as ReturnType<typeof db> & { sessions?: Session[] };
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ sessions, count: all.length });
 }
 
-/** Log a session — signed-in mentors (staff passes every role check). */
+/** Log a session - signed-in mentors (staff passes every role check). */
 export async function POST(req: Request) {
   const me = await getRoleUser("mentor");
   if (!me) {

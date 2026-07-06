@@ -39,7 +39,7 @@ type Analytics = { mentees: MenteeAnalytics[]; rollup: Rollup };
 
 const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
-/** "today" / "5 days ago" / "May 12" — session recency. */
+/** "today" / "5 days ago" / "May 12" - session recency. */
 function rel(ts: number): string {
   const days = Math.floor((Date.now() - ts) / 86400e3);
   if (days < 1) return "today";
@@ -52,14 +52,14 @@ function rel(ts: number): string {
   });
 }
 
-/** BARC check-in trend — warm arrows, never red on a person. */
+/** BARC check-in trend - warm arrows, never red on a person. */
 const TREND: Record<BarcTrend, { glyph: string; cls: string; word: string }> = {
   up: { glyph: "▲", cls: "text-success", word: "rising" },
   flat: { glyph: "▬", cls: "text-ink-400", word: "steady" },
   down: { glyph: "▼", cls: "text-amber-ink", word: "dipping" },
 };
 
-/* ── demo fallback — mirrors the roster's three flagship mentees ───────── */
+/* ── demo fallback - mirrors the roster's three flagship mentees ───────── */
 
 const DEMO_MENTEES: MenteeAnalytics[] = [
   {
@@ -307,7 +307,7 @@ export default function MeTab({
           My mentoring
         </div>
         <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-          How your mentees are growing — at a glance.
+          How your mentees are growing - at a glance.
         </div>
       </div>
       <div className="hairline" />
@@ -318,7 +318,7 @@ export default function MeTab({
             href="/login"
             className="flex min-h-[44px] items-center justify-center rounded-2xl border-[1.5px] border-sky-tint-2 bg-sky-tint px-5 py-3 text-center text-[13px] font-bold text-blue-primary hover:bg-sky-tint-2"
           >
-            This is a preview — sign in as a mentor to see your real
+            This is a preview - sign in as a mentor to see your real
             mentees →
           </a>
         )}

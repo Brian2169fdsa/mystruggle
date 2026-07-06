@@ -1,6 +1,6 @@
 "use client";
 
-// Mobile bottom tab bar for the community surface — app-like navigation on
+// Mobile bottom tab bar for the community surface - app-like navigation on
 // small screens (hidden at lg+ where the three-column rails take over).
 // Alerts shows a live unread badge from GET /api/notifications; a 401
 // (signed out) or zero unread simply hides the badge.
@@ -88,7 +88,7 @@ export default function CommunityTabBar() {
           : (data.notifications ?? []).filter((n) => !n.read).length
       );
     } catch {
-      // Network hiccup — keep the last known count.
+      // Network hiccup - keep the last known count.
     }
   }, []);
 

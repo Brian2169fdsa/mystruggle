@@ -1,6 +1,6 @@
 "use client";
 
-/** Quiet "I'm concerned" bottom sheet — same shell as LogSheet, calmer
+/** Quiet "I'm concerned" bottom sheet - same shell as LogSheet, calmer
  *  voice. No alarm styling, no red: this is a hand on a shoulder, not a
  *  siren. The note goes to staff only and never appears on the member. */
 export default function ConcernSheet({
@@ -33,13 +33,13 @@ export default function ConcernSheet({
         </div>
         <div className="mt-2 text-sm/[1.6] font-normal text-ink-600">
           Tell the care team what you&apos;re seeing. This stays between you
-          and staff — never on {name}&apos;s profile.
+          and staff - never on {name}&apos;s profile.
         </div>
 
         <div className="mt-5 text-xs font-bold tracking-[.12em] text-blue-primary">
           WHAT YOU&apos;RE SEEING{" "}
           <span className="text-[11px] font-normal tracking-normal text-ink-400">
-            — optional
+            - optional
           </span>
         </div>
         <textarea
@@ -52,7 +52,7 @@ export default function ConcernSheet({
 
         {needSignIn && (
           <div className="mt-3 rounded-[14px] bg-sky-tint px-4 py-3 text-center text-[13px] font-semibold text-ink-600">
-            Sign in as a mentor first —{" "}
+            Sign in as a mentor first -{" "}
             <a href="/login" className="font-bold text-blue-primary">
               go to sign in
             </a>

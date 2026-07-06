@@ -1,6 +1,6 @@
 "use client";
 
-// Left rail of /community — profile card, channel nav, and small footer links.
+// Left rail of /community - profile card, channel nav, and small footer links.
 // Self-fetching (GET /api/auth/me); reads the active channel from ?topic=.
 
 import { Suspense, useEffect, useState } from "react";
@@ -45,7 +45,7 @@ function SignedOutCard() {
         Join the community
       </h2>
       <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-600">
-        A warm corner of the internet where members cheer each other on — wins,
+        A warm corner of the internet where members cheer each other on - wins,
         gratitude, and honest days alike.
       </p>
       <Link
@@ -258,7 +258,7 @@ function CirclesCard() {
   }, []);
 
   function select(id: string) {
-    // Circles replace the topic view — one active lens at a time.
+    // Circles replace the topic view - one active lens at a time.
     router.replace(`/community?circle=${encodeURIComponent(id)}`, {
       scroll: false,
     });

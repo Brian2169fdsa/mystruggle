@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 /**
  * Newsletter signups. Deliberately self-contained: a module-level array (no
- * store.ts) — resets per server restart, which is fine for a monthly-letter
+ * store.ts) - resets per server restart, which is fine for a monthly-letter
  * waitlist demo. Swap for the real store/ESP when the data layer lands.
  */
 const subscribers: { email: string; createdAt: string }[] = [];

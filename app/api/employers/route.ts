@@ -13,7 +13,7 @@ import { toSafeUser, type User } from "@/app/lib/types";
 const AVATAR_COLORS = ["#2E7CD6", "#4E5B9B", "#0B2545", "#12B76A", "#4E7BC4"];
 
 /**
- * POST — create a recovery-friendly employer account and sign in.
+ * POST - create a recovery-friendly employer account and sign in.
  * Body: { company, name (contact), email, password }. Reuses the same HMAC
  * session cookie as every other role; the account is a User with role
  * "employer" and their business on `company`.

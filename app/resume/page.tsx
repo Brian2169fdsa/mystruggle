@@ -13,7 +13,7 @@ import ResumeDoc, {
 } from "./ResumeDoc";
 
 /**
- * /resume — the dignity-first guided Résumé Builder (docs/13 Part D).
+ * /resume - the dignity-first guided Résumé Builder (docs/13 Part D).
  * Mobile-first standalone page: wordmark header + hairline, canvas bg,
  * PrototypeMap. Warm plain-language prompts, autosave, clean_blue preview.
  * PDF export = the browser's print-to-PDF via /resume/print (a pdf library
@@ -51,14 +51,14 @@ const SUGGESTED_SKILLS = [
   "Punctuality",
 ];
 
-// Pre-written fair-chance strength lines — positive reframing of lived
+// Pre-written fair-chance strength lines - positive reframing of lived
 // experience into real transferable skills. Never legal advice.
 const STRENGTH_LINES = [
-  "Peer mentor — supported 3 members weekly through structured recovery programming",
-  "Center inventory volunteer — stocked, counted, and organized donations for 200+ visitors/week",
+  "Peer mentor - supported 3 members weekly through structured recovery programming",
+  "Center inventory volunteer - stocked, counted, and organized donations for 200+ visitors/week",
   "Completed structured personal-development program with perfect attendance",
-  "Group facilitator — led weekly peer support circle of 8–12 people",
-  "Kitchen crew volunteer — prepped and served meals for 60+ guests per shift",
+  "Group facilitator - led weekly peer support circle of 8–12 people",
+  "Kitchen crew volunteer - prepped and served meals for 60+ guests per shift",
 ];
 
 function newId(): string {
@@ -99,7 +99,7 @@ function SignedOutCard() {
           <span className="script text-[34px]">your</span> story
         </h1>
         <p className="mt-3 text-[14px]/[1.7] font-medium text-ink-600">
-          A step-by-step builder made for people rebuilding — it saves as you
+          A step-by-step builder made for people rebuilding - it saves as you
           go, and your story is strength here. Sign in to start yours.
         </p>
         <Link
@@ -231,7 +231,7 @@ export default function ResumeBuilderPage() {
         const data = await res.json();
         if (!alive) return;
         setResume(data.resume as Resume);
-        // Seeded résumés use aggregate content.items sections — explode
+        // Seeded résumés use aggregate content.items sections - explode
         // them into the builder's one-section-per-entry shape and persist
         // the migration so future edits round-trip cleanly.
         const { sections: norm, explodedIds } = normalizeSections(
@@ -314,7 +314,7 @@ export default function ResumeBuilderPage() {
     [debounced, post]
   );
 
-  // Section upsert — optimistic local state + (debounced or immediate) POST.
+  // Section upsert - optimistic local state + (debounced or immediate) POST.
   const upsertSection = useCallback(
     (section: ResumeSection, immediate = false) => {
       setSections((prev) => {
@@ -326,7 +326,7 @@ export default function ResumeBuilderPage() {
       });
       const fire = () => {
         void post({ section }).then((res) => {
-          // Server may reassign the id (collision safety) — reconcile.
+          // Server may reassign the id (collision safety) - reconcile.
           if (res?.section && res.section.id !== section.id) {
             const fresh = res.section;
             setSections((prev) =>
@@ -523,7 +523,7 @@ export default function ResumeBuilderPage() {
                       <input
                         value={resume.headline ?? ""}
                         onChange={(e) => updateResume({ headline: e.target.value })}
-                        placeholder="One line about the worker you are — e.g. 'Reliable warehouse & inventory associate'"
+                        placeholder="One line about the worker you are - e.g. 'Reliable warehouse & inventory associate'"
                         className={inputCls}
                       />
                     </label>
@@ -537,7 +537,7 @@ export default function ResumeBuilderPage() {
                         className={textareaCls}
                       />
                       <span className={hintCls}>
-                        Say what you&apos;re great at now. Your story is strength —
+                        Say what you&apos;re great at now. Your story is strength -
                         time in a program counts as structured personal
                         development.
                       </span>
@@ -597,7 +597,7 @@ export default function ResumeBuilderPage() {
             {step === "experience" && (
               <>
                 <p className={hintCls}>
-                  Every job counts — paid work, program roles, volunteering at
+                  Every job counts - paid work, program roles, volunteering at
                   the center. Plain words beat fancy ones.
                 </p>
 
@@ -690,7 +690,7 @@ export default function ResumeBuilderPage() {
                             }
                             rows={3}
                             placeholder={
-                              "One line per task — 2 or 3 is plenty.\ne.g. Loaded and unloaded 20+ trucks per shift"
+                              "One line per task - 2 or 3 is plenty.\ne.g. Loaded and unloaded 20+ trucks per shift"
                             }
                             className={textareaCls}
                           />
@@ -720,7 +720,7 @@ export default function ResumeBuilderPage() {
                   </div>
                   <p className={"mt-2 " + hintCls}>
                     What you did in the program is real work experience. Tap a
-                    line to add it to your résumé — then make it yours.
+                    line to add it to your résumé - then make it yours.
                   </p>
                   <div className="mt-3 flex flex-col gap-2">
                     {STRENGTH_LINES.map((line) => (
@@ -737,7 +737,7 @@ export default function ResumeBuilderPage() {
 
                 <div className="rounded-2xl bg-amber-bg px-5 py-4 text-[13px]/[1.65] font-semibold text-amber-ink">
                   Questions about discussing a record? Your center staff can
-                  help — this tool never gives legal advice.
+                  help - this tool never gives legal advice.
                 </div>
               </>
             )}
@@ -821,8 +821,8 @@ export default function ResumeBuilderPage() {
                 kind="education"
                 items={educations}
                 heading="Education & courses"
-                intro="GED, classes at the center, online courses — in progress counts too."
-                titlePlaceholder="e.g. GED — completed"
+                intro="GED, classes at the center, online courses - in progress counts too."
+                titlePlaceholder="e.g. GED - completed"
                 placePlaceholder="e.g. Laveen Center"
                 addLabel="+ Add education"
                 upsertSection={upsertSection}
@@ -839,8 +839,8 @@ export default function ResumeBuilderPage() {
                   kind="certifications"
                   items={certifications}
                   heading="Certifications"
-                  intro="Forklift, food handler, OSHA, first aid — anything with a card or a certificate."
-                  titlePlaceholder="e.g. Forklift certification — in training"
+                  intro="Forklift, food handler, OSHA, first aid - anything with a card or a certificate."
+                  titlePlaceholder="e.g. Forklift certification - in training"
                   placePlaceholder="Who issued it"
                   addLabel="+ Add certification"
                   upsertSection={upsertSection}
@@ -880,7 +880,7 @@ export default function ResumeBuilderPage() {
                 </div>
                 <ResumeDoc resume={resume} sections={sections} />
                 <p className={"text-center " + hintCls}>
-                  Tip: &ldquo;Download PDF&rdquo; opens a print view — choose
+                  Tip: &ldquo;Download PDF&rdquo; opens a print view - choose
                   &ldquo;Save as PDF&rdquo; in the print dialog.
                 </p>
                 <div className="rounded-2xl bg-sky-tint px-5 py-4 text-[13px]/[1.65] font-semibold text-navy-deep">

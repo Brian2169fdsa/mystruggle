@@ -2,24 +2,24 @@ import { NextResponse } from "next/server";
 import { db, save } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 
-/** Cash redemption desk — staff records a card-present cash payout.
+/** Cash redemption desk - staff records a card-present cash payout.
  *  Dual record per docs/04: member card scan (the desk looked the member up
  *  by card #) + staff PIN entered here. Staff-only (was demo-open; P0 gap
- *  closed — a staff session is now required on top of the desk PIN). */
+ *  closed - a staff session is now required on top of the desk PIN). */
 
-// Demo constant — real staff PINs live in the auth system (P0 gap, tracked).
+// Demo constant - real staff PINs live in the auth system (P0 gap, tracked).
 const STAFF_PIN = "1234";
 
-/** Org-configurable daily cash cap (docs/04 guardrails — default $100/day). */
+/** Org-configurable daily cash cap (docs/04 guardrails - default $100/day). */
 const DAILY_CAP = 100;
 
 /** Per-member running total for the current day. Module-scope and
- *  NON-PERSISTENT — resets on server restart/redeploy. Acceptable for the
+ *  NON-PERSISTENT - resets on server restart/redeploy. Acceptable for the
  *  demo; the real ledger (append-only ledger_entries) replaces this. */
 const redeemedByDay = new Map<string, { day: string; total: number }>();
 
 function todayKey(): string {
-  return new Date().toISOString().slice(0, 10); // UTC day — fine for demo
+  return new Date().toISOString().slice(0, 10); // UTC day - fine for demo
 }
 
 function bad(status: number, error: string) {
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
   const member = db().users.find(
     (u) => u.id === memberId && u.role === "member"
   );
-  if (!member) return bad(404, "Member not found — rescan the ID card.");
+  if (!member) return bad(404, "Member not found - rescan the ID card.");
 
   const day = todayKey();
   const entry = redeemedByDay.get(member.id);
@@ -69,13 +69,13 @@ export async function POST(req: Request) {
   if (amount > capRemaining) {
     return bad(
       422,
-      `Daily cash cap is $${DAILY_CAP} — $${already} already redeemed today, $${capRemaining} remaining.`
+      `Daily cash cap is $${DAILY_CAP} - $${already} already redeemed today, $${capRemaining} remaining.`
     );
   }
 
   const cash = member.balances?.cash ?? 0;
   if (amount > cash) {
-    return bad(422, `Insufficient cash balance — $${cash} available.`);
+    return bad(422, `Insufficient cash balance - $${cash} available.`);
   }
 
   member.balances = {

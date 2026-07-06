@@ -8,16 +8,16 @@ import type { SponsoredPlacement, CarePhase } from "@/app/lib/types";
 /**
  * Serve sponsored placements into a viewer's feed. Public-safe shape only:
  * {id, orgName, title, body, ctaLabel, ctaUrl, kind}. Works signed-out
- * (returns []). THREE TRUST RULES ARE ENFORCED HERE, IN CODE — they are the
+ * (returns []). THREE TRUST RULES ARE ENFORCED HERE, IN CODE - they are the
  * product, not policy prose:
  *
- *   (a) CRISIS / AT-RISK EXCLUSION — a member who has recently posted crisis
+ *   (a) CRISIS / AT-RISK EXCLUSION - a member who has recently posted crisis
  *       content (any of their posts is status "flagged" AND isCrisisText) is
- *       in a support state, never an ad state. They get [] — support
+ *       in a support state, never an ad state. They get [] - support
  *       resources are surfaced elsewhere, sponsored content never.
- *   (b) FREQUENCY CAP — we return `everyN`, the spacing the feed must honor
+ *   (b) FREQUENCY CAP - we return `everyN`, the spacing the feed must honor
  *       (≤ 1 sponsored item per everyN organic posts).
- *   (c) COARSE TARGETING MATCH ONLY — a placement is eligible only if its
+ *   (c) COARSE TARGETING MATCH ONLY - a placement is eligible only if its
  *       coarse, non-clinical targeting (metro / phase / circle / community)
  *       matches the viewer. There is no health/diagnosis targeting to match on.
  *
@@ -31,7 +31,7 @@ export async function GET() {
   const everyN = getAdConfig().frequencyEveryN;
   const empty = NextResponse.json({ placements: [], everyN });
 
-  // KILL SWITCH — platform-wide off switch beats everything else.
+  // KILL SWITCH - platform-wide off switch beats everything else.
   if (isAdKillSwitchOn()) return empty;
 
   // Signed-out viewers see no sponsored content (and no targeting exists).
@@ -54,7 +54,7 @@ export async function GET() {
   // ── viewer context for RULE (c): coarse, non-clinical attributes only ─
   const viewerCity =
     d.centers.find((c) => c.id === user.centerId)?.city ?? "";
-  // Latest care phase from the continuum (coarse care stage — NOT a diagnosis).
+  // Latest care phase from the continuum (coarse care stage - NOT a diagnosis).
   const viewerPhase: CarePhase | undefined = d.careEpisodes
     .filter((e) => e.memberId === user.id)
     .sort((a, b) => b.phaseChangedAt - a.phaseChangedAt)[0]?.carePhase;
@@ -64,7 +64,7 @@ export async function GET() {
       .map((m) => m.circleId)
   );
 
-  // Coarse geo match: same region (state) is enough — metro-level, never finer.
+  // Coarse geo match: same region (state) is enough - metro-level, never finer.
   const region = (s: string): string =>
     s.split(",").pop()?.trim().toLowerCase() ?? "";
   const sameRegion = (a: string, b: string): boolean =>
@@ -86,7 +86,7 @@ export async function GET() {
     }
   };
 
-  // Status "running" is the source of truth for "live" — an ms_admin approval
+  // Status "running" is the source of truth for "live" - an ms_admin approval
   // moved it there and a pause/end moves it out. We deliberately do NOT gate on
   // startsAt/endsAt here: the deterministic seed is anchored to a fixed EPOCH,
   // so wall-clock window math would drift; scheduling is display metadata, the

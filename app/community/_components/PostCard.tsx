@@ -71,13 +71,13 @@ function RequestCard({
   );
 }
 
-/** Short statuses read like a headline — the big-social pattern. */
+/** Short statuses read like a headline - the big-social pattern. */
 function isShortStatus(body: string): boolean {
   return body.length <= 80 && !body.includes("\n");
 }
 
 /**
- * Desktop feed card — modern social anatomy: header, body (short statuses
+ * Desktop feed card - modern social anatomy: header, body (short statuses
  * render large), social-proof summary row, hairline, equal action buttons,
  * inline CommentThread. Optimistic hearts + shared-experience reactions;
  * warm sign-in nudges when out.
@@ -116,7 +116,7 @@ export default function PostCard({
     setTimeout(() => setNudge(false), 3200);
   };
 
-  /* — heart (optimistic toggle) — */
+  /* - heart (optimistic toggle) - */
   const toggleHeart = async () => {
     if (temp) return;
     if (!viewer) return showNudge();
@@ -142,7 +142,7 @@ export default function PostCard({
     }
   };
 
-  /* — proud / same (docs/13 Part B shared-experience reactions) — */
+  /* - proud / same (docs/13 Part B shared-experience reactions) - */
   const toggleShared = async (kind: "proud" | "same") => {
     if (temp) return;
     if (!viewer) return showNudge();
@@ -200,7 +200,7 @@ export default function PostCard({
         " scroll-mt-24"
       }
     >
-      {/* header — author links to their public profile when they have one */}
+      {/* header - author links to their public profile when they have one */}
       <div className="flex items-start gap-3">
         {post.authorSlug ? (
           <Link href={`/community/u/${post.authorSlug}`} className="flex-none">
@@ -232,7 +232,7 @@ export default function PostCard({
           </div>
         </div>
 
-        {/* safety overflow menu — hidden on your own posts and on temp posts */}
+        {/* safety overflow menu - hidden on your own posts and on temp posts */}
         {!isOwn && !temp && (
           <div className="relative flex-none">
             <button
@@ -290,7 +290,7 @@ export default function PostCard({
         )}
       </div>
 
-      {/* body — short statuses read large, like a headline */}
+      {/* body - short statuses read large, like a headline */}
       <div
         className={
           "mt-3.5 whitespace-pre-wrap text-ink-900 " +
@@ -307,7 +307,7 @@ export default function PostCard({
         <RequestCard request={post.request} authorSlug={post.authorSlug} />
       )}
 
-      {/* social-proof summary — only when there's something to show */}
+      {/* social-proof summary - only when there's something to show */}
       {(hearts > 0 || proud > 0 || same > 0 || commentCount > 0) && (
         <div className="mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px] font-semibold text-ink-600">
           <div className="flex min-h-5 flex-wrap items-center gap-x-2 gap-y-1">
@@ -364,7 +364,7 @@ export default function PostCard({
           <Heart size={16} fill={hearted ? "currentColor" : "none"} />
           Heart
         </button>
-        {/* shared-experience pair — text + icon, never emoji (house style) */}
+        {/* shared-experience pair - text + icon, never emoji (house style) */}
         <button
           type="button"
           onClick={() => toggleShared("proud")}
@@ -403,7 +403,7 @@ export default function PostCard({
       </div>
       {nudge && (
         <div className="mt-1.5 text-[12px] font-semibold text-indigo-brand">
-          This one needs an account —{" "}
+          This one needs an account -{" "}
           <Link href="/login" className="underline">
             sign in
           </Link>{" "}

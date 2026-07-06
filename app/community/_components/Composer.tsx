@@ -10,7 +10,7 @@ const KINDS: { value: PostKind; label: string; diamond?: boolean }[] = [
   { value: "milestone", label: "Milestone", diamond: true },
 ];
 
-/** Fired (window CustomEvent) by JourneyRail's "Share a moment" card — the
+/** Fired (window CustomEvent) by JourneyRail's "Share a moment" card - the
  *  composer expands and focuses. Optional detail pre-selects a kind or opens
  *  the ask-for-support flow. */
 export const COMPOSER_OPEN_EVENT = "ms:composer:open";
@@ -18,15 +18,15 @@ export type ComposerOpenDetail = { kind?: PostKind; asking?: boolean };
 
 /** The editable suggested body for a support-request post. */
 function suggestBody(target: number, label: string): string {
-  return `I'm raising $${target}/week for ${label.trim()} — every gift splits 50/50 and goes through the center.`;
+  return `I'm raising $${target}/week for ${label.trim()} - every gift splits 50/50 and goes through the center.`;
 }
 
-/** A ritual prompt handed down from the Daily Reflection card — the nonce
+/** A ritual prompt handed down from the Daily Reflection card - the nonce
  *  lets the same prompt be re-applied after the member clears the box. */
 export type ComposerPrefill = { text: string; nonce: number };
 
 /**
- * Desktop composer — topic + kind chips and an "Ask for support" flow that
+ * Desktop composer - topic + kind chips and an "Ask for support" flow that
  * creates the support request first, then posts with the returned requestId.
  * Crisis submissions are held server-side → warm 988 care card in place.
  * Inside a circle (`circleId`) every share posts into that circle.
@@ -40,7 +40,7 @@ export default function Composer({
   onPosted,
 }: {
   viewer: SafeUser;
-  /** Currently selected feed topic ("" = All) — seeds the composer topic. */
+  /** Currently selected feed topic ("" = All) - seeds the composer topic. */
   topic: string;
   /** When set, posts go into this circle (author must have joined). */
   circleId?: string;
@@ -60,10 +60,10 @@ export default function Composer({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [held, setHeld] = useState<{ line: string; note: string } | null>(null);
-  // Collapsed by default — a modern avatar + pill row with shortcut buttons.
+  // Collapsed by default - a modern avatar + pill row with shortcut buttons.
   // Expanding reveals the full composer (all posting behavior unchanged).
   const [expanded, setExpanded] = useState(false);
-  // Last auto-suggested body — only overwrite the textarea while untouched.
+  // Last auto-suggested body - only overwrite the textarea while untouched.
   const suggestionRef = useRef<string | null>(null);
   const boxRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -72,7 +72,7 @@ export default function Composer({
     if (TOPICS.includes(feedTopic as Topic)) setTopic(feedTopic as Topic);
   }, [feedTopic]);
 
-  // "Reflect" ritual — drop the day's prompt into the box and focus it.
+  // "Reflect" ritual - drop the day's prompt into the box and focus it.
   useEffect(() => {
     if (!prefill) return;
     setBody(prefill.text);
@@ -129,7 +129,7 @@ export default function Composer({
     setBusy(true);
     setError(null);
     try {
-      // 1 — support flow: create the request first, then link the post to it.
+      // 1 - support flow: create the request first, then link the post to it.
       let requestId: string | undefined;
       if (asking) {
         const rRes = await fetch("/api/requests", {
@@ -144,7 +144,7 @@ export default function Composer({
         requestId = rData.request.id as string;
       }
 
-      // 2 — the post itself.
+      // 2 - the post itself.
       const pRes = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,10 +154,10 @@ export default function Composer({
       if (!pRes.ok) throw new Error(pData?.error ?? "That didn't go through.");
 
       if (pData.held) {
-        // Crisis care path — the post was held, never published.
+        // Crisis care path - the post was held, never published.
         setHeld(
           pData.resources ?? {
-            line: "988 Suicide & Crisis Lifeline — call or text 988",
+            line: "988 Suicide & Crisis Lifeline - call or text 988",
             note: "A member of the care team will reach out today.",
           }
         );
@@ -172,13 +172,13 @@ export default function Composer({
       setExpanded(false); // back to the calm collapsed row
       suggestionRef.current = null;
     } catch (e) {
-      setError((e as Error).message || "That didn't go through — mind trying again?");
+      setError((e as Error).message || "That didn't go through - mind trying again?");
     } finally {
       setBusy(false);
     }
   };
 
-  /* — crisis care card takes the composer's place until dismissed — */
+  /* - crisis care card takes the composer's place until dismissed - */
   if (held) {
     return (
       <div className="rounded-2xl bg-navy-deep px-6 py-6 text-white shadow-[0_2px_10px_rgba(11,37,69,.25)]">
@@ -200,7 +200,7 @@ export default function Composer({
     );
   }
 
-  /* — collapsed row: avatar + pill "input" + hairline-separated shortcuts — */
+  /* - collapsed row: avatar + pill "input" + hairline-separated shortcuts - */
   if (!expanded) {
     const firstName = viewer.name.trim().split(/\s+/)[0] || viewer.name;
     const shortcuts: { emoji: string; label: string; preset: ComposerOpenDetail }[] = [
@@ -265,7 +265,7 @@ export default function Composer({
         />
       </div>
 
-      {/* topic chips — plain text labels */}
+      {/* topic chips - plain text labels */}
       <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
         <span className="mr-1 text-[11px] font-extrabold tracking-[.06em] text-ink-400">
           TOPIC
@@ -357,7 +357,7 @@ export default function Composer({
             </div>
           </div>
           <div className="mt-2 text-[12px] font-medium text-ink-600">
-            Gifts split 50/50 — half cash now, half held for your reentry —
+            Gifts split 50/50 - half cash now, half held for your reentry -
             and go through your center. Your ask appears on your public giving
             page too.
           </div>

@@ -4,18 +4,18 @@ import { getSessionUser } from "@/app/lib/auth";
 import { detailsFor } from "@/app/api/profile/profile-lib";
 import type { MemberBlock, ProfileDetails, User } from "@/app/lib/types";
 
-// GET /api/community/highlights — right-rail celebration data.
+// GET /api/community/highlights - right-rail celebration data.
 //
 // Two lists, both strictly consent-gated with the SAME top gate as
 // buildPublicProfile (app/api/profile/profile-lib.ts): a member only appears
 // when they are role "member", have consentPublic, a slug + memberNumber,
 // AND have created profile details. We reuse `detailsFor` from profile-lib
-// directly (no circularity — this route only imports downward).
+// directly (no circularity - this route only imports downward).
 //
-//   anniversaries — members whose journeySince month matches the current
+//   anniversaries - members whose journeySince month matches the current
 //                   month (any year): full years (or months when < 1 year)
 //                   on the journey as of today. Cap 6, longest first.
-//   suggestions   — up to 6 other public members ("Members you may know"),
+//   suggestions   - up to 6 other public members ("Members you may know"),
 //                   excluding the signed-in viewer and anyone they block.
 //                   Deterministic order (memberNumber hash) so it's stable.
 //
@@ -97,7 +97,7 @@ function hash(s: string): number {
 }
 
 export async function GET() {
-  const viewer = await getSessionUser(); // null when signed out — still OK
+  const viewer = await getSessionUser(); // null when signed out - still OK
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const pub = publicMembers();
@@ -109,7 +109,7 @@ export async function GET() {
       const start = parseJourneySince(details.journeySince);
       if (!start || start.m !== currentMonth) return [];
       const total = monthsOnJourney(start, now);
-      if (total < 1) return []; // just started — nothing to celebrate yet
+      if (total < 1) return []; // just started - nothing to celebrate yet
       return [
         {
           slug: member.slug,

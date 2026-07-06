@@ -1,6 +1,6 @@
 "use client";
 
-// Employer entry — create a recovery-friendly hiring account or sign in, then
+// Employer entry - create a recovery-friendly hiring account or sign in, then
 // land in the dashboard. Reuses the shared HMAC session; a signed-in employer
 // is redirected straight to /employer/dashboard.
 

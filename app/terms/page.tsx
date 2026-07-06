@@ -18,12 +18,12 @@ import PrototypeMap from "../components/PrototypeMap";
 export const metadata: Metadata = {
   title: "Terms of Service · My Struggle",
   description:
-    "The plain-language agreement for using the My Struggle community — dignity, the 50/50 Reentry Fund giving model, conduct, moderation, and safety.",
+    "The plain-language agreement for using the My Struggle community - dignity, the 50/50 Reentry Fund giving model, conduct, moderation, and safety.",
 };
 
 const LAST_UPDATED = "July 6, 2026";
 
-/** A titled prose block with an icon chip — the page's section rhythm. */
+/** A titled prose block with an icon chip - the page's section rhythm. */
 function Block({
   icon: Icon,
   eyebrow,
@@ -76,7 +76,7 @@ export default function Terms() {
           <p className="max-w-[620px] text-[16px]/[1.7] text-white/80">
             These terms are the agreement between you and My Struggle. They keep
             the community safe and explain how giving, mentorship, and your
-            account work — in plain language, not fine print.
+            account work - in plain language, not fine print.
           </p>
           <div className="text-[13px] font-medium text-white/60">
             Last updated {LAST_UPDATED}
@@ -89,8 +89,8 @@ export default function Terms() {
         <div className="mx-auto max-w-[1000px] px-5 py-12 lg:px-6 lg:py-16">
           <p className="text-[18px]/[1.75] text-ink-600 lg:text-[19px]/[1.8]">
             My Struggle is a nonprofit peer-mentorship platform (EST. 2021,
-            Laveen, Arizona). By creating an account or using the platform — the
-            website, community, member and mentor apps, and giving pages — you
+            Laveen, Arizona). By creating an account or using the platform - the
+            website, community, member and mentor apps, and giving pages - you
             agree to these terms. If you don&apos;t agree, please don&apos;t use
             the platform. We may update these terms as the platform grows;
             we&apos;ll change the date above and tell you about meaningful
@@ -159,8 +159,8 @@ export default function Terms() {
         }
       >
         <p className="m-0">
-          When someone gives to a member — by scanning a QR code or visiting a
-          giving page — that gift is divided in half:
+          When someone gives to a member - by scanning a QR code or visiting a
+          giving page - that gift is divided in half:
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-2xl bg-sky-tint/60 p-6">
@@ -172,7 +172,7 @@ export default function Terms() {
             </div>
             <p className="mt-2 text-[15px]/[1.65] text-ink-600">
               Half of every gift goes to the member as cash, made available
-              through a My Struggle center — meeting a real need today.
+              through a My Struggle center - meeting a real need today.
             </p>
           </div>
           <div className="rounded-2xl bg-sky-tint/60 p-6">
@@ -184,7 +184,7 @@ export default function Terms() {
             </div>
             <p className="mt-2 text-[15px]/[1.65] text-ink-600">
               The other half is held as the member&apos;s Reentry Fund and
-              released on their re-entry to society — a foundation for the next
+              released on their re-entry to society - a foundation for the next
               chapter.
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function Terms() {
           guidelines tied to a member&apos;s re-entry. Gifts to a nonprofit are
           generally non-refundable. Card payments are processed by our payment
           partner; by giving, you authorize that charge. My Struggle is a
-          501(c)(3) nonprofit — donation tax treatment depends on your
+          501(c)(3) nonprofit - donation tax treatment depends on your
           situation, so keep your receipt and consult a tax professional.
         </p>
       </Block>
@@ -207,7 +207,7 @@ export default function Terms() {
       >
         <p className="m-0">
           Mentorship at My Struggle is built on lived experience and trust.
-          Mentors walk beside members as peers — not as clinicians, counselors,
+          Mentors walk beside members as peers - not as clinicians, counselors,
           or authorities over someone&apos;s life.
         </p>
         <ul className="m-0 flex flex-col gap-3 pl-0">
@@ -263,8 +263,8 @@ export default function Terms() {
             <p className="m-0">
               If you or someone else is in crisis or danger, don&apos;t rely on
               the platform. Call or text{" "}
-              <strong className="text-white">988</strong> — the Suicide &amp;
-              Crisis Lifeline — or call 911. Always seek qualified professionals
+              <strong className="text-white">988</strong> - the Suicide &amp;
+              Crisis Lifeline - or call 911. Always seek qualified professionals
               for medical, legal, or financial matters.
             </p>
           </div>
@@ -303,7 +303,7 @@ export default function Terms() {
         </p>
         <p className="m-0">
           We may suspend or end access if someone breaks these terms, harms
-          another person, or puts the community at risk — and, where it&apos;s
+          another person, or puts the community at risk - and, where it&apos;s
           safe and appropriate, we&apos;ll try to explain why. Some things
           naturally continue after an account ends, including a member&apos;s
           Reentry Fund handling under program guidelines and any legal or safety
@@ -348,7 +348,7 @@ export default function Terms() {
               Questions about these terms?
             </div>
             <div className="mt-2 text-[15px] font-medium text-ink-600">
-              Call 602-402-5121 or reach out through our contact form — a real
+              Call 602-402-5121 or reach out through our contact form - a real
               person will help.
             </div>
           </div>

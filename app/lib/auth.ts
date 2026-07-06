@@ -1,4 +1,4 @@
-// Session auth — HMAC-signed cookie, no external deps. Demo-grade secret
+// Session auth - HMAC-signed cookie, no external deps. Demo-grade secret
 // fallback; set SESSION_SECRET in production.
 
 import { createHmac, timingSafeEqual } from "crypto";

@@ -6,7 +6,7 @@ import { db } from "../lib/store";
 import type { JobPost, JobType } from "../lib/types";
 
 export const metadata = {
-  title: "Recovery-Friendly Jobs — My Struggle",
+  title: "Recovery-Friendly Jobs - My Struggle",
   description:
     "Fair-chance job openings from employers who hire on who you are today. Steady work for members building their next chapter.",
 };
@@ -22,7 +22,7 @@ const TYPE_LABEL: Record<JobType, string> = {
 const fmtDate = (ms: number) =>
   new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-/** Public board — read the store directly (the API route is the swap-seam). */
+/** Public board - read the store directly (the API route is the swap-seam). */
 function openJobs(): JobPost[] {
   const d = db() as ReturnType<typeof db> & { jobPosts?: JobPost[] };
   return (d.jobPosts ?? [])
@@ -71,7 +71,7 @@ export default function JobsPage() {
                 No open roles right now
               </p>
               <p className="mt-1.5 text-[14px]/[1.6] font-medium text-ink-600">
-                Check back soon — new fair-chance openings are posted often.
+                Check back soon - new fair-chance openings are posted often.
               </p>
             </div>
           ) : (

@@ -49,8 +49,8 @@ export default function About() {
             </p>
             <p className="m-0">
               Every mentor in our program has been through the struggle
-              themselves. Every program we run — outreach centers, Position of
-              Neutrality, QR Code Giving, transitional housing — was built by
+              themselves. Every program we run - outreach centers, Position of
+              Neutrality, QR Code Giving, transitional housing - was built by
               people who needed it once and didn&apos;t have it.
             </p>
             <p className="m-0">
@@ -116,14 +116,14 @@ export default function About() {
               projected to cost the U.S. economy{" "}
               <strong className="text-ink-900">$10 trillion by 2030</strong>.
               Prevention through mentorship and reintegration costs a fraction
-              — and returns people, not just dollars.
+              - and returns people, not just dollars.
             </div>
             <div className="mt-2 flex flex-col gap-3">
               {[
-                { c: "#2E7CD6", l: "Healthcare — 40%" },
-                { c: "#4E5B9B", l: "Incarceration — 30%" },
-                { c: "#8FBCF0", l: "Lost productivity — 20%" },
-                { c: "#C7DBF4", l: "Other costs — 10%" },
+                { c: "#2E7CD6", l: "Healthcare - 40%" },
+                { c: "#4E5B9B", l: "Incarceration - 30%" },
+                { c: "#8FBCF0", l: "Lost productivity - 20%" },
+                { c: "#C7DBF4", l: "Other costs - 10%" },
               ].map((r) => (
                 <div
                   key={r.l}
@@ -159,7 +159,7 @@ export default function About() {
       <section className="bg-navy-deep">
         <div className="mx-auto max-w-[900px] px-5 py-16 text-center lg:px-6 lg:py-[100px]">
           <div className="text-[26px]/[1.4] font-extrabold tracking-[-0.02em] text-white lg:text-[36px]/[1.35]">
-            &ldquo;How can I help you? Let&apos;s talk — tell me about{" "}
+            &ldquo;How can I help you? Let&apos;s talk - tell me about{" "}
             <span className="script text-[34px] text-[#A9B4E8] lg:text-[46px]">you</span>
             .&rdquo;
           </div>
@@ -196,7 +196,7 @@ export default function About() {
                   Danielle&apos;s journey
                 </div>
                 <div className="mt-2 text-[14px]/[1.65] text-ink-600">
-                  GED, first job, transitional housing — in eight months.
+                  GED, first job, transitional housing - in eight months.
                 </div>
                 <div className="mt-3 text-[14px] font-bold text-blue-primary">
                   Support her journey →

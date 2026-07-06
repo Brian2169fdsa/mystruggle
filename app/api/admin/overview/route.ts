@@ -3,7 +3,7 @@ import { db } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 
 /** Center-dashboard KPIs computed from live data. Staff-only (was demo-open;
- *  P0 gap closed — gated behind the staff session role). */
+ *  P0 gap closed - gated behind the staff session role). */
 export async function GET() {
   const staff = await getRoleUser();
   if (!staff) {

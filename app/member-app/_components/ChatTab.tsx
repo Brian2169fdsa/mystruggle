@@ -26,7 +26,7 @@ export default function ChatTab(_props: {
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [viewerId, setViewerId] = useState("");
   const [open, setOpen] = useState<ThreadSummary | null>(null);
-  // My Program (docs/14 §D) — an open care channel takes over the full tab,
+  // My Program (docs/14 §D) - an open care channel takes over the full tab,
   // same pattern as the mentor thread. Not a 6th tab.
   const [openCare, setOpenCare] = useState<{
     channel: CareChannelSummary;
@@ -61,7 +61,7 @@ export default function ChatTab(_props: {
     };
   }, []);
 
-  // ── Open care channel — full height within the tab ──
+  // ── Open care channel - full height within the tab ──
   if (openCare) {
     return (
       <div className="flex flex-1 flex-col">
@@ -74,7 +74,7 @@ export default function ChatTab(_props: {
     );
   }
 
-  // ── Open conversation — full height within the tab ──
+  // ── Open conversation - full height within the tab ──
   if (open && open.other && viewerId) {
     return (
       <div className="flex flex-1 flex-col">
@@ -101,7 +101,7 @@ export default function ChatTab(_props: {
       <div className="hairline" />
 
       <div className="flex flex-col gap-4 p-5">
-        {/* Pinned mentor thread — real when signed in, demo otherwise */}
+        {/* Pinned mentor thread - real when signed in, demo otherwise */}
         {realThreads ? (
           threads.map((t) => (
             <button
@@ -178,13 +178,13 @@ export default function ChatTab(_props: {
           </a>
         )}
 
-        {/* My Program — care channels (IOP cohort, care team, announcements) */}
+        {/* My Program - care channels (IOP cohort, care team, announcements) */}
         <ProgramCard
           onOpen={(channel, vId) => setOpenCare({ channel, viewerId: vId })}
         />
       </div>
 
-      {/* The Guide — plan-aware AI companion. Owns its own context card,
+      {/* The Guide - plan-aware AI companion. Owns its own context card,
           conversation scroll, and composer (see GuideCompanion). */}
       <GuideCompanion />
     </div>

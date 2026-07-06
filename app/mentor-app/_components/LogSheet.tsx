@@ -87,7 +87,7 @@ export default function LogSheet({
         <div className="mt-5 text-xs font-bold tracking-[.12em] text-blue-primary">
           NOTE{" "}
           <span className="text-[11px] font-normal tracking-normal text-ink-400">
-            — optional, staff-visible
+            - optional, staff-visible
           </span>
         </div>
         <div className="mt-2.5 min-h-[84px] rounded-[14px] border-[1.5px] border-sky-tint bg-canvas px-4 py-3.5 text-sm/[1.6] font-normal text-ink-900">

@@ -175,7 +175,7 @@ export default function LearnTab({
           ))
         ) : (
           <>
-        {/* ISE Course 3 — opens lesson player */}
+        {/* ISE Course 3 - opens lesson player */}
         <button
           type="button"
           onClick={openLesson}
@@ -201,7 +201,7 @@ export default function LearnTab({
               </span>
             </div>
             <div className="text-[15px] font-bold text-ink-900">
-              ISE Course 3 — Decision
+              ISE Course 3 - Decision
             </div>
             <div className="mt-0.5 text-[12px] text-ink-600">
               {lessonDone
@@ -235,7 +235,7 @@ export default function LearnTab({
           <span className="text-[18px] font-bold text-blue-primary">→</span>
         </div>
 
-        {/* Documents & ID Recovery — complete */}
+        {/* Documents & ID Recovery - complete */}
         <div className="flex items-center gap-4 rounded-2xl bg-white px-5 py-[18px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-[conic-gradient(#12B76A_0_100%)]">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[14px] font-extrabold text-success">

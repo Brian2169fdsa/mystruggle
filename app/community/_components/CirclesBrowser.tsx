@@ -1,6 +1,6 @@
 "use client";
 
-// /community/circles — the circles directory (docs/13 Part B).
+// /community/circles - the circles directory (docs/13 Part B).
 // Groups-style browser translated to recovery: three lenses ("For you",
 // "Your circles", "Discover"), client-side search, and an optimistic
 // Join/Joined pill against POST /api/circles. Joined rows deep-link into
@@ -15,7 +15,7 @@ import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "./ui";
 
 const CARD = "rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 
-/* ── Kind tile — deterministic gradient + icon per circle kind ────── */
+/* ── Kind tile - deterministic gradient + icon per circle kind ────── */
 
 const KIND_TILE: Record<
   CircleKind,
@@ -118,7 +118,7 @@ function CircleRow({
 
       <div className="min-w-0 flex-1">
         {circle.joined ? (
-          // Joined rows deep-link into the circle's feed — the whole row is
+          // Joined rows deep-link into the circle's feed - the whole row is
           // the target via a stretched link (the pill stays above it).
           <Link
             href={`/community?circle=${encodeURIComponent(circle.id)}`}
@@ -233,7 +233,7 @@ export default function CirclesBrowser() {
       return [...circles]
         .sort((a, b) => b.members - a.members)
         .filter(matches);
-    // "For you" — open circles you haven't joined, busiest first.
+    // "For you" - open circles you haven't joined, busiest first.
     return circles
       .filter((c) => !c.joined && !c.locked && matches(c))
       .sort((a, b) => b.members - a.members);
@@ -346,7 +346,7 @@ export default function CirclesBrowser() {
               >
                 For you
               </button>{" "}
-              — nobody walks alone here.
+              - nobody walks alone here.
             </EmptyCard>
           )
         ) : query.trim() ? (
@@ -356,7 +356,7 @@ export default function CirclesBrowser() {
           </EmptyCard>
         ) : (
           <EmptyCard>
-            Nothing here right now — every circle you can join already has you
+            Nothing here right now - every circle you can join already has you
             in it. Check &ldquo;Your circles&rdquo; to visit them.
           </EmptyCard>
         )

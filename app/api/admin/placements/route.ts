@@ -8,10 +8,10 @@ import { withStats } from "@/app/api/placements/_lib";
  * codebase, so STAFF acts as ms_admin (getRoleUser() with no args = staff-only;
  * staff supervise every surface).
  *
- * GET  — the review queue: every placement that is pending_review OR has been
+ * GET  - the review queue: every placement that is pending_review OR has been
  *        reported (aggregate report count > 0), newest first, with aggregate
  *        stats. Plus the current kill-switch state.
- * POST — {killSwitch: boolean} toggles the platform-wide ad kill switch that
+ * POST - {killSwitch: boolean} toggles the platform-wide ad kill switch that
  *        makes /api/placements/serve return [] for everyone.
  */
 export async function GET() {

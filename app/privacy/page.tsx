@@ -18,7 +18,7 @@ import PrototypeMap from "../components/PrototypeMap";
 export const metadata: Metadata = {
   title: "Privacy Policy · My Struggle",
   description:
-    "How My Struggle protects your account, giving activity, community posts, self-checks, and care-channel messages — in plain language.",
+    "How My Struggle protects your account, giving activity, community posts, self-checks, and care-channel messages - in plain language.",
 };
 
 const LAST_UPDATED = "July 6, 2026";
@@ -39,7 +39,7 @@ function CollectRow({
   );
 }
 
-/** A titled prose block with an icon chip — the page's main section rhythm. */
+/** A titled prose block with an icon chip - the page's main section rhythm. */
 function Block({
   icon: Icon,
   eyebrow,
@@ -106,7 +106,7 @@ export default function Privacy() {
           <p className="text-[18px]/[1.75] text-ink-600 lg:text-[19px]/[1.8]">
             My Struggle is a nonprofit peer-mentorship platform (EST. 2021,
             Laveen, Arizona). We built this platform so people can heal in
-            community — which only works if members trust us with the truth.
+            community - which only works if members trust us with the truth.
             That trust is the product. We designed our systems around three
             rules you&apos;ll see throughout this page:{" "}
             <strong className="text-ink-900">
@@ -141,15 +141,15 @@ export default function Privacy() {
           <div className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <CollectRow
               title="Account information"
-              body="Your name or chosen display name, email or phone, sign-in credentials, the center you're connected to, and your role — member, mentor, or center staff."
+              body="Your name or chosen display name, email or phone, sign-in credentials, the center you're connected to, and your role - member, mentor, or center staff."
             />
             <CollectRow
               title="Giving activity"
-              body="Gifts you send or receive, the 50/50 split between cash and your Reentry Fund, and the balance held for re-entry. Payment card details are handled by our payment processor — we don't store full card numbers."
+              body="Gifts you send or receive, the 50/50 split between cash and your Reentry Fund, and the balance held for re-entry. Payment card details are handled by our payment processor - we don't store full card numbers."
             />
             <CollectRow
               title="Community posts"
-              body="What you share in the feed and circles — wins, reflections, comments, reactions, and any photos you choose to upload."
+              body="What you share in the feed and circles - wins, reflections, comments, reactions, and any photos you choose to upload."
             />
             <CollectRow
               title="Self-checks & BARC"
@@ -161,7 +161,7 @@ export default function Privacy() {
             />
             <CollectRow
               title="Device & usage basics"
-              body="Standard technical data — device type, app version, and general activity — used to keep the platform secure, reliable, and accessible."
+              body="Standard technical data - device type, app version, and general activity - used to keep the platform secure, reliable, and accessible."
             />
           </div>
         </div>
@@ -200,8 +200,8 @@ export default function Privacy() {
       >
         <p className="m-0">
           When you join, you consent to a specific center. The people who can
-          see information that identifies you — your name, your messages, your
-          check-ins — are the mentors and staff at{" "}
+          see information that identifies you - your name, your messages, your
+          check-ins - are the mentors and staff at{" "}
           <strong className="text-ink-900">that center</strong>, and only while
           your consent is active.
         </p>
@@ -213,7 +213,7 @@ export default function Privacy() {
         <div className="rounded-2xl bg-sky-tint/60 p-5 text-[15px]/[1.7] text-ink-600">
           <strong className="text-navy-deep">Care-team view.</strong> Mentors
           and center staff see what they need to support you and nothing
-          designed to expose you. Access follows your consent — revoke it and
+          designed to expose you. Access follows your consent - revoke it and
           that access ends.
         </div>
       </Block>
@@ -227,8 +227,8 @@ export default function Privacy() {
         <p className="m-0">
           Understanding recovery at scale helps every member who comes next. To
           do that responsibly, any research or reporting uses{" "}
-          <strong className="text-ink-900">de-identified</strong> data —
-          stripped of the details that point to a person — and is only ever
+          <strong className="text-ink-900">de-identified</strong> data -
+          stripped of the details that point to a person - and is only ever
           reported in <strong className="text-ink-900">aggregate</strong>.
         </p>
         <p className="m-0">
@@ -276,8 +276,8 @@ export default function Privacy() {
             <p className="m-0">
               If you or someone you care about is in danger, don&apos;t wait for
               the platform. Call or text{" "}
-              <strong className="text-white">988</strong> — the Suicide &amp;
-              Crisis Lifeline — or call 911. My Struggle is peer support and
+              <strong className="text-white">988</strong> - the Suicide &amp;
+              Crisis Lifeline - or call 911. My Struggle is peer support and
               community, not an emergency or clinical service.
             </p>
             <div className="rounded-2xl bg-white/[.06] p-5 text-[15px]/[1.7] text-white/75">
@@ -310,7 +310,7 @@ export default function Privacy() {
             ],
             [
               "Revoke consent",
-              "Withdraw your consent to a center's access at any time — that access ends.",
+              "Withdraw your consent to a center's access at any time - that access ends.",
             ],
             [
               "Opt out of research",
@@ -360,7 +360,7 @@ export default function Privacy() {
           processor), or where the law requires it.
         </p>
         <p className="m-0">
-          As a nonprofit, we exist to serve members — not to monetize them.
+          As a nonprofit, we exist to serve members - not to monetize them.
         </p>
       </Block>
 
@@ -408,7 +408,7 @@ export default function Privacy() {
               Questions about your privacy?
             </div>
             <div className="mt-2 text-[15px] font-medium text-ink-600">
-              Call 602-402-5121 or reach out through our contact form — a real
+              Call 602-402-5121 or reach out through our contact form - a real
               person will help.
             </div>
           </div>

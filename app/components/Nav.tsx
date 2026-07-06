@@ -45,7 +45,7 @@ const PLATFORM_SECTIONS: Section[] = [
       {
         href: "/community",
         title: "Community feed",
-        desc: "Wins, circles, and support — a recovery-first network",
+        desc: "Wins, circles, and support - a recovery-first network",
         icon: MessageCircle,
       },
       {
@@ -134,7 +134,7 @@ const DONATE_ITEMS: Item[] = [
   {
     href: "/give",
     title: "Give to a member",
-    desc: "Scan a QR or visit their page — 50/50 split",
+    desc: "Scan a QR or visit their page - 50/50 split",
     icon: QrCode,
   },
   {
@@ -175,8 +175,8 @@ function MenuTile({ item }: { item: Item }) {
 }
 
 /**
- * Sticky website nav with two premium mega-menus — Platform (a wide, multi-
- * column panel organizing every platform destination) and Donate — both using
+ * Sticky website nav with two premium mega-menus - Platform (a wide, multi-
+ * column panel organizing every platform destination) and Donate - both using
  * CSS-hover kept open across a 22px hover bridge, over the 3px indigo→blue
  * hairline. Shared by all marketing pages; mobile mirror in NavDrawer.
  */
@@ -198,7 +198,7 @@ export default function Nav() {
             About us
           </Link>
 
-          {/* Platform — wide mega-menu on hover; top-level link → /centers */}
+          {/* Platform - wide mega-menu on hover; top-level link → /centers */}
           <div className="group relative flex items-center">
             <Link
               href="/centers"
@@ -211,7 +211,7 @@ export default function Nav() {
                 <div className="hairline" />
                 <div className="p-8">
                   <div className="grid grid-cols-[260px_1fr] gap-8">
-                    {/* Featured card — The Continuum of Care */}
+                    {/* Featured card - The Continuum of Care */}
                     <Link
                       href="/centers"
                       className="group/feat relative flex min-h-[300px] flex-col justify-end overflow-hidden rounded-2xl p-6 text-white"
@@ -230,7 +230,7 @@ export default function Nav() {
                         </div>
                         <p className="mt-2 text-[13px]/[1.5] text-white/80">
                           We follow a person before, during, and after a center
-                          — one continuous record.
+                          - one continuous record.
                         </p>
                         <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-white group-hover/feat:gap-2.5">
                           Explore the platform
@@ -259,7 +259,7 @@ export default function Nav() {
                     </div>
                   </div>
 
-                  {/* Bottom strip — For recovery centers */}
+                  {/* Bottom strip - For recovery centers */}
                   <div className="-mx-8 -mb-8 mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 rounded-b-2xl bg-canvas px-8 py-4">
                     <span className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
                       For recovery centers
@@ -296,7 +296,7 @@ export default function Nav() {
             Community
           </Link>
 
-          {/* Donate — mega-menu on hover; top-level link still navigates */}
+          {/* Donate - mega-menu on hover; top-level link still navigates */}
           <div className="group relative flex items-center">
             <Link
               href="/donate"
@@ -341,7 +341,7 @@ export default function Nav() {
                     </div>
                   </div>
 
-                  {/* Bottom strip — For employers */}
+                  {/* Bottom strip - For employers */}
                   <div className="-mx-8 -mb-8 mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 rounded-b-2xl bg-canvas px-8 py-4">
                     <span className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-brand">
                       For employers
@@ -377,7 +377,7 @@ export default function Nav() {
         </nav>
 
         <div className="flex items-center gap-2.5 lg:gap-[18px]">
-          {/* Self-gating bell — renders nothing until a signed-in session is
+          {/* Self-gating bell - renders nothing until a signed-in session is
               confirmed via /api/notifications (401 → hidden). */}
           <NotificationBell />
           <Link

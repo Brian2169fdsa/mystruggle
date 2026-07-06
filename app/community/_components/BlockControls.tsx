@@ -7,7 +7,7 @@
 //                                                     -> { ok, blocked: string[] }
 // Everything here fails OPEN: if the API isn't live yet or the viewer is
 // signed out (401), we behave as though nobody is blocked rather than hiding
-// the whole feed. Blocking is a quiet, dignified control — never punitive.
+// the whole feed. Blocking is a quiet, dignified control - never punitive.
 
 import { useEffect, useState } from "react";
 import { UserRoundX, UserRoundCheck } from "lucide-react";
@@ -102,7 +102,7 @@ export function useBlockedIds(): Set<string> {
 }
 
 /**
- * Block / Unblock control for a member profile. Signed-in, non-self only —
+ * Block / Unblock control for a member profile. Signed-in, non-self only -
  * renders nothing for the viewer's own profile, for signed-out visitors, or
  * until we know who's looking (so it never flickers the wrong state).
  */
@@ -187,7 +187,7 @@ export function BlockButton({
       <p className="max-w-[320px] text-center text-[12px] font-medium text-ink-600">
         {blocked
           ? `You won't see ${targetName}'s posts. You can undo this anytime.`
-          : `Blocking hides their posts from your feed. This is just for you — they aren't told.`}
+          : `Blocking hides their posts from your feed. This is just for you - they aren't told.`}
       </p>
     </div>
   );

@@ -18,7 +18,7 @@ function reportStore() {
   return d;
 }
 
-/** POST { postId, reason, note? } — a signed-in member files a report on a post.
+/** POST { postId, reason, note? } - a signed-in member files a report on a post.
  *  Creates an "open" PostReport and notifies center staff. */
 export async function POST(req: Request) {
   const user = await getSessionUser();
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, report });
 }
 
-/** GET — staff-only moderation queue, newest first, each decorated with a small
+/** GET - staff-only moderation queue, newest first, each decorated with a small
  *  post preview + the reporter's first name. */
 export async function GET() {
   const user = await getSessionUser();
@@ -114,14 +114,14 @@ export async function GET() {
 const ACTIONS = ["reviewed", "dismiss", "hide_post", "warn_author"] as const;
 type ReportAction = (typeof ACTIONS)[number];
 
-/** PATCH { id, action } — staff acts on a report.
+/** PATCH { id, action } - staff acts on a report.
  *   - "reviewed" | "dismiss" → status "reviewed" (post stays; no author impact).
  *   - "hide_post" → hide the reported post from the community + status "actioned".
  *   - "warn_author" → warm-but-firm system notification to the author + status
  *     "actioned".
  *  Back-compat: an old caller sending { id, status: "reviewed" } is treated as
  *  action "reviewed". Returns the updated report. 400 unknown action; 404 when
- *  the report — or the post an action needs — is missing. */
+ *  the report - or the post an action needs - is missing. */
 export async function PATCH(req: Request) {
   const user = await getSessionUser();
   if (!user) {
@@ -165,10 +165,10 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "hide_post") {
-      // Soft take-down — removes it from the community feed for everyone.
+      // Soft take-down - removes it from the community feed for everyone.
       post.hidden = true;
     } else {
-      // warn_author — a warm, non-punitive nudge to the post's author. Never
+      // warn_author - a warm, non-punitive nudge to the post's author. Never
       // notify a member about their own staff action against someone else, and
       // skip if the author account is gone.
       const author = findUserById(post.authorId);
@@ -177,7 +177,7 @@ export async function PATCH(req: Request) {
           author.id,
           "system",
           "A note from the care team",
-          "A community member flagged one of your posts. Please review our community guidelines — keep it supportive and safe.",
+          "A community member flagged one of your posts. Please review our community guidelines - keep it supportive and safe.",
           "post",
           post.id
         );
@@ -185,7 +185,7 @@ export async function PATCH(req: Request) {
     }
     report.status = "actioned";
   } else {
-    // "reviewed" | "dismiss" — resolved without a take-down.
+    // "reviewed" | "dismiss" - resolved without a take-down.
     report.status = "reviewed";
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-// My Plan — the member's recovery goals (docs/13 Part C): goal cards with
+// My Plan - the member's recovery goals (docs/13 Part C): goal cards with
 // milestone checklists, linked QR funding, the 9-domain progress strip, and
 // the job-application tracker for employment goals. Opens full-screen inside
 // the phone shell (MemberApp planOpen), same pattern as the lesson player.
@@ -83,7 +83,7 @@ function ProgressBar({ pct }: { pct: number }) {
   );
 }
 
-/** 9-domain summary strip — a mini ring per recovery-capital domain. */
+/** 9-domain summary strip - a mini ring per recovery-capital domain. */
 function DomainStrip({ goals }: { goals: PlanGoal[] }) {
   return (
     <div className="rounded-2xl bg-white px-4 py-4 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
@@ -185,7 +185,7 @@ export default function PlanView({
       setApps(data.applications ?? []);
       setStaleCount(data.staleCount ?? 0);
     } catch {
-      // offline — keep whatever we have
+      // offline - keep whatever we have
     }
   };
 
@@ -208,7 +208,7 @@ export default function PlanView({
       const data = await res.json();
       if (data.goal) patchGoal(data.goal);
     } catch {
-      // offline — leave as-is
+      // offline - leave as-is
     }
   };
 
@@ -334,7 +334,7 @@ export default function PlanView({
 
   return (
     <div className="flex flex-1 flex-col pb-20">
-      {/* Navy header — same full-screen-in-shell pattern as the lesson player */}
+      {/* Navy header - same full-screen-in-shell pattern as the lesson player */}
       <div className="flex items-center justify-between bg-navy-deep px-5 py-3.5">
         <button
           type="button"
@@ -353,7 +353,7 @@ export default function PlanView({
       </div>
 
       {!user ? (
-        /* Signed out — warm invitation, no demo data behind it */
+        /* Signed out - warm invitation, no demo data behind it */
         <div className="flex flex-1 flex-col gap-4 p-5">
           <div className="rounded-2xl bg-white px-6 py-9 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sky-tint text-[26px]">
@@ -363,7 +363,7 @@ export default function PlanView({
               Your plan lives here
             </div>
             <div className="mx-auto mt-2 max-w-[280px] text-[14px]/[1.6] font-medium text-ink-600">
-              Set the goals that matter to you — housing, work, family — break
+              Set the goals that matter to you - housing, work, family - break
               them into steps, and watch your progress grow. Sign in to start
               your plan.
             </div>
@@ -440,7 +440,7 @@ export default function PlanView({
                   <ProgressBar pct={goal.progressPct} />
                 </div>
 
-                {/* Milestone checklist — one-tap toggles like the tracker */}
+                {/* Milestone checklist - one-tap toggles like the tracker */}
                 {goal.milestones.length > 0 && (
                   <div className="mt-2.5 flex flex-col">
                     {goal.milestones.map((m) => (
@@ -542,7 +542,7 @@ export default function PlanView({
                   </div>
                 )}
 
-                {/* Achieve celebration — inline warm card, no overlay needed */}
+                {/* Achieve celebration - inline warm card, no overlay needed */}
                 {goal.status === "achieved" ? (
                   <div className="mt-3.5 rounded-xl bg-gold-bg px-4 py-3.5 text-center">
                     <div className="text-[15px] font-extrabold text-gold-ink">
@@ -554,7 +554,7 @@ export default function PlanView({
                           <span className="font-extrabold text-blue-primary">
                             +25 points
                           </span>{" "}
-                          — this is what showing up looks like.
+                          - this is what showing up looks like.
                         </>
                       ) : (
                         "One more brick in the foundation."
@@ -682,7 +682,7 @@ export default function PlanView({
             </div>
           )}
 
-          {/* Job search — first-class when an employment goal exists */}
+          {/* Job search - first-class when an employment goal exists */}
           {hasJobGoal && (
             <>
               <div className="mt-1 flex items-center justify-between">
@@ -698,7 +698,7 @@ export default function PlanView({
               <div className="rounded-2xl bg-white px-5 py-2 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
                 {apps.length === 0 && (
                   <div className="py-4 text-center text-[13px] font-medium text-ink-600">
-                    No applications yet — log your first one below.
+                    No applications yet - log your first one below.
                   </div>
                 )}
                 {apps.map((a) => {
@@ -740,7 +740,7 @@ export default function PlanView({
                         >
                           {a.nextActionDate
                             ? overdue
-                              ? `Follow up — was due ${fmtDate(a.nextActionDate)}`
+                              ? `Follow up - was due ${fmtDate(a.nextActionDate)}`
                               : `Next: ${fmtDate(a.nextActionDate)}`
                             : ""}
                         </span>

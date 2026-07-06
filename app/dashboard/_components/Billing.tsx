@@ -5,11 +5,11 @@ import { CARD, SKELETON } from "./types";
 
 /**
  * Center subscription / billing view (docs/15 §C, requirements/12 §C).
- * A PREVIEW STUB — billing is handled by the My Struggle team, so there is no
+ * A PREVIEW STUB - billing is handled by the My Struggle team, so there is no
  * real payment here. It mirrors the marketing /centers pricing tiers, shows the
  * center's current plan + add-ons, and attributes the center's demo leads by
  * source (read live from GET /api/leads). "Contact us to change plan" is a
- * mailto — the same convention the /centers page uses.
+ * mailto - the same convention the /centers page uses.
  */
 
 const CONTACT = "mailto:info@themystruggles.com";
@@ -89,7 +89,7 @@ export default function Billing() {
         </span>
       </div>
       <p className="-mt-2 text-[13px] font-medium text-ink-400">
-        Billing is managed by our team — this is a preview. No payment is
+        Billing is managed by our team - this is a preview. No payment is
         processed here.
       </p>
 
@@ -107,7 +107,7 @@ export default function Billing() {
           Platform + Continuum
         </div>
         <div className="mt-1 text-[14px]/[1.6] font-medium text-ink-600">
-          Deliver your programming and stay connected across the continuum —
+          Deliver your programming and stay connected across the continuum -
           before, during, and long after care.
         </div>
         <a

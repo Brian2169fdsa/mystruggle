@@ -24,7 +24,7 @@ const SESSION_MODE_LABEL: Record<SessionRow["mode"], string> = {
 const TABS = ["Journey", "Courses", "Mentorship", "Balances", "Consent"] as const;
 type Tab = (typeof TABS)[number];
 
-// ── MY PLAN (docs/14) — GET /api/recovery-goals?memberId=… is staff-readable.
+// ── MY PLAN (docs/14) - GET /api/recovery-goals?memberId=… is staff-readable.
 // Code the enriched response shape defensively.
 type PlanMilestone = { id: string; title: string; done: boolean };
 type PlanLinkedRequest = {
@@ -64,7 +64,7 @@ function domainLabel(d: string): string {
 const GOAL_STATUS_CHIP: Record<PlanGoal["status"], string> = {
   active: "bg-sky-tint text-blue-primary",
   achieved: "bg-[#E8F8F0] text-success",
-  paused: "bg-[#FFF7EA] text-[#B54708]", // amber — concern, never red
+  paused: "bg-[#FFF7EA] text-[#B54708]", // amber - concern, never red
   archived: "bg-canvas text-ink-400",
 };
 
@@ -75,23 +75,23 @@ const GOAL_STATUS_LABEL: Record<PlanGoal["status"], string> = {
   archived: "Archived",
 };
 
-// Journey timeline stays the styled demo — journey stages aren't in the
+// Journey timeline stays the styled demo - journey stages aren't in the
 // data model yet.
 const TIMELINE = [
   {
-    title: "Outreach — met Laveen team",
+    title: "Outreach - met Laveen team",
     date: <>Oct 12, 2025</>,
     done: true,
     lineColor: "#12B76A",
   },
   {
-    title: "Stabilization — matched with mentor, IOP intake",
+    title: "Stabilization - matched with mentor, IOP intake",
     date: <>Nov 3, 2025</>,
     done: true,
     lineColor: "#12B76A",
   },
   {
-    title: "In Program — GED earned, first job at ABC Painting",
+    title: "In Program - GED earned, first job at ABC Painting",
     date: (
       <>
         Feb 20, 2026 ·{" "}
@@ -102,7 +102,7 @@ const TIMELINE = [
     lineColor: "#2E7CD6",
   },
   {
-    title: "Transitional — hallway house, weekly goal live",
+    title: "Transitional - hallway house, weekly goal live",
     date: <>May 4, 2026 · current stage</>,
     done: false,
     lineColor: null,
@@ -135,7 +135,7 @@ function Toggle({
   );
 }
 
-/** MY PLAN — the member's recovery goals, milestones, progress + linked
+/** MY PLAN - the member's recovery goals, milestones, progress + linked
  *  funding. LIVE for staff via GET /api/recovery-goals?memberId=… */
 function MyPlanCard({ memberId }: { memberId: string }) {
   const [goals, setGoals] = useState<PlanGoal[] | null>(null);
@@ -156,7 +156,7 @@ function MyPlanCard({ memberId }: { memberId: string }) {
     };
   }, [memberId]);
 
-  // Which of the nine domains this member has a goal in — drives the strip.
+  // Which of the nine domains this member has a goal in - drives the strip.
   const covered = new Set((goals ?? []).map((g) => g.domain));
 
   return (
@@ -261,7 +261,7 @@ function MyPlanCard({ memberId }: { memberId: string }) {
                     </span>
                   </div>
 
-                  {/* Milestone checklist — read-only ticks */}
+                  {/* Milestone checklist - read-only ticks */}
                   {g.milestones.length > 0 && (
                     <div className="mt-3 flex flex-col gap-1.5">
                       {g.milestones.map((m) => (
@@ -338,7 +338,7 @@ function MyPlanCard({ memberId }: { memberId: string }) {
 // ── CONSENT-GATED staff read (GET /api/staff/participant?memberId=…) ──────
 // A member's BARC-10 trend + résumé are member-private. Staff see them ONLY
 // when the member has an active continuum consent grant to this center. The
-// route returns { consent:false, … } — never the data — when consent is
+// route returns { consent:false, … } - never the data - when consent is
 // absent. Code the response shape defensively.
 type BarcTrendPoint = { takenAt: number; total: number };
 type StaffResume = {
@@ -372,7 +372,7 @@ const RESUME_SECTION_LABEL: Record<string, string> = {
 };
 
 /** BARC total is 0–50 (10 domains × 0–5). Read the last two totals as a warm,
- *  never-clinical direction — amber for a dip (concern, never red). */
+ *  never-clinical direction - amber for a dip (concern, never red). */
 function barcRead(trend: BarcTrendPoint[]): {
   label: string;
   chip: string; // tailwind classes for the direction chip
@@ -394,7 +394,7 @@ function barcRead(trend: BarcTrendPoint[]): {
   if (delta <= -3)
     return {
       label: "Could use extra support",
-      chip: "bg-[#FFF7EA] text-[#B54708]", // amber — concern, never red
+      chip: "bg-[#FFF7EA] text-[#B54708]", // amber - concern, never red
       bar: "bg-[#E9A23B]",
     };
   return {
@@ -404,7 +404,7 @@ function barcRead(trend: BarcTrendPoint[]): {
   };
 }
 
-/** The respectful "not shared" state — shown for both cards when the member
+/** The respectful "not shared" state - shown for both cards when the member
  *  hasn't granted this center continuum consent. Never shows data. */
 function GatedNote({ what }: { what: string }) {
   return (
@@ -413,16 +413,16 @@ function GatedNote({ what }: { what: string }) {
         ♡
       </span>
       <div className="text-[13px]/[1.55] text-ink-600">
-        This member hasn&apos;t shared their {what} with the center yet — ask
+        This member hasn&apos;t shared their {what} with the center yet - ask
         them in your next session if they&apos;d like to.
       </div>
     </div>
   );
 }
 
-/** RÉSUMÉ — LIVE, consent-gated. Shows the member's résumé projection when
+/** RÉSUMÉ - LIVE, consent-gated. Shows the member's résumé projection when
  *  they've granted this center continuum consent; a warm gated note otherwise.
- *  Read-only — the dashboard never edits a member's résumé. */
+ *  Read-only - the dashboard never edits a member's résumé. */
 function ResumeCard({
   data,
   memberName,
@@ -486,7 +486,7 @@ function ResumeCard({
           )}
 
           <div className="mt-3 text-[11px]/[1.5] text-ink-400">
-            Read-only — {memberName}&apos;s résumé, shared with the center.
+            Read-only - {memberName}&apos;s résumé, shared with the center.
             Edits happen in their app&apos;s Résumé Builder.
           </div>
         </>
@@ -495,7 +495,7 @@ function ResumeCard({
   );
 }
 
-/** BARC TREND — LIVE, consent-gated. BARC-10 self-checks are member-private;
+/** BARC TREND - LIVE, consent-gated. BARC-10 self-checks are member-private;
  *  staff see totals-over-time ONLY with an active consent grant. Never a
  *  diagnosis; amber for a dip, never red. */
 function BarcCard({
@@ -539,7 +539,7 @@ function BarcCard({
         </div>
       ) : (
         <>
-          {/* Real mini-trend — check-in totals over time (each bar = one
+          {/* Real mini-trend - check-in totals over time (each bar = one
               self-check, 0–50). */}
           <div className="mt-3.5 flex h-16 items-end gap-1.5 rounded-xl bg-sky-tint px-4 py-3">
             {trend.map((p) => (
@@ -565,7 +565,7 @@ function BarcCard({
           </div>
 
           <div className="mt-2 text-[11px]/[1.5] text-ink-400">
-            Self-reflection, shared by {memberName} — never a diagnosis. Totals
+            Self-reflection, shared by {memberName} - never a diagnosis. Totals
             over time only; the ten domain details stay with the member.
           </div>
         </>
@@ -584,7 +584,7 @@ export default function ParticipantDetail({
   goGiving: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("Journey");
-  // "Public giving page" is LIVE — POST /api/admin/consent, optimistic flip
+  // "Public giving page" is LIVE - POST /api/admin/consent, optimistic flip
   // with revert on failure. Photo + milestone toggles stay local-only: there
   // is no data model for them yet (they still need the signed consent form).
   const [pagePublic, setPagePublic] = useState(member.consentPublic);
@@ -615,7 +615,7 @@ export default function ParticipantDetail({
       if (!r.ok || !d?.ok) throw new Error("save failed");
       setPagePublic(Boolean(d.consentPublic));
     } catch {
-      setPagePublic(!next); // revert — the page is unchanged
+      setPagePublic(!next); // revert - the page is unchanged
       setConsentError(
         "We couldn't save that just now, so nothing changed on the public page. Please try again in a moment."
       );
@@ -624,7 +624,7 @@ export default function ParticipantDetail({
     }
   }
 
-  // Recent mentor sessions — LIVE. null = loading.
+  // Recent mentor sessions - LIVE. null = loading.
   const [sessions, setSessions] = useState<SessionRow[] | null>(null);
   useEffect(() => {
     let alive = true;
@@ -642,7 +642,7 @@ export default function ParticipantDetail({
     };
   }, [member.id]);
 
-  // CONSENT-GATED BARC trend + résumé — LIVE. null = loading. The route
+  // CONSENT-GATED BARC trend + résumé - LIVE. null = loading. The route
   // returns { consent:false, barc:null, resume:null } (never the data) unless
   // this member granted the center continuum consent; the cards render a
   // respectful gated state in that case.
@@ -661,7 +661,7 @@ export default function ParticipantDetail({
           });
       })
       .catch(() => {
-        // On failure, fail CLOSED — treat as not-shared, never guess data.
+        // On failure, fail CLOSED - treat as not-shared, never guess data.
         if (alive) setParticipant({ consent: false, barc: null, resume: null });
       });
     return () => {
@@ -730,15 +730,15 @@ export default function ParticipantDetail({
         </button>
       </div>
 
-      {/* CONTINUUM — the continuum-of-care ribbon (docs/14). Top of the pane,
+      {/* CONTINUUM - the continuum-of-care ribbon (docs/14). Top of the pane,
           above balances. */}
       <ContinuumRibbon memberId={member.id} />
 
-      {/* MY PLAN (docs/14) — recovery goals, milestones, funding. LIVE. Sits
+      {/* MY PLAN (docs/14) - recovery goals, milestones, funding. LIVE. Sits
           right under the journey ribbon, always visible above the tabs. */}
       <MyPlanCard memberId={member.id} />
 
-      {/* RÉSUMÉ + BARC TREND (docs/13/14) — paired. Both are member-private
+      {/* RÉSUMÉ + BARC TREND (docs/13/14) - paired. Both are member-private
           surfaces, now LIVE for staff via GET /api/staff/participant, gated on
           an active continuum consent grant to this center. No consent → a
           respectful "not shared" state, never the data. */}
@@ -770,13 +770,13 @@ export default function ParticipantDetail({
         <div className={CARD + " px-[30px] py-[26px]"}>
           <div className="text-[15px] font-bold text-ink-900">{tab}</div>
           <div className="mt-2 text-[13px] text-ink-600">
-            {tab} view is a stub in this prototype — the Journey tab shows the
+            {tab} view is a stub in this prototype - the Journey tab shows the
             working record, including balances and consent.
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-[1.4fr_1fr] gap-[18px]">
-          {/* Left column — journey timeline (demo) + real support requests */}
+          {/* Left column - journey timeline (demo) + real support requests */}
           <div className="flex flex-col gap-[18px]">
             <div className={CARD + " px-[30px] py-[26px]"}>
               <div className="text-[15px] font-bold text-ink-900">
@@ -816,7 +816,7 @@ export default function ParticipantDetail({
               </div>
             </div>
 
-            {/* Support requests — LIVE */}
+            {/* Support requests - LIVE */}
             <div className={CARD + " px-[30px] py-[26px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Support requests
@@ -867,7 +867,7 @@ export default function ParticipantDetail({
           </div>
 
           <div className="flex flex-col gap-[18px]">
-            {/* Balances — LIVE */}
+            {/* Balances - LIVE */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">Balances</div>
               <div className="mt-3.5 grid grid-cols-3 gap-2.5 text-center">
@@ -901,7 +901,7 @@ export default function ParticipantDetail({
               </div>
             </div>
 
-            {/* Recent sessions — LIVE */}
+            {/* Recent sessions - LIVE */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Recent sessions
@@ -945,7 +945,7 @@ export default function ParticipantDetail({
               )}
             </div>
 
-            {/* Consent — public-page toggle is LIVE (POST /api/admin/consent);
+            {/* Consent - public-page toggle is LIVE (POST /api/admin/consent);
                 photo + milestone toggles are local-only, no data model yet. */}
             <div className={CARD + " px-[26px] py-[22px]"}>
               <div className="text-[15px] font-bold text-ink-900">Consent</div>
@@ -991,8 +991,8 @@ export default function ParticipantDetail({
               </div>
               <div className="mt-3 text-[11px]/[1.5] text-ink-400">
                 {pagePublic
-                  ? `Public page is ON — give.my-struggle.org/p/${member.slug}. Revoking flips it to the generic org-giving state immediately.`
-                  : `Public page is OFF — give.my-struggle.org/p/${member.slug} now shows the generic org-giving state.`}
+                  ? `Public page is ON - give.my-struggle.org/p/${member.slug}. Revoking flips it to the generic org-giving state immediately.`
+                  : `Public page is OFF - give.my-struggle.org/p/${member.slug} now shows the generic org-giving state.`}
                 <br />
                 Photo and milestone changes require the member&apos;s signed
                 consent form.

@@ -143,7 +143,7 @@ export default function AdApproval({
         placements?: ReviewItem[];
         killSwitch?: boolean;
       };
-      // Contract says `queue`; the live API returns all `placements` — either way,
+      // Contract says `queue`; the live API returns all `placements` - either way,
       // narrow to what still needs review (pending, or member-reported).
       const all = data.queue ?? data.placements ?? [];
       const q = all.filter(needsReview);
@@ -343,7 +343,7 @@ export default function AdApproval({
         </div>
         {killSwitch && (
           <div className="mt-3 text-[13px] font-bold text-amber-ink">
-            Kill switch is ON — sponsored content is paused platform-wide.
+            Kill switch is ON - sponsored content is paused platform-wide.
           </div>
         )}
       </div>
@@ -464,7 +464,7 @@ export default function AdApproval({
 
       {queue && items.length === 0 && (
         <div className={CARD + " px-[30px] py-8 text-center text-[13px] font-semibold text-ink-400"}>
-          Nothing awaiting review — the queue is clear.
+          Nothing awaiting review - the queue is clear.
         </div>
       )}
 

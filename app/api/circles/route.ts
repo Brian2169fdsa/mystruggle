@@ -17,12 +17,12 @@ function decorateCircle(circle: Circle, user: User | null) {
     members: circleMemberCount(circle.id),
     joined: user ? isCircleMember(circle.id, user.id) : false,
     // Alumni circles of another center are visible in the directory but
-    // their feed is private — the UI shows them locked.
+    // their feed is private - the UI shows them locked.
     locked: !canReadCircle(circle, user),
   };
 }
 
-/** Circle directory — every circle with member count + viewer's joined flag. */
+/** Circle directory - every circle with member count + viewer's joined flag. */
 export async function GET() {
   const user = await getSessionUser();
   return NextResponse.json({
@@ -30,7 +30,7 @@ export async function GET() {
   });
 }
 
-/** Join or leave a circle — members, mentors, and staff alike. */
+/** Join or leave a circle - members, mentors, and staff alike. */
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) {
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
   const d = circleDb();
   if (action === "join") {
-    // Alumni circles stay center-private — you can't join across centers.
+    // Alumni circles stay center-private - you can't join across centers.
     if (!canReadCircle(circle, user)) {
       return NextResponse.json(
         { error: "This alumni circle is private to its center." },

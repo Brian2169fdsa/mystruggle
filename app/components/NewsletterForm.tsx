@@ -44,7 +44,7 @@ export default function NewsletterForm() {
       const data = await res.json().catch(() => null);
       setError(
         res.status === 409
-          ? "You're already on the list — first letter next month."
+          ? "You're already on the list - first letter next month."
           : (data?.error ?? "Something went wrong. Please try again."),
       );
       setStatus("idle");

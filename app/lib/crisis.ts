@@ -1,10 +1,10 @@
-// Crisis-language screen — SAFETY STOPGAP.
+// Crisis-language screen - SAFETY STOPGAP.
 //
 // Per docs/05-MODULE-SOCIAL.md the real pipeline is a Claude review with a
 // strict rubric; until that exists, this keyword pass makes sure obvious
 // self-harm/danger language is HELD from the public feed (status "flagged"),
 // resources are shown to the poster, and staff see it pinned in moderation.
-// Pure function — no store access, safe to run on server or client.
+// Pure function - no store access, safe to run on server or client.
 
 /**
  * Case-insensitive, word-boundary patterns for self-harm / danger phrasing.
@@ -19,7 +19,7 @@ const CRISIS_PATTERNS: RegExp[] = [
   /\bend(?:ing)? my (?:own )?life\b/i,
   /\btak(?:e|ing) my own life\b/i,
   /\bsuicidal\b/i,
-  // "suicide" alone is a signal — but not when it's support-seeking language
+  // "suicide" alone is a signal - but not when it's support-seeking language
   // like "suicide prevention/awareness/hotline/lifeline/resources".
   /\bsuicide\b(?!\s+(?:prevention|awareness|hotline|lifeline|resources?))/i,
   /\bhurt(?:ing)? myself\b/i,

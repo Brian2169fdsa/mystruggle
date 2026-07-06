@@ -134,7 +134,7 @@ export default function Participants({
                 {m.mentorName ? (
                   `Mentor: ${m.mentorName}`
                 ) : (
-                  <span className="font-semibold text-ink-400">—</span>
+                  <span className="font-semibold text-ink-400">-</span>
                 )}
               </span>
               <span
@@ -158,7 +158,7 @@ export default function Participants({
                   </span>
                 ) : (
                   <span className="text-[13px] font-semibold text-ink-400">
-                    —
+                    -
                   </span>
                 )}
               </span>

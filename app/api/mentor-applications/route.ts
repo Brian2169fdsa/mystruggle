@@ -9,9 +9,9 @@ const STATUSES: MentorApplication["status"][] = ["contacted", "approved"];
 
 /**
  * Website mentor applications.
- * POST — public (it's the marketing-site form): validate + queue as "new".
- * GET  — staff-only: full queue, newest first.
- * PUT  — staff-only: advance an application's status (new→contacted→approved).
+ * POST - public (it's the marketing-site form): validate + queue as "new".
+ * GET  - staff-only: full queue, newest first.
+ * PUT  - staff-only: advance an application's status (new→contacted→approved).
  */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "You're already on our list — a coordinator will call you.",
+          "You're already on our list - a coordinator will call you.",
       },
       { status: 409 }
     );
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-/** Staff queue — newest first. */
+/** Staff queue - newest first. */
 export async function GET() {
   const staff = await getRoleUser();
   if (!staff) {

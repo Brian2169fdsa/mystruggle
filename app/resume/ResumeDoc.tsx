@@ -1,7 +1,7 @@
 import type { Resume, ResumeSection, ResumeSectionKind } from "../lib/types";
 
 /**
- * The "clean_blue" résumé template — white page card, navy name, blue
+ * The "clean_blue" résumé template - white page card, navy name, blue
  * headline, hairline divider, eyebrow section headings. Montserrat comes
  * from the root layout. Print-perfect: no shadows/rounding when printing.
  * Shared by the /resume Preview step and the /resume/print route.

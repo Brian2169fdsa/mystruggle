@@ -26,7 +26,7 @@ function money(n: number) {
 }
 
 /**
- * The real public QR giving page — /p/[slug].
+ * The real public QR giving page - /p/[slug].
  * Fetches /api/members/[slug] and renders loading / 404 / generic
  * (consent off) / full member states in the /give visual system.
  */
@@ -48,7 +48,7 @@ export default function PublicGivingPage() {
   const [sending, setSending] = useState(false);
 
   // `extra` = a request returned by POST /api/donations that just flipped to
-  // "funded" — the members API only returns active requests, so we merge it
+  // "funded" - the members API only returns active requests, so we merge it
   // back in to keep showing the goal with its ✓ Funded chip.
   const load = useCallback(
     async (extra?: SupportRequest) => {
@@ -141,7 +141,7 @@ export default function PublicGivingPage() {
   return (
     <div className="flex min-h-screen justify-center bg-[#E8EDF4]">
       <div className="flex min-h-screen w-full max-w-[430px] flex-col bg-canvas shadow-[0_0_60px_rgba(11,37,69,.12)]">
-        {/* MINIMAL HEADER — wordmark + hairline */}
+        {/* MINIMAL HEADER - wordmark + hairline */}
         <div className="bg-white">
           <div className="flex h-[60px] items-center justify-center">
             <Link href="/">
@@ -167,7 +167,7 @@ export default function PublicGivingPage() {
           <NotFound />
         ) : page.kind === "generic" ? (
           <>
-            {/* GENERIC / PRIVATE STATE — no personal info */}
+            {/* GENERIC / PRIVATE STATE - no personal info */}
             <div className="flex flex-col items-center gap-3.5 px-6 pt-8 text-center">
               <div className="photo-ph flex h-[104px] w-[104px] items-center justify-center rounded-full border-[3px] border-white text-[36px] font-extrabold text-indigo-brand shadow-[0_4px_14px_rgba(11,37,69,.15)]">
                 ♥
@@ -176,7 +176,7 @@ export default function PublicGivingPage() {
                 This member&apos;s page is private right now
               </div>
               <div className="max-w-[320px] text-[15px]/[1.7] text-ink-600">
-                They&apos;ve chosen not to share their story publicly — and we
+                They&apos;ve chosen not to share their story publicly - and we
                 honor that. Your gift to My Struggle still changes lives.
               </div>
               <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-brand">
@@ -198,7 +198,7 @@ export default function PublicGivingPage() {
               weeklyHint={
                 weekly
                   ? `${amtLabel} every week sustains the general fund`
-                  : "One-time gift — flip to weekly to sustain the work"
+                  : "One-time gift - flip to weekly to sustain the work"
               }
               giveLabel={giveLabel}
               sending={sending}
@@ -235,7 +235,7 @@ export default function PublicGivingPage() {
   );
 }
 
-/* ── Loading skeleton — soft sky-tint blocks, no spinners ─────────────── */
+/* ── Loading skeleton - soft sky-tint blocks, no spinners ─────────────── */
 function LoadingSkeleton() {
   return (
     <div className="animate-pulse">
@@ -289,7 +289,7 @@ function NotFound() {
   );
 }
 
-/* ── Thank-you state — real split recap ───────────────────────────────── */
+/* ── Thank-you state - real split recap ───────────────────────────────── */
 function ThankYou({
   gave,
   back,
@@ -310,7 +310,7 @@ function ThankYou({
       </div>
       <div className="max-w-[300px] text-[16px]/[1.7] font-medium text-ink-600">
         Your <strong className="text-ink-900">{confirmAmount}</strong> gift is
-        on its way to {gave.name || "My Struggle"} —{" "}
+        on its way to {gave.name || "My Struggle"} -{" "}
         {cash && credits ? (
           <>
             <strong className="text-ink-900">{cash}</strong> as cash{" "}
@@ -353,7 +353,7 @@ function ThankYou({
   );
 }
 
-/* ── 50/50 split explainer — ported verbatim from /give, name-dynamic ─── */
+/* ── 50/50 split explainer - ported verbatim from /give, name-dynamic ─── */
 function SplitExplainer({ name }: { name: string | null }) {
   return (
     <div className="px-5 pt-7">
@@ -532,7 +532,7 @@ function AmountPicker(props: {
         {footerName && (
           <>
             <br />
-            Follow {footerName}&apos;s journey — milestone updates they choose
+            Follow {footerName}&apos;s journey - milestone updates they choose
             to share
           </>
         )}
@@ -561,7 +561,7 @@ function MemberBody(props: {
   const initial = (member.name || "?").charAt(0).toUpperCase();
   return (
     <div>
-      {/* PROFILE — avatar, name, member chip, consented story */}
+      {/* PROFILE - avatar, name, member chip, consented story */}
       <div className="flex flex-col items-center gap-3.5 px-6 pt-8 text-center">
         <div className="photo-ph flex h-[104px] w-[104px] items-center justify-center rounded-full border-[3px] border-white text-[36px] font-extrabold text-indigo-brand shadow-[0_4px_14px_rgba(11,37,69,.15)]">
           {initial}
@@ -590,14 +590,14 @@ function MemberBody(props: {
 
       <SplitExplainer name={member.name} />
 
-      {/* GOALS — one progress card per support request + savings */}
+      {/* GOALS - one progress card per support request + savings */}
       <div className="flex flex-col gap-3.5 px-6 pt-7">
         <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary">
           {member.name}&apos;s goals
         </div>
         {member.requests.length === 0 && (
           <div className="rounded-2xl bg-white px-5 py-[18px] text-[13px] text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-            No active support requests right now — your gift still goes
+            No active support requests right now - your gift still goes
             straight to {member.name}&apos;s balances.
           </div>
         )}
@@ -634,7 +634,7 @@ function MemberBody(props: {
         weeklyHint={
           props.weekly
             ? `${amtLabel} every week keeps ${member.name}’s goals on track`
-            : "One-time gift — flip to weekly to sustain their goal"
+            : "One-time gift - flip to weekly to sustain their goal"
         }
         giveLabel={props.giveLabel}
         sending={props.sending}

@@ -8,7 +8,7 @@ import type { SafeUser, SupportRequest } from "../lib/types";
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
 
-/** Signed-in account overview — profile, QR code, support goals, sign out. */
+/** Signed-in account overview - profile, QR code, support goals, sign out. */
 export default function AccountPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function AccountPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      {/* MINIMAL HEADER — wordmark + hairline */}
+      {/* MINIMAL HEADER - wordmark + hairline */}
       <div className="bg-white">
         <div className="flex h-[60px] items-center justify-center">
           <Link href="/">
@@ -118,7 +118,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* QR CODE — members only */}
+            {/* QR CODE - members only */}
             {user.role === "member" && user.slug && (
               <div className="rounded-2xl bg-white p-6 text-center shadow-[0_2px_12px_rgba(11,37,69,.1)]">
                 <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary">
@@ -142,7 +142,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* SUPPORT REQUESTS — members only */}
+            {/* SUPPORT REQUESTS - members only */}
             {user.role === "member" && (
               <div className="flex flex-col gap-3">
                 <div className="text-[12px] font-bold uppercase tracking-[.12em] text-blue-primary">
@@ -150,7 +150,7 @@ export default function AccountPage() {
                 </div>
                 {requests.length === 0 ? (
                   <div className="rounded-2xl bg-white px-5 py-6 text-center text-[13.5px]/[1.7] font-medium text-ink-600 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-                    No support goals yet — your mentor can help you set your
+                    No support goals yet - your mentor can help you set your
                     first one.
                   </div>
                 ) : (

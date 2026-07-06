@@ -221,7 +221,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
       } catch {
         if (!alive) return;
         setStatus("offline");
-        // The API may not be live yet — retry a few times as it warms up.
+        // The API may not be live yet - retry a few times as it warms up.
         if (attempts < 6) {
           timer = setTimeout(load, 4000);
         }
@@ -249,7 +249,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
     );
   }
 
-  // ── API not live — quiet placeholder ──────────────────────────────────
+  // ── API not live - quiet placeholder ──────────────────────────────────
   if (status === "offline" || !data) {
     return (
       <div className={CARD + " px-[30px] py-[26px]"}>
@@ -264,13 +264,13 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
 
   const { episode, transitions, events, score, monthlyActivity } = data;
 
-  // ── Empty state — no episode (unaffiliated / pre-care) ────────────────
+  // ── Empty state - no episode (unaffiliated / pre-care) ────────────────
   if (!episode) {
     return (
       <div className={CARD + " px-[30px] py-[26px]"}>
         <div className="text-[15px] font-bold text-ink-900">Continuum</div>
         <div className="mt-2 text-[13px] text-ink-600">
-          No continuum record yet — this member is pre-care/unaffiliated.
+          No continuum record yet - this member is pre-care/unaffiliated.
         </div>
       </div>
     );
@@ -281,11 +281,11 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
   const widths = segmentWidths(durations);
   const safeScore = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
 
-  // Sparkline scaling — heights driven by weight.
+  // Sparkline scaling - heights driven by weight.
   const months = Array.isArray(monthlyActivity) ? monthlyActivity : [];
   const maxWeight = months.reduce((m, x) => Math.max(m, x.weight || 0), 0) || 1;
 
-  // Event markers — last ~30, positioned along the episode timeline.
+  // Event markers - last ~30, positioned along the episode timeline.
   const t0 = episode.startedAt;
   const t1 = episode.endedAt ?? Date.now();
   const span = Math.max(1, t1 - t0);
@@ -296,7 +296,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
         .slice(-30)
     : [];
 
-  // Which sources actually appear — drives the legend.
+  // Which sources actually appear - drives the legend.
   const presentSources = Array.from(
     new Set(markerEvents.map((e) => e.source))
   ).filter((s): s is EventSource => s in SOURCE_COLOR);
@@ -310,7 +310,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
         }
       `}</style>
 
-      {/* 1 — Score header */}
+      {/* 1 - Score header */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <div>
           <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-400">
@@ -340,7 +340,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
         </div>
       </div>
 
-      {/* 2 — The ribbon */}
+      {/* 2 - The ribbon */}
       <div className="mt-5 flex gap-1.5">
         {PHASE_ORDER.map((phase, i) => {
           const isPast = i < curIdx;
@@ -379,7 +379,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
         })}
       </div>
 
-      {/* 3 — Engagement sparkline */}
+      {/* 3 - Engagement sparkline */}
       {months.length > 0 && (
         <div className="mt-5">
           <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-400">
@@ -407,7 +407,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
             })}
           </div>
 
-          {/* 4 — Event markers along the time axis */}
+          {/* 4 - Event markers along the time axis */}
           <div className="relative mt-2 h-4">
             <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-sky-tint-2" />
             {markerEvents.map((e, i) => {
@@ -466,7 +466,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
         </div>
       )}
 
-      {/* 5 — Phase history */}
+      {/* 5 - Phase history */}
       {transitions.length > 0 && (
         <div className="mt-5 border-t border-canvas pt-3">
           <button
@@ -489,7 +489,7 @@ export default function ContinuumRibbon({ memberId }: { memberId: string }) {
                 .map((t, i) => {
                   const from = t.fromPhase
                     ? PHASE_LABEL[t.fromPhase as CarePhase] ?? t.fromPhase
-                    : "—";
+                    : "-";
                   const to =
                     PHASE_LABEL[t.toPhase as CarePhase] ?? t.toPhase;
                   return (

@@ -4,10 +4,10 @@ import { db, save } from "@/app/lib/store";
 
 /** Staff sets a member's public-giving-page consent flag.
  *
- *  docs/10-COMPLIANCE — revocation must propagate immediately: the public
+ *  docs/10-COMPLIANCE - revocation must propagate immediately: the public
  *  /p/[slug] route already reads consentPublic live on every request, so
  *  flipping the flag here takes effect on the very next page load (no cache,
- *  no delay). Staff-only — consent changes are a compliance action.
+ *  no delay). Staff-only - consent changes are a compliance action.
  */
 
 function bad(status: number, error: string) {

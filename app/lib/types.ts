@@ -1,4 +1,4 @@
-// Shared platform types — the contract between the API and every surface.
+// Shared platform types - the contract between the API and every surface.
 
 export type Role = "member" | "mentor" | "staff" | "employer";
 
@@ -46,13 +46,13 @@ export interface User {
   mentorId?: string;
   centerId?: string; // outreach center this person belongs to
   lastActivityAt?: number; // last streak-qualifying activity (lesson complete)
-  // employer fields (role === "employer") — a recovery-friendly hiring account.
+  // employer fields (role === "employer") - a recovery-friendly hiring account.
   // `name` is the contact's first name; `company` is the business they hire for.
   company?: string;
 }
 
 // ── Employer accounts + job posts (recovery-friendly hiring) ──────────
-// An employer is a User with role "employer" — reuses the HMAC session cookie,
+// An employer is a User with role "employer" - reuses the HMAC session cookie,
 // findUserById, and getRoleUser gates with no new auth path. The company they
 // hire for lives on `User.company`; every job they post is a JobPost below.
 
@@ -73,7 +73,7 @@ export const JOB_TYPES: JobType[] = [
 ];
 
 /** A recovery-friendly job opening posted by an employer account. Every post
- *  is recoveryFriendly by definition — this board only carries fair-chance,
+ *  is recoveryFriendly by definition - this board only carries fair-chance,
  *  second-chance-welcome roles. status open↔closed; owner controls both. */
 export interface JobPost {
   id: string;
@@ -82,7 +82,7 @@ export interface JobPost {
   company: string; // denormalized from the employer for public display
   location: string;
   type: JobType;
-  payRange?: string; // e.g. "$17–$19/hr" — optional, employer's words
+  payRange?: string; // e.g. "$17–$19/hr" - optional, employer's words
   description: string;
   recoveryFriendly: true; // always true on this board (fair-chance by design)
   status: "open" | "closed";
@@ -163,7 +163,7 @@ export interface Donation {
 export type PostKind = "regular" | "milestone" | "win";
 export type PostStatus = "approved" | "pending" | "flagged" | "removed";
 
-/** Community feed topics — the recovery community's channels. */
+/** Community feed topics - the recovery community's channels. */
 export type Topic = "general" | "jobs" | "housing" | "recovery" | "gratitude";
 export const TOPICS: Topic[] = [
   "general",
@@ -200,7 +200,7 @@ export interface Post {
   topic?: Topic; // community channel (defaults to "general" when absent)
   requestId?: string; // links a support-request post to its goal
   hearts: string[]; // user ids who reacted
-  // EXPANSION (docs/13 Part B) — documented additive exception: shared-
+  // EXPANSION (docs/13 Part B) - documented additive exception: shared-
   // experience reactions. Optional because they're runtime-added on demand
   // (`post.proud ??= []`) so pre-expansion posts stay untouched.
   proud?: string[]; // "proud of you" user ids
@@ -229,7 +229,7 @@ export interface Thread {
 }
 
 // ── Community expansion (docs/13-MODULE-COMMUNITY-EXPANSION) ──────────
-// EXPANSION: additive only — nothing above this line changes.
+// EXPANSION: additive only - nothing above this line changes.
 
 export interface ProfileDetails {
   userId: string;
@@ -240,7 +240,7 @@ export interface ProfileDetails {
   showMilestones: boolean;
 }
 
-/** BARC-10 self-check — warm self-reflection, never clinical, never public. */
+/** BARC-10 self-check - warm self-reflection, never clinical, never public. */
 export interface BarcSelfCheck {
   id: string;
   memberId: string;
@@ -283,7 +283,7 @@ export type RecoveryDomain = (typeof RECOVERY_DOMAINS)[number];
 export type GoalStatus = "active" | "achieved" | "paused" | "archived";
 export type GoalVisibility = "private" | "mentor" | "circle" | "public";
 
-/** Recovery Goal — the member-owned middle layer connecting tracker tasks
+/** Recovery Goal - the member-owned middle layer connecting tracker tasks
  *  (to-dos) and support requests (funding). Merges neither. */
 export interface RecoveryGoal {
   id: string;
@@ -351,11 +351,11 @@ export interface ResumeSection {
 }
 
 // ── Continuum of Care (docs/14 + requirements/11 §A/B/K) ──────────────
-// EXPANSION: additive only — the platform spine (the hub every other
+// EXPANSION: additive only - the platform spine (the hub every other
 // module feeds). Nothing above this line changes. `care_phase` runs in
 // PARALLEL to the existing journey/level fields; it never replaces them.
 
-/** The five care phases — one person, one continuous timeline. */
+/** The five care phases - one person, one continuous timeline. */
 export type CarePhase =
   | "pre_care" // in community before any center relationship (unaffiliated)
   | "intake" // connected to a center, assessment, not yet in programming
@@ -387,7 +387,7 @@ export interface CareEpisode {
   dischargeType?: string; // completed | stepped_down | left_early | transferred
 }
 
-/** Append-only log of every phase/LOC change — the outcomes gold. */
+/** Append-only log of every phase/LOC change - the outcomes gold. */
 export interface PhaseTransition {
   id: string;
   episodeId: string;
@@ -423,14 +423,14 @@ export interface ContinuumEvent {
 }
 
 // ── Community Ad Product (docs/15 §B + requirements/12 §B/E) ───────────
-// EXPANSION: additive only — nothing above this line changes. The buyer is
+// EXPANSION: additive only - nothing above this line changes. The buyer is
 // the recovery center; the audience is members in recovery. Member trust is
 // the product, so the trust rules are enforced in CODE (see app/api/placements
 // /serve for the crisis-exclusion + frequency-cap + coarse-targeting gates),
 // not left to policy docs. Ads live in the community feed as clearly labeled
-// "Sponsored by [Center]" items — never disguised as a peer Post.
+// "Sponsored by [Center]" items - never disguised as a peer Post.
 
-/** What a sponsored placement is selling — recovery-relevant categories ONLY.
+/** What a sponsored placement is selling - recovery-relevant categories ONLY.
  *  There is deliberately no "product"/"offer" free-for-all kind; every value
  *  here is something a person in recovery should be able to see safely. */
 export type PlacementKind =
@@ -451,10 +451,10 @@ export type PlacementStatus =
   | "ended"
   | "rejected";
 
-/** How broadly a placement is shown. COARSE only — see targeting note below. */
+/** How broadly a placement is shown. COARSE only - see targeting note below. */
 export type AudienceScope = "community" | "geo" | "circle" | "phase";
 
-/** Coarse, NON-CLINICAL targeting. THIS IS THE WHOLE OBJECT — there is
+/** Coarse, NON-CLINICAL targeting. THIS IS THE WHOLE OBJECT - there is
  *  deliberately NO field for health, diagnosis, substance, symptom, or any
  *  sensitive attribute, and none may ever be added. Targeting a vulnerable
  *  population by their condition is structurally impossible here: an advertiser
@@ -462,17 +462,17 @@ export type AudienceScope = "community" | "geo" | "circle" | "phase";
  *  schema has no place to put it. Only metro/geo, care phase (e.g. alumni),
  *  interest tags, and a circle topic are allowed. (docs/10 + docs/15 §B.) */
 export interface PlacementTargeting {
-  metro?: string; // e.g. "Phoenix, AZ" — geographic, non-clinical
-  phase?: CarePhase; // e.g. "continuing" (alumni) — care stage, NOT a health status
-  interestTags?: string[]; // e.g. ["employment", "housing"] — coarse interests
+  metro?: string; // e.g. "Phoenix, AZ" - geographic, non-clinical
+  phase?: CarePhase; // e.g. "continuing" (alumni) - care stage, NOT a health status
+  interestTags?: string[]; // e.g. ["employment", "housing"] - coarse interests
   circleId?: string; // a community circle topic (Circle.id)
 }
 
-/** A center's sponsored placement in the community feed. orgId === centerId —
+/** A center's sponsored placement in the community feed. orgId === centerId -
  *  only approved orgs (centers) advertise; there are no arbitrary advertisers. */
 export interface SponsoredPlacement {
   id: string;
-  orgId: string; // === Center.id — the buying center
+  orgId: string; // === Center.id - the buying center
   orgName: string; // shown to members as "Sponsored by [orgName]"
   title: string;
   body: string;
@@ -491,13 +491,13 @@ export interface SponsoredPlacement {
 }
 
 /** An interaction with a placement. memberId is stored SERVER-SIDE ONLY for
- *  frequency-capping and dedup — it is NEVER exposed to advertiser reads
+ *  frequency-capping and dedup - it is NEVER exposed to advertiser reads
  *  (GET /api/placements returns aggregate counts, never per-member rows). */
 export interface PlacementEvent {
   id: string;
   placementId: string;
   kind: "impression" | "click" | "dismiss" | "report";
-  memberId?: string; // internal only — never surfaced to the center
+  memberId?: string; // internal only - never surfaced to the center
   occurredAt: number;
 }
 
@@ -517,17 +517,17 @@ export interface DemoLead {
 
 // ── Continuum: Care Channels + Consent + Follow-up cadence ────────────
 // (docs/14 §In-Program D + §Intake C + §Continuing G; requirements/11 §C/§D/§G)
-// EXPANSION: additive only — nothing above this line changes. Three additions
-// to the continuum spine: (1) in-program center↔client ENGAGEMENT comms — NOT
+// EXPANSION: additive only - nothing above this line changes. Three additions
+// to the continuum spine: (1) in-program center↔client ENGAGEMENT comms - NOT
 // clinical notes/PHI, never therapy delivery; (2) a granular, revocable consent
 // grant to a SPECIFIC center (extends consentPublic, replaces nothing); (3) the
 // post-discharge follow-up cadence. All read/write against the same spine.
 
-/** A care communication space. Engagement comms only — no PHI/clinical notes.
+/** A care communication space. Engagement comms only - no PHI/clinical notes.
  *  - program_group: an IOP cohort's shared space (staff schedule/assignments +
- *    peer discussion, moderated) — keyed by `cohortId`.
- *  - one_to_one: a staff↔member channel (reminders, "you missed group — ok?")
- *    — keyed by `memberId`. Distinct from mentor chat and the public feed.
+ *    peer discussion, moderated) - keyed by `cohortId`.
+ *  - one_to_one: a staff↔member channel (reminders, "you missed group - ok?")
+ *    - keyed by `memberId`. Distinct from mentor chat and the public feed.
  *  - announcement: one-way center broadcast (no `memberId`/`cohortId`). */
 export type CareChannelKind = "program_group" | "one_to_one" | "announcement";
 
@@ -536,12 +536,12 @@ export interface CareChannel {
   centerId: string; // the owning center (=== Center.id)
   kind: CareChannelKind;
   title: string;
-  memberId?: string; // set for one_to_one — the member side of the channel
-  cohortId?: string; // set for program_group — the cohort key (e.g. "cohort-iop-laveen")
+  memberId?: string; // set for one_to_one - the member side of the channel
+  cohortId?: string; // set for program_group - the cohort key (e.g. "cohort-iop-laveen")
   createdAt: number;
 }
 
-/** A message in a CareChannel. Engagement content only — the UI/policy bar
+/** A message in a CareChannel. Engagement content only - the UI/policy bar
  *  PHI + clinical notes (requirements/11 §D). moderationStatus reuses the
  *  community moderation pipeline (docs/06) for group-channel discussion. */
 export interface CareMessage {
@@ -556,7 +556,7 @@ export interface CareMessage {
 }
 
 /** A member's granular, revocable grant of continuum access to ONE specific
- *  center (requirements/11 §C). EXTENDS existing consent — it does NOT replace
+ *  center (requirements/11 §C). EXTENDS existing consent - it does NOT replace
  *  User.consentPublic (public giving page) and is a separate axis: consentPublic
  *  governs donor visibility; a ConsentGrant governs a center's continuum access.
  *  Revoking (revokedAt) cuts the center's access to future data; append-only
@@ -585,7 +585,7 @@ export interface FollowUpCheckin {
 }
 
 // ── Engagement: notifications + member blocks + community events ──────
-// EXPANSION: additive only — nothing above this line changes. The engagement
+// EXPANSION: additive only - nothing above this line changes. The engagement
 // backend: per-user notifications (one inbox across every module), user-driven
 // member blocks (mutual safety), and center community events with RSVP (an
 // RSVP is an engagement signal → continuum_event source "community").
@@ -614,7 +614,7 @@ export interface Notification {
   createdAt: number;
 }
 
-/** A user-driven block — blocker hides/mutes blocked across social surfaces. */
+/** A user-driven block - blocker hides/mutes blocked across social surfaces. */
 export interface MemberBlock {
   id: string;
   blockerId: string;
@@ -648,10 +648,10 @@ export interface EventRsvp {
 
 /** A member-filed report on a community post, awaiting staff review. Feeds the
  *  moderation queue. Lifecycle:
- *   - "open"     — filed, awaiting a staff look.
- *   - "reviewed" — staff looked and resolved it WITHOUT a take-down (a plain
- *                  "mark reviewed" or an explicit "dismiss" — post stays).
- *   - "actioned" — staff resolved it WITH a moderation action (hid the post or
+ *   - "open"     - filed, awaiting a staff look.
+ *   - "reviewed" - staff looked and resolved it WITHOUT a take-down (a plain
+ *                  "mark reviewed" or an explicit "dismiss" - post stays).
+ *   - "actioned" - staff resolved it WITH a moderation action (hid the post or
  *                  warned the author). A distinct state so the queue can show
  *                  "this report changed something," not just "someone glanced." */
 export interface PostReport {
@@ -664,7 +664,7 @@ export interface PostReport {
   createdAt: number;
 }
 
-/** What /api/auth/me returns — never includes credentials. */
+/** What /api/auth/me returns - never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 
 export function toSafeUser(u: User): SafeUser {

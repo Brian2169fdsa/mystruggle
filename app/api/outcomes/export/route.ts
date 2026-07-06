@@ -5,7 +5,7 @@ import { buildFrame, buildLicensed, SUPPRESSED } from "../compute";
  * GET /api/outcomes/export?plane=licensed  (staff only)
  *
  * The "grant-ready / licensor packet" export: a downloadable CSV of the
- * DE-IDENTIFIED, AGGREGATED outcomes (k≥11 enforced — see compute.ts). Only the
+ * DE-IDENTIFIED, AGGREGATED outcomes (k≥11 enforced - see compute.ts). Only the
  * licensed plane is exportable: an identifiable single-center roster is never a
  * file that leaves the building (docs/10 §6 / requirements/11 §H).
  */

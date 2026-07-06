@@ -51,7 +51,7 @@ export default function Home() {
               Together
             </h1>
             <p className="max-w-[560px] text-[16px]/[1.65] font-medium text-white/[.88] lg:text-[19px]">
-              Peer mentorship, outreach centers, and QR Code Giving — built by
+              Peer mentorship, outreach centers, and QR Code Giving - built by
               people who&apos;ve lived the struggle, for people still in it.
             </p>
             <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -92,7 +92,7 @@ export default function Home() {
             <p className="m-0">
               My Struggle is a nonprofit founded in 2021 in Laveen, Arizona, by
               people who have lived through homelessness, addiction, and
-              incarceration — and found their way home.
+              incarceration - and found their way home.
             </p>
             <p className="m-0">
               We believe nobody escapes the struggle alone. Our outreach centers
@@ -102,15 +102,15 @@ export default function Home() {
             </p>
             <p className="m-0">
               Through QR Code Giving, anyone can give directly to a
-              member&apos;s journey — half in cash they redeem at our centers,
-              half held safely for their reentry — theirs the day they step
+              member&apos;s journey - half in cash they redeem at our centers,
+              half held safely for their reentry - theirs the day they step
               back into society. Every gift is
               accountable, dignified, and personal.
             </p>
             <p className="m-0">
               Our register is simple:{" "}
               <em className="text-ink-900">
-                &ldquo;How can I help you? Let&apos;s talk — tell me about
+                &ldquo;How can I help you? Let&apos;s talk - tell me about
                 you.&rdquo;
               </em>{" "}
               Compassion replacing contempt, one member at a time.
@@ -142,7 +142,7 @@ export default function Home() {
               </div>
               <div className="text-[17px]/[1.7] text-ink-600">
                 Danielle earned her GED, started her first job, and moved into
-                transitional housing — three milestones in eight months. Right
+                transitional housing - three milestones in eight months. Right
                 now she&apos;s working toward $175 a week for her hallway house,
                 the last step before a place of her own.
               </div>
@@ -195,13 +195,13 @@ export default function Home() {
                 n: "02",
                 href: "/mentor",
                 title: "Donate time",
-                desc: "Mentor, teach a skill, or volunteer at a center. Lived experience isn't required — but it's always welcome.",
+                desc: "Mentor, teach a skill, or volunteer at a center. Lived experience isn't required - but it's always welcome.",
               },
               {
                 n: "03",
                 href: "/donate",
                 title: "Donate funds",
-                desc: "$25 provides a week of essential services for one member — meals, transportation, and a mentor who shows up.",
+                desc: "$25 provides a week of essential services for one member - meals, transportation, and a mentor who shows up.",
               },
             ].map((c) => (
               <Link
@@ -244,10 +244,10 @@ export default function Home() {
           </div>
           <div className="mx-auto max-w-[640px] text-[16px]/[1.7] text-white/75 lg:text-[18px]">
             &ldquo;We don&apos;t ask what&apos;s wrong with you. We ask what
-            happened to you — and how we can help.&rdquo;
+            happened to you - and how we can help.&rdquo;
           </div>
           <div className="text-[14px] font-bold tracking-[.08em] text-[#8FBCF0]">
-            — BRIAN REINHART, CO-FOUNDER
+            - BRIAN REINHART, CO-FOUNDER
           </div>
         </div>
       </section>
@@ -264,7 +264,7 @@ export default function Home() {
             </div>
             <div className="text-[17px]/[1.75] text-ink-600">
               Founded by Joe McDonald, Position of Neutrality teaches members to
-              find steady ground before rebuilding — the Internal Self
+              find steady ground before rebuilding - the Internal Self
               Evaluation (ISE) curriculum, eight courses that move from surviving
               to deciding to becoming.
             </div>
@@ -286,7 +286,7 @@ export default function Home() {
           <div className="aspect-video overflow-hidden rounded-2xl bg-navy-deep shadow-[0_2px_10px_rgba(11,37,69,.12)]">
             <iframe
               src="https://www.youtube.com/embed/ws7TGP2QtSE"
-              title="Position of Neutrality — Joe McDonald"
+              title="Position of Neutrality - Joe McDonald"
               className="h-full w-full border-0"
               loading="lazy"
               allowFullScreen
@@ -383,8 +383,8 @@ const FAQ = [
     a: (
       <>
         When you give to a member, your gift splits 50/50: half becomes cash
-        they collect at our outreach centers with their member ID card —
-        whether they&apos;re unhoused or currently incarcerated — and half is
+        they collect at our outreach centers with their member ID card -
+        whether they&apos;re unhoused or currently incarcerated - and half is
         held as their Reentry Fund, released directly to them when they
         re-enter society.
       </>
@@ -395,9 +395,9 @@ const FAQ = [
     a: (
       <>
         Every member carries a personal QR code. Scan it with your phone camera
-        and you land on their giving page — their story, their goals, and a
+        and you land on their giving page - their story, their goals, and a
         secure checkout. Your gift reaches them in under a minute, split 50/50
-        — half now, half held for their reentry.{" "}
+        - half now, half held for their reentry.{" "}
         <Link href="/give" className="font-bold text-blue-primary">
           See Danielle&apos;s page →
         </Link>
@@ -418,7 +418,7 @@ const FAQ = [
     q: "How do I become a mentor?",
     a: (
       <>
-        Apply in five minutes — a center coordinator calls you within a week.
+        Apply in five minutes - a center coordinator calls you within a week.
         Lived experience is the qualification; we provide training, the mentor
         app, and staff support.{" "}
         <Link href="/mentor" className="font-bold text-blue-primary">
@@ -430,7 +430,7 @@ const FAQ = [
 ];
 
 /* ---------------------------------------------------------------- */
-/* THE CONTINUUM OF CARE — the platform thesis on the home page      */
+/* THE CONTINUUM OF CARE - the platform thesis on the home page      */
 /* ---------------------------------------------------------------- */
 
 const CONTINUUM_STAGES = [
@@ -532,7 +532,7 @@ function TheContinuum() {
           <p className="mx-auto mt-4 max-w-[640px] text-base/[1.7] text-white/75 lg:text-[17px]">
             Recovery doesn&apos;t start at intake or end at discharge. My
             Struggle follows a person&apos;s engagement from their first day in
-            the community, through their program, and for years after — one
+            the community, through their program, and for years after - one
             continuous record.
           </p>
         </div>
@@ -623,14 +623,14 @@ function TheContinuum() {
 }
 
 /* ---------------------------------------------------------------- */
-/* PLATFORM AT A GLANCE — every surface, linked                      */
+/* PLATFORM AT A GLANCE - every surface, linked                      */
 /* ---------------------------------------------------------------- */
 
 const SURFACES = [
   {
     icon: Smartphone,
     title: "Member app",
-    desc: "Courses, streaks, goals, mentor chat, and the community feed — in a pocket.",
+    desc: "Courses, streaks, goals, mentor chat, and the community feed - in a pocket.",
     href: "/member-app",
   },
   {
@@ -648,7 +648,7 @@ const SURFACES = [
   {
     icon: HeartHandshake,
     title: "Public giving page",
-    desc: "Scan a member's QR code and give directly — half cash now, half held for reentry.",
+    desc: "Scan a member's QR code and give directly - half cash now, half held for reentry.",
     href: "/give",
   },
 ];
@@ -666,7 +666,7 @@ function PlatformAtAGlance() {
             <span className="script text-[44px] lg:text-[60px]">glance</span>
           </h2>
           <p className="mx-auto mt-4 max-w-[560px] text-base/[1.7] text-ink-600 lg:text-[17px]">
-            The whole thing is explorable right now — nothing hidden. Open any
+            The whole thing is explorable right now - nothing hidden. Open any
             screen and look around.
           </p>
         </div>
@@ -698,7 +698,7 @@ function PlatformAtAGlance() {
         </div>
 
         <p className="mt-8 text-center text-[13px] font-medium text-ink-400">
-          Explore the demo — logins on each screen.
+          Explore the demo - logins on each screen.
         </p>
       </div>
     </section>
@@ -718,7 +718,7 @@ function EmployerBand() {
         </h2>
         <p className="mx-auto mt-4 max-w-[560px] text-[16px]/[1.7] text-white/80 lg:text-[17px]">
           Post jobs and opportunities directly to our recovery community.
-          Fair-chance employers change lives here — reach members building
+          Fair-chance employers change lives here - reach members building
           their next chapter, ready to work.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
@@ -734,7 +734,7 @@ function EmployerBand() {
             className="inline-flex h-[52px] w-full cursor-default items-center justify-center rounded-full border-[1.5px] border-white/70 px-[34px] text-base font-bold text-white/90 sm:w-auto"
             style={{ color: "rgba(255,255,255,.9)", borderColor: "rgba(255,255,255,.7)" }}
           >
-            Employer dashboard — coming soon
+            Employer dashboard - coming soon
           </span>
         </div>
       </div>
@@ -746,17 +746,17 @@ const COMMUNITY_FEATURES = [
   {
     icon: MessagesSquare,
     title: "Share your journey",
-    desc: "A feed for wins and milestones, honest hard days, and asking for support — met by people who get it.",
+    desc: "A feed for wins and milestones, honest hard days, and asking for support - met by people who get it.",
   },
   {
     icon: Users,
     title: "Circles",
-    desc: "Job Seekers, New in Recovery, Parents in Recovery, and center alumni — smaller rooms for your people.",
+    desc: "Job Seekers, New in Recovery, Parents in Recovery, and center alumni - smaller rooms for your people.",
   },
   {
     icon: LifeBuoy,
     title: "Support board",
-    desc: "Raise a hand for rent, work boots, or a bus pass — donors give directly to the need.",
+    desc: "Raise a hand for rent, work boots, or a bus pass - donors give directly to the need.",
   },
   {
     icon: ShieldCheck,
@@ -782,7 +782,7 @@ function CommunityTeaser() {
           <div className="max-w-[620px] text-base/[1.7] text-ink-600 lg:text-[17px]">
             A recovery-first, moderated, peer network. Members and mentors share
             wins, jobs, and housing leads, join circles for their people, and
-            ask for support — and anyone can give directly.
+            ask for support - and anyone can give directly.
           </div>
         </div>
 
@@ -855,7 +855,7 @@ function CommunityTeaser() {
               </span>
             </div>
             <div className="mt-3 text-[14px]/[1.6] text-ink-900">
-              A warehouse in Laveen is hiring — second-chance friendly, weekly
+              A warehouse in Laveen is hiring - second-chance friendly, weekly
               pay, on the bus line. I can walk you through the application.
             </div>
             <div className="mt-3 text-[12px] font-bold text-blue-primary">
@@ -880,7 +880,7 @@ function CommunityTeaser() {
               </span>
             </div>
             <div className="mt-3 text-[14px]/[1.6] text-ink-900">
-              A monthly bus pass gets me to my new job and back — $64 covers
+              A monthly bus pass gets me to my new job and back - $64 covers
               the whole month.
             </div>
             <div className="mt-3.5">
@@ -944,7 +944,7 @@ function SocialWall() {
       cap: "Pantry restock day",
       img: "/pantry-restock.png",
       video: false,
-      body: "The pantry shelves are stocked — thank you to everyone who donated items this month.",
+      body: "The pantry shelves are stocked - thank you to everyone who donated items this month.",
     },
     {
       tag: "TT",
@@ -954,7 +954,7 @@ function SocialWall() {
       cap: "video: a day at Laveen Center",
       img: null,
       video: "dark",
-      body: '"How can I help you?" — what one question sounds like in real life.',
+      body: '"How can I help you?" - what one question sounds like in real life.',
     },
     {
       tag: "YT",
@@ -978,7 +978,7 @@ function SocialWall() {
             Follow the <span className="script text-[42px] lg:text-[56px]">journey</span>
           </h2>
           <div className="text-base text-ink-600">
-            Wins, reunions, and center life — @themystruggle everywhere.
+            Wins, reunions, and center life - @themystruggle everywhere.
           </div>
         </div>
         <div className="mt-10 grid grid-cols-1 gap-[22px] sm:grid-cols-2 lg:mt-[52px] lg:grid-cols-4">

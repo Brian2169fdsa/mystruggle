@@ -11,7 +11,7 @@ type Placement = {
   body: string;
   kind: PlacementKind;
   status: string;
-  // Targeting is freeform jsonb — we flatten it defensively for display.
+  // Targeting is freeform jsonb - we flatten it defensively for display.
   targeting?: Record<string, string | string[] | undefined | null> | null;
   startsAt?: number | string | null;
   endsAt?: number | string | null;
@@ -56,7 +56,7 @@ const SCOPE_OPTIONS: { value: AudienceScope; label: string }[] = [
 
 type TargetKey = "metros" | "phases" | "interests" | "circles";
 
-/** Coarse, non-clinical targeting chips only — NO health / diagnosis option. */
+/** Coarse, non-clinical targeting chips only - NO health / diagnosis option. */
 const TARGET_GROUPS: { key: TargetKey; label: string; chips: string[] }[] = [
   { key: "metros", label: "Metro", chips: ["Phoenix", "Laveen", "Tempe", "Mesa"] },
   { key: "phases", label: "Care phase", chips: ["Pre-care", "In-care", "Alumni"] },
@@ -215,12 +215,12 @@ export default function AdManager() {
       });
       if (res.status === 404) {
         setApiPending(true);
-        setRejectReason("Ad service is still coming online — try again shortly.");
+        setRejectReason("Ad service is still coming online - try again shortly.");
         return;
       }
       const data = await res.json().catch(() => ({}));
       if (res.status === 400) {
-        // Content-policy rejection — surface the reason inline.
+        // Content-policy rejection - surface the reason inline.
         setRejectReason(
           (data as { error?: string }).error ??
             "This placement doesn't meet the community content policy."
@@ -236,7 +236,7 @@ export default function AdManager() {
       setKind("service");
       setScope("community");
       setTargeting(EMPTY_TARGETING);
-      setOkMsg("Draft created — submit it for review when you're ready.");
+      setOkMsg("Draft created - submit it for review when you're ready.");
       await load();
     } catch {
       setRejectReason("Something went wrong creating this placement.");
@@ -407,7 +407,7 @@ export default function AdManager() {
             PRIVACY
           </span>
           <span className="text-[13px]/[1.6] font-medium text-ink-900">
-            Targeting is coarse and non-clinical by design — we never target by
+            Targeting is coarse and non-clinical by design - we never target by
             health, diagnosis, or substance.
           </span>
         </div>
@@ -491,7 +491,7 @@ export default function AdManager() {
 
       {placements && placements.length === 0 && (
         <div className={CARD + " px-[30px] py-8 text-center text-[13px] font-semibold text-ink-400"}>
-          No placements yet — create one above.
+          No placements yet - create one above.
         </div>
       )}
 
@@ -563,7 +563,7 @@ export default function AdManager() {
               ))}
             </div>
             <div className="mt-2 text-[11px] font-medium text-ink-400">
-              Aggregate only — we never show you individual members.
+              Aggregate only - we never show you individual members.
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">

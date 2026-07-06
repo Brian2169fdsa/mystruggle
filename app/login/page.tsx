@@ -11,7 +11,7 @@ const WORDMARK_INDIGO =
 const inputCls =
   "box-border h-[52px] w-full rounded-xl border-[1.5px] border-sky-tint-2 bg-white px-4 text-[15px] font-medium text-ink-900 placeholder:text-ink-400 focus:border-blue-primary focus:outline-none";
 
-/** Sign-in page — routes members to /member-app, mentors to /mentor-app,
+/** Sign-in page - routes members to /member-app, mentors to /mentor-app,
  *  and staff to /dashboard. */
 export default function LoginPage() {
   const router = useRouter();
@@ -52,7 +52,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      {/* MINIMAL HEADER — wordmark + hairline */}
+      {/* MINIMAL HEADER - wordmark + hairline */}
       <div className="bg-white">
         <div className="flex h-[60px] items-center justify-center">
           <Link href="/">

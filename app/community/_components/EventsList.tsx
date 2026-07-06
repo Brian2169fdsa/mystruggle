@@ -6,7 +6,7 @@
 // /api/events). CONTRACT:
 //   GET  /api/events            -> { events: CommunityEvent[] }
 //   POST /api/events/[id]/rsvp  { going:boolean } -> { event: CommunityEvent }
-// While that route is still landing, GET may 404 / error — we degrade to a
+// While that route is still landing, GET may 404 / error - we degrade to a
 // warm "coming soon" state rather than a broken screen.
 
 import { useEffect, useMemo, useState } from "react";
@@ -315,7 +315,7 @@ export default function EventsList() {
         <p className="mx-auto mt-2 max-w-[440px] text-[14px]/[1.65] font-medium text-ink-600">
           {unavailable
             ? "Community meetups, celebrations, and workshops will show up here soon. Check back in a bit."
-            : "When the community plans a meetup, celebration, or workshop, you’ll find it here — and you can save your seat with one tap."}
+            : "When the community plans a meetup, celebration, or workshop, you’ll find it here - and you can save your seat with one tap."}
         </p>
       </div>
     );

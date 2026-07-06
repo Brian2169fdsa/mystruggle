@@ -7,16 +7,16 @@ import { buildCenter, buildFrame, buildLicensed, type Plane } from "./compute";
  *
  * The licensed OUTCOMES DATA PRODUCT (docs/14 § data product; requirements/11
  * §H). Three computed "materialized views" over the continuum stream:
- *   • mvContinuumScore — 0–100 rolling engagement index → DISTRIBUTION
- *   • mvCareOutcomes   — phase-transition rates, completion by LOC,
+ *   • mvContinuumScore - 0–100 rolling engagement index → DISTRIBUTION
+ *   • mvCareOutcomes   - phase-transition rates, completion by LOC,
  *                        retention-in-recovery 30/60/90/180/365d,
  *                        recovery-capital pre→during→post delta
- *   • mvEfficacy       — engagement-quartile → outcome (engagement = efficacy)
+ *   • mvEfficacy       - engagement-quartile → outcome (engagement = efficacy)
  *
- * TWO DATA PLANES — the P0 trust boundary, enforced in code (see compute.ts):
- *   • plane=center   — identified, consented, single-center. Staff see
+ * TWO DATA PLANES - the P0 trust boundary, enforced in code (see compute.ts):
+ *   • plane=center   - identified, consented, single-center. Staff see
  *                      identifiable member rows for THEIR OWN center only.
- *   • plane=licensed — de-identified, aggregated. ONLY aggregate counters; k≥11
+ *   • plane=licensed - de-identified, aggregated. ONLY aggregate counters; k≥11
  *                      minimum cohort; no name/id/memberNumber/slug can appear.
  *
  * GOVERNANCE (docs/10 §6): licensing outcomes to a third party is BLOCKED until

@@ -52,7 +52,7 @@ type AnalyticsData = {
   };
 };
 
-/** Recovery-capital domains — blues + success green, never clinical reds. */
+/** Recovery-capital domains - blues + success green, never clinical reds. */
 const DOMAINS = [
   { key: "personal", label: "Personal", bar: "bg-indigo-brand" },
   { key: "social", label: "Social", bar: "bg-blue-primary" },
@@ -107,7 +107,7 @@ function RetentionCell({
   showUpDelta?: boolean;
 }) {
   if (h.pct === null) {
-    return <span className="text-[22px] font-extrabold text-ink-400">—</span>;
+    return <span className="text-[22px] font-extrabold text-ink-400">-</span>;
   }
   const tone = blue ? "blue" : h.pct >= bench ? "green" : "red";
   const delta =
@@ -165,7 +165,7 @@ type OutcomesData = {
  *  long-term recovery target). Not a clinical threshold. */
 const RETENTION_BENCH = 60;
 
-/** pre → during → post recovery-capital bars — reuse the domain palette so the
+/** pre → during → post recovery-capital bars - reuse the domain palette so the
  *  outcomes block reads as one system with the recovery-capital block above. */
 const CAPITAL_PHASES = [
   { key: "pre", label: "Pre-care", bar: "bg-indigo-brand" },
@@ -173,7 +173,7 @@ const CAPITAL_PHASES = [
   { key: "post", label: "Post-discharge", bar: "bg-success" },
 ] as const;
 
-/** Download the de-identified (k≥11) licensed CSV — Blob download, cookie auth,
+/** Download the de-identified (k≥11) licensed CSV - Blob download, cookie auth,
  *  same pattern as the cohort export. The licensed plane is the ONLY exportable
  *  one: identifiable single-center rows never leave the building (docs/10 §6). */
 async function exportLicensedCsv() {
@@ -188,7 +188,7 @@ async function exportLicensedCsv() {
   URL.revokeObjectURL(url);
 }
 
-/** Client-side CSV of the cohort table — Blob download, no deps. */
+/** Client-side CSV of the cohort table - Blob download, no deps. */
 function exportCohortCsv(retention: Cohort[]) {
   const cell = (h: Horizon) => (h.pct === null ? "" : String(h.pct));
   const lines = [
@@ -211,11 +211,11 @@ function exportCohortCsv(retention: Cohort[]) {
 export default function Reports() {
   const [data, setData] = useState<ReportsData | null>(null);
   const [error, setError] = useState(false);
-  // Recovery-capital analytics load independently — a hiccup here never
+  // Recovery-capital analytics load independently - a hiccup here never
   // takes down the existing retention/giving report.
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsError, setAnalyticsError] = useState(false);
-  // Outcomes data product (docs/14) loads independently too — the retention /
+  // Outcomes data product (docs/14) loads independently too - the retention /
   // efficacy block never blocks the existing retention + recovery-capital cards.
   const [outcomes, setOutcomes] = useState<OutcomesData | null>(null);
   const [outcomesError, setOutcomesError] = useState(false);
@@ -290,7 +290,7 @@ export default function Reports() {
             We couldn&apos;t load the reports right now
           </div>
           <div className="text-sm font-medium text-ink-600">
-            The numbers are safe — this is just a hiccup reaching the server.
+            The numbers are safe - this is just a hiccup reaching the server.
           </div>
           <button
             type="button"
@@ -362,7 +362,7 @@ export default function Reports() {
             ))}
           </div>
 
-          {/* ── recovery capital (docs/13 Part F — additive) ───────────── */}
+          {/* ── recovery capital (docs/13 Part F - additive) ───────────── */}
           {!analytics && !analyticsError && (
             <div className={SKELETON + " h-[260px]"} />
           )}
@@ -373,7 +373,7 @@ export default function Reports() {
                   Recovery capital
                 </div>
                 <div className="text-xs font-semibold text-ink-600">
-                  Personal · Social · Community — activity-derived domain
+                  Personal · Social · Community - activity-derived domain
                   averages, 0–100 · never clinical
                 </div>
               </div>
@@ -545,7 +545,7 @@ export default function Reports() {
         </>
       )}
 
-      {/* ── OUTCOMES & EFFICACY (docs/14 data product — additive) ──────────
+      {/* ── OUTCOMES & EFFICACY (docs/14 data product - additive) ──────────
           Retention-in-recovery curve, pre→during→post recovery-capital delta,
           the engagement→outcome efficacy table, and the de-identified (k≥11)
           licensed export. Loads independently of the reports above. */}
@@ -601,12 +601,12 @@ export default function Reports() {
                         />
                       ) : (
                         <span className="text-[22px] font-extrabold text-ink-400">
-                          —
+                          -
                         </span>
                       )}
                     </div>
                     <span className="tnum text-[15px] font-extrabold text-ink-900">
-                      {observable ? `${r.pct}%` : "—"}
+                      {observable ? `${r.pct}%` : "-"}
                     </span>
                     <span className="text-[11px] font-semibold text-ink-600">
                       {r.day}d
@@ -635,7 +635,7 @@ export default function Reports() {
                       <div className="flex h-32 w-full items-end justify-center">
                         {val === null ? (
                           <span className="text-[20px] font-extrabold text-ink-400">
-                            —
+                            -
                           </span>
                         ) : (
                           <div
@@ -645,7 +645,7 @@ export default function Reports() {
                         )}
                       </div>
                       <span className="tnum text-[18px] font-extrabold text-ink-900">
-                        {val === null ? "—" : val}
+                        {val === null ? "-" : val}
                       </span>
                       <span className="text-center text-[11px] font-semibold text-ink-600">
                         {p.label}
@@ -687,10 +687,10 @@ export default function Reports() {
                     </span>
                   </span>
                   <span className="tnum text-right text-[15px] font-extrabold text-blue-primary">
-                    {q.avgScore ?? "—"}
+                    {q.avgScore ?? "-"}
                   </span>
                   <span className="tnum text-right text-[15px] font-extrabold text-ink-900">
-                    {q.avgGoalsAchieved ?? "—"}
+                    {q.avgGoalsAchieved ?? "-"}
                   </span>
                 </div>
               ))}

@@ -1,6 +1,6 @@
 "use client";
 
-// Big-profile header for /community/u/[slug] — cover band, overlapping
+// Big-profile header for /community/u/[slug] - cover band, overlapping
 // avatar, identity block, action row, and a sticky anchor-tab row.
 // Renders ONLY fields already released by buildPublicProfile(); the
 // consent gate lives upstream in the page (profile === null → private card).
@@ -93,7 +93,7 @@ export default function ProfileHeader({
   return (
     <>
       <header className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-        {/* cover band — token gradient + faint script watermark (no photo uploads yet) */}
+        {/* cover band - token gradient + faint script watermark (no photo uploads yet) */}
         <div
           aria-hidden
           className="relative h-[160px] overflow-hidden bg-gradient-to-r from-navy-deep via-indigo-brand to-blue-primary lg:h-[220px]"
@@ -106,7 +106,7 @@ export default function ProfileHeader({
           </span>
         </div>
 
-        {/* identity block — avatar overlaps the cover's bottom edge */}
+        {/* identity block - avatar overlaps the cover's bottom edge */}
         <div className="px-5 pb-7 sm:px-8">
           <div className="-mt-[44px] w-fit rounded-full ring-4 ring-white lg:hidden">
             <AvatarTile name={profile.name} color={profile.avatarColor} size={88} />
@@ -139,7 +139,7 @@ export default function ProfileHeader({
             </p>
           )}
 
-          {/* action row — give pill (consent-gated upstream) + the existing block control */}
+          {/* action row - give pill (consent-gated upstream) + the existing block control */}
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
             {profile.hasGivingPage && (
               <Link
@@ -150,7 +150,7 @@ export default function ProfileHeader({
                 <Heart size={14} fill="currentColor" />
               </Link>
             )}
-            {/* signed-in, non-self viewers only — renders nothing otherwise */}
+            {/* signed-in, non-self viewers only - renders nothing otherwise */}
             <div className="sm:ml-auto [&>div]:mt-0 sm:[&>div]:items-end sm:[&>div>p]:text-right">
               <BlockButton targetId={memberId} targetName={profile.name} />
             </div>

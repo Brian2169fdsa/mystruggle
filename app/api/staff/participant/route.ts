@@ -1,14 +1,14 @@
-// /api/staff/participant — CONSENT-GATED staff read of a member's BARC-10
-// self-check trend + résumé (requirements/11 §C — the granular ConsentGrant).
+// /api/staff/participant - CONSENT-GATED staff read of a member's BARC-10
+// self-check trend + résumé (requirements/11 §C - the granular ConsentGrant).
 //
 // A member's BARC trend and résumé are member-private surfaces (see
-// /api/profile and /api/resumes — both owner-only). This route opens a
+// /api/profile and /api/resumes - both owner-only). This route opens a
 // READ-ONLY staff path that is gated on an ACTIVE ConsentGrant from that
 // member to the signed-in staff's center. No consent → no data, ever.
 //
 // GET ?memberId=…  staff-only.
 //   401 signed-out · 403 non-staff · 400 missing memberId.
-//   No active consent → { consent: false, barc: null, resume: null } (200) —
+//   No active consent → { consent: false, barc: null, resume: null } (200) -
 //     a clean "not shared" state, never the data.
 //   Active consent → { consent: true, barc: { trend: [{ takenAt, total }] },
 //     resume: { …public-safe projection… } | null }.
@@ -17,7 +17,7 @@
 // staff reads (outcomes, care-channels) use center affiliation as an implicit
 // grant; here we honor the member's revocable, center-specific grant literally,
 // mirroring the ConsentGrant contract in app/lib/types (revokedAt undefined =
-// active — a revoked/expired grant cuts access).
+// active - a revoked/expired grant cuts access).
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
@@ -31,7 +31,7 @@ import type {
 
 // ── defensive store access ──────────────────────────────────────────────
 // These expansion arrays may be seeded by a concurrent pass or absent on a
-// fresh store — default them in place so both orders of arrival work.
+// fresh store - default them in place so both orders of arrival work.
 type ParticipantStore = {
   consentGrants?: ConsentGrant[];
   barcChecks?: BarcSelfCheck[];
@@ -66,7 +66,7 @@ function activeGrant(
   );
 }
 
-/** BARC trend projection — totals over time only, oldest → newest. Parity
+/** BARC trend projection - totals over time only, oldest → newest. Parity
  *  with /api/profile's private trend: never the raw 10-domain scores. */
 function barcTrend(memberId: string): { takenAt: number; total: number }[] {
   return pstore()
@@ -75,7 +75,7 @@ function barcTrend(memberId: string): { takenAt: number; total: number }[] {
     .map((c) => ({ takenAt: c.takenAt, total: c.total }));
 }
 
-/** Public-safe résumé projection — the member's primary résumé + sections.
+/** Public-safe résumé projection - the member's primary résumé + sections.
  *  Deliberately omits the account email (never leak email). Returns null when
  *  the member has no résumé on file. */
 function resumeProjection(memberId: string) {
@@ -94,7 +94,7 @@ function resumeProjection(memberId: string) {
     fullName: resume.fullName,
     headline: resume.headline,
     summary: resume.summary,
-    // Contact minus email — a member's account email is never surfaced to
+    // Contact minus email - a member's account email is never surfaced to
     // staff here (phone/city are résumé-authored, safe to show).
     contact: resume.contact
       ? { phone: resume.contact.phone, city: resume.contact.city }
@@ -106,7 +106,7 @@ function resumeProjection(memberId: string) {
 }
 
 export async function GET(req: Request) {
-  // 401 signed-out vs. 403 non-staff — resolved explicitly so the two states
+  // 401 signed-out vs. 403 non-staff - resolved explicitly so the two states
   // are distinct (getRoleUser("staff") collapses both to null). The gate is
   // still staff-only: only role "staff" passes.
   const me = await getSessionUser();

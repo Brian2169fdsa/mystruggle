@@ -5,7 +5,7 @@ import PrototypeMap from "../components/PrototypeMap";
 import MentorForm from "./_components/MentorForm";
 
 export const metadata = {
-  title: "Become a Mentor — My Struggle",
+  title: "Become a Mentor - My Struggle",
   description:
     "Your struggle is someone's map. If you've been through it and out the other side, you're exactly who we're looking for.",
 };
@@ -58,7 +58,7 @@ export default function Mentor() {
         </div>
       </section>
 
-      {/* WHY MENTOR — 01/02/03 */}
+      {/* WHY MENTOR - 01/02/03 */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-7">
@@ -91,7 +91,7 @@ export default function Mentor() {
             </h2>
             <div className="text-[17px]/[1.75] text-ink-600">
               Applications take five minutes. A center coordinator calls you
-              within a week — a real conversation, not a screening.
+              within a week - a real conversation, not a screening.
             </div>
             <div className="mt-2 rounded-2xl bg-white px-6 py-6 shadow-[0_1px_3px_rgba(11,37,69,.06)] lg:px-8 lg:py-7">
               <div className="text-[15px] font-bold text-ink-900">

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────
 // SERVER-ONLY Supabase clients. Do NOT import this module from a client
-// component ("use client") or any browser-bound bundle — it reads the
+// component ("use client") or any browser-bound bundle - it reads the
 // service-role key (`SUPABASE_SERVICE_ROLE_KEY`), which must never ship to the
 // browser (docs/10 §4, docs/13 §(a)/(b)). Use `app/lib/supabase/browser.ts`
 // for anything client-side.
@@ -20,7 +20,7 @@ let _admin: SupabaseClient | null = null;
 let _anonServer: SupabaseClient | null = null;
 
 /**
- * Service-role client — bypasses RLS. SERVER-ONLY.
+ * Service-role client - bypasses RLS. SERVER-ONLY.
  *
  * Import ONLY from trusted server code (route handlers / server actions) that
  * has already authorized the caller: donations/webhook writes, signup
@@ -50,7 +50,7 @@ export function supabaseAdmin(): SupabaseClient {
 }
 
 /**
- * Anon-scoped server client (no cookies) — for anon reads from server code,
+ * Anon-scoped server client (no cookies) - for anon reads from server code,
  * e.g. public views that RLS already exposes to `anon`. RLS is the guard; this
  * holds no user session. Kept minimal; request-scoped user clients (bound to
  * `cookies()` via `@supabase/ssr`) arrive with the auth swap (docs/13 §(b)/(c)).

@@ -17,7 +17,7 @@ const allura = Allura({
 });
 
 export const metadata: Metadata = {
-  title: "My Struggle — End the Struggle, Build the Future Together",
+  title: "My Struggle - End the Struggle, Build the Future Together",
   description:
     "A nonprofit helping people overcome homelessness, addiction, and incarceration through peer mentorship, outreach centers, and QR Code Giving. EST. 2021 · Laveen, Arizona.",
   manifest: "/manifest.webmanifest",

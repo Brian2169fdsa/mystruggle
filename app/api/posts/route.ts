@@ -25,7 +25,7 @@ function decorate(post: Post) {
     : undefined;
   return {
     ...post,
-    // Give button target — only when the author's page is public.
+    // Give button target - only when the author's page is public.
     authorSlug: author?.consentPublic ? author.slug ?? null : null,
     request: request
       ? {
@@ -39,11 +39,11 @@ function decorate(post: Post) {
   };
 }
 
-/** Community feed — approved posts, newest first.
+/** Community feed - approved posts, newest first.
  *  Query params: topic (channel filter) · circle=<id> (that circle's posts;
  *  alumni circles are center-private) · author=me (own posts, any status
  *  except removed) · before=<timestamp> cursor · limit (≤50, default 20).
- *  Without ?circle, circle posts are EXCLUDED — they live in their circle. */
+ *  Without ?circle, circle posts are EXCLUDED - they live in their circle. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const topic = url.searchParams.get("topic");
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
 
   const user = await getSessionUser();
 
-  // Circle read access — anyone may read topic/cohort circles; alumni
+  // Circle read access - anyone may read topic/cohort circles; alumni
   // circles only that center's people or staff (docs/13 Part B).
   if (circleId) {
     const circle = findCircle(circleId);
@@ -99,9 +99,9 @@ export async function GET(req: Request) {
   });
 }
 
-/** Create a post — members and mentors both. Optional topic + requestId
+/** Create a post - members and mentors both. Optional topic + requestId
  *  (support-request posts link to the author's own active goal) + circleId
- *  (posts into a circle the author has joined — 403 otherwise). */
+ *  (posts into a circle the author has joined - 403 otherwise). */
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     requestId = r.id;
   }
 
-  // Circle posts require membership — reading is open(er), posting is not.
+  // Circle posts require membership - reading is open(er), posting is not.
   let circleId: string | undefined;
   if (body?.circleId) {
     const circle = findCircle(String(body.circleId));
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
   }
 
   // SAFETY: crisis language is HELD from the feed (docs/05 §Moderation step 4).
-  // Held posts get the existing "flagged" status — GET only serves "approved",
+  // Held posts get the existing "flagged" status - GET only serves "approved",
   // so they never reach the public feed. A human must follow up; the poster is
   // shown supportive resources instead of a published post.
   const crisis = isCrisisText(text);
@@ -179,7 +179,7 @@ export async function POST(req: Request) {
       post,
       held: true,
       resources: {
-        line: "988 Suicide & Crisis Lifeline — call or text 988",
+        line: "988 Suicide & Crisis Lifeline - call or text 988",
         note: "A member of the care team will reach out today.",
       },
     });

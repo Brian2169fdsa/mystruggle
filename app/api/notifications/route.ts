@@ -5,7 +5,7 @@ import type { Notification } from "@/app/lib/types";
 
 // ── defensive store access ─────────────────────────────────────────────
 // The engagement arrays may be seeded by a concurrent pass or absent on a
-// fresh store — always default them in place so both orders of arrival work.
+// fresh store - always default them in place so both orders of arrival work.
 type EngagementStore = { notifications?: Notification[] };
 
 function notifStore() {
@@ -20,7 +20,7 @@ function unreadCount(userId: string): number {
   ).length;
 }
 
-/** GET — the signed-in user's notifications, newest first, with unread count. */
+/** GET - the signed-in user's notifications, newest first, with unread count. */
 export async function GET() {
   const user = await getSessionUser();
   if (!user) {
@@ -35,7 +35,7 @@ export async function GET() {
   });
 }
 
-/** POST — { action: "markRead", ids?: string[] }. Marks the given own
+/** POST - { action: "markRead", ids?: string[] }. Marks the given own
  *  notifications read; with ids omitted, marks ALL of the user's unread read. */
 export async function POST(req: Request) {
   const user = await getSessionUser();

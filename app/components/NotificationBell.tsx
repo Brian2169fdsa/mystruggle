@@ -19,7 +19,7 @@ import type { LucideIcon } from "lucide-react";
 /* ── Contract with /api/notifications (built concurrently) ───────────────
    GET  -> { notifications: NotificationItem[]; unreadCount: number }
    POST { action:"markRead", ids?: string[] } -> { ok:true; unreadCount:number }
-   401 when signed out — the bell renders nothing in that case. */
+   401 when signed out - the bell renders nothing in that case. */
 
 export type NotificationKind =
   | "reaction"
@@ -63,7 +63,7 @@ export const KIND_META: Record<
   system: { icon: Info, label: "Update" },
 };
 
-/** "just now" / "5m" / "3h" / "2d" / "May 12" — relative recency. */
+/** "just now" / "5m" / "3h" / "2d" / "May 12" - relative recency. */
 export function relTime(ts: number): string {
   const secs = Math.max(0, Math.floor((Date.now() - ts) / 1000));
   if (secs < 45) return "just now";
@@ -81,7 +81,7 @@ export function relTime(ts: number): string {
 }
 
 /**
- * Header notification bell — self-gating. Polls GET /api/notifications on
+ * Header notification bell - self-gating. Polls GET /api/notifications on
  * mount; a 401 means "signed out", so the whole control renders nothing.
  * Click opens a dropdown of recent notifications with "Mark all read" and a
  * "See all" link to the full /notifications page.
@@ -114,7 +114,7 @@ export default function NotificationBell() {
           : (data.notifications ?? []).filter((n) => !n.read).length
       );
     } catch {
-      // Network hiccup — leave state as-is; a later poll can recover.
+      // Network hiccup - leave state as-is; a later poll can recover.
     }
   }, []);
 
@@ -153,7 +153,7 @@ export default function NotificationBell() {
 
   const markRead = useCallback(
     async (ids?: string[]) => {
-      // Optimistic — dim the badge immediately, then reconcile with server.
+      // Optimistic - dim the badge immediately, then reconcile with server.
       setItems((prev) =>
         prev.map((n) =>
           !ids || ids.includes(n.id) ? { ...n, read: true } : n
@@ -175,7 +175,7 @@ export default function NotificationBell() {
           if (typeof data.unreadCount === "number") setUnread(data.unreadCount);
         }
       } catch {
-        // Ignore — the next poll re-syncs truth.
+        // Ignore - the next poll re-syncs truth.
       }
       load();
     },

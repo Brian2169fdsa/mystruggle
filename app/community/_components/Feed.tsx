@@ -28,11 +28,11 @@ type FeedResponse = {
   nextBefore: number | null;
 };
 
-/** GET /api/placements/serve — the server enforces crisis/signed-out exclusion. */
+/** GET /api/placements/serve - the server enforces crisis/signed-out exclusion. */
 type ServeResponse = { placements: Placement[]; everyN: number };
 
 /**
- * Weave sponsored cards into the organic post stream for render only — the
+ * Weave sponsored cards into the organic post stream for render only - the
  * posts array is never mutated. A card is inserted after every `everyN`
  * organic posts (spacing rule), cycling through available placements, so two
  * are never adjacent. Dismissed placements are excluded (never reinserted),
@@ -194,8 +194,8 @@ function CircleHeaderCard({
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-blue-primary" />
               {circle.staffModerated
-                ? "Staff-moderated — the care team watches over this circle"
-                : "Peer-led — same community guidelines, members hold the space"}
+                ? "Staff-moderated - the care team watches over this circle"
+                : "Peer-led - same community guidelines, members hold the space"}
             </span>
           </div>
         </div>
@@ -229,7 +229,7 @@ function CircleHeaderCard({
 
 /* ── Daily Reflection ritual ────────────────────────────────────────── */
 
-// 14 rotating prompts — deterministic prompt-of-the-day by day of year, so
+// 14 rotating prompts - deterministic prompt-of-the-day by day of year, so
 // every member in a circle sees the same prompt on the same day.
 const REFLECTION_PROMPTS = [
   "One thing you're grateful for today",
@@ -238,7 +238,7 @@ const REFLECTION_PROMPTS = [
   "One thing you're proud of yourself for",
   "A habit that's been helping you lately",
   "Something you're looking forward to",
-  "A person who showed up for you — give them a shoutout",
+  "A person who showed up for you - give them a shoutout",
   "One thing today that was harder than it looked",
   "Something you learned about yourself this week",
   "A moment of peace you found recently",
@@ -298,7 +298,7 @@ function ReflectionCard({
   );
 }
 
-/** Center-private alumni circle — shown instead of the feed on a 403. */
+/** Center-private alumni circle - shown instead of the feed on a 403. */
 function PrivateCircleCard({ name }: { name?: string }) {
   return (
     <div className="rounded-2xl bg-white px-6 py-8 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
@@ -315,7 +315,7 @@ function PrivateCircleCard({ name }: { name?: string }) {
 }
 
 /**
- * Center column of /community — topic chip row (URL-synced via ?topic=),
+ * Center column of /community - topic chip row (URL-synced via ?topic=),
  * circle view (?circle=), composer, and the paginated + 12s-polled feed.
  */
 export default function Feed({
@@ -328,7 +328,7 @@ export default function Feed({
   const searchParams = useSearchParams();
   const circle = searchParams.get("circle") ?? "";
   const rawTopic = searchParams.get("topic") ?? "";
-  // A circle replaces the topic lens — one active filter at a time.
+  // A circle replaces the topic lens - one active filter at a time.
   const topic = !circle && TOPICS.includes(rawTopic as Topic) ? rawTopic : "";
   const filterKey = `${topic}|${circle}`;
 
@@ -337,10 +337,10 @@ export default function Feed({
   const [nextBefore, setNextBefore] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [blocked, setBlocked] = useState(false); // 403 — private alumni circle
+  const [blocked, setBlocked] = useState(false); // 403 - private alumni circle
   const [circleInfo, setCircleInfo] = useState<CircleSummary | null>(null);
   const [prefill, setPrefill] = useState<ComposerPrefill | null>(null);
-  // Sponsored placements (docs/15 §B) — fetched once, woven into render only.
+  // Sponsored placements (docs/15 §B) - fetched once, woven into render only.
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [everyN, setEveryN] = useState(4);
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
@@ -353,7 +353,7 @@ export default function Feed({
   // everything by default.
   const blockedIds = useBlockedIds();
 
-  /* — re-sync auth on the client (covers a stale cached shell) — */
+  /* - re-sync auth on the client (covers a stale cached shell) - */
   useEffect(() => {
     let alive = true;
     fetch("/api/auth/me")
@@ -367,7 +367,7 @@ export default function Feed({
     };
   }, []);
 
-  /* — sponsored placements: fetched once on mount, defensively —
+  /* - sponsored placements: fetched once on mount, defensively -
      If the serve API isn't live (404) or errors, render NO sponsored cards;
      the server returns { placements: [] } for crisis-state and signed-out
      members, so an empty list simply means the feed stays as it is today. */
@@ -384,7 +384,7 @@ export default function Feed({
         }
       })
       .catch(() => {
-        /* API not live / offline — no sponsored cards this session */
+        /* API not live / offline - no sponsored cards this session */
       });
     return () => {
       alive = false;
@@ -399,7 +399,7 @@ export default function Feed({
     });
   }, []);
 
-  /* — circle header info (from the /api/circles directory) — */
+  /* - circle header info (from the /api/circles directory) - */
   useEffect(() => {
     setCircleInfo(null);
     setPrefill(null);
@@ -417,7 +417,7 @@ export default function Feed({
     };
   }, [circle]);
 
-  /* — first page (per filter) — */
+  /* - first page (per filter) - */
   useEffect(() => {
     let alive = true;
     setPosts(null);
@@ -446,7 +446,7 @@ export default function Feed({
     };
   }, [topic, circle, filterKey]);
 
-  /* — 12s polling: refresh page one, merge by id, keep paginated tail — */
+  /* - 12s polling: refresh page one, merge by id, keep paginated tail - */
   useEffect(() => {
     if (blocked) return; // a private circle never opens up mid-visit
     const id = setInterval(async () => {
@@ -472,7 +472,7 @@ export default function Feed({
     return () => clearInterval(id);
   }, [topic, circle, filterKey, blocked]);
 
-  /* — load more (cursor) — */
+  /* - load more (cursor) - */
   const loadMore = useCallback(async () => {
     if (!nextBefore || loadingMore) return;
     setLoadingMore(true);
@@ -494,7 +494,7 @@ export default function Feed({
   }, [topic, circle, filterKey, nextBefore, loadingMore]);
 
   const selectTopic = (t: string) => {
-    // Also exits any circle — the chip row is the topic lens.
+    // Also exits any circle - the chip row is the topic lens.
     router.replace(t ? `/community?topic=${t}` : "/community", {
       scroll: false,
     });
@@ -512,7 +512,7 @@ export default function Feed({
   ];
 
   const inPrivateCircle = blocked || (!!circleInfo && circleInfo.locked);
-  // Posts from blocked authors — and any a staff moderator has hidden — are
+  // Posts from blocked authors - and any a staff moderator has hidden - are
   // dropped before render/interleave (defense in depth; the API already
   // excludes hidden posts from the community feed).
   const shown = (posts ?? []).filter(
@@ -561,12 +561,12 @@ export default function Feed({
         <ReflectionCard
           viewer={viewer}
           onReflect={(prompt) =>
-            setPrefill({ text: `${prompt} — `, nonce: Date.now() })
+            setPrefill({ text: `${prompt} - `, nonce: Date.now() })
           }
         />
       )}
 
-      {/* ── journey moments rail (main feed only — circles keep their ritual) ── */}
+      {/* ── journey moments rail (main feed only - circles keep their ritual) ── */}
       {!circle && <JourneyRail />}
 
       {/* ── composer / join card ── */}
@@ -601,14 +601,14 @@ export default function Feed({
             {loadError
               ? "The feed is catching its breath"
               : circle
-                ? `It's quiet in ${circleInfo?.name ?? "this circle"} — start it.`
+                ? `It's quiet in ${circleInfo?.name ?? "this circle"} - start it.`
                 : topic
-                  ? `Nothing in ${TOPIC_LABELS[topic as Topic]} yet — start it.`
+                  ? `Nothing in ${TOPIC_LABELS[topic as Topic]} yet - start it.`
                   : "It's quiet in here"}
           </div>
           <div className="mt-1 text-[13px] font-medium text-ink-600">
             {loadError
-              ? "We'll keep trying — hang tight."
+              ? "We'll keep trying - hang tight."
               : circle
                 ? "Today's reflection prompt is a good place to begin."
                 : "Be the first to share something with the community."}

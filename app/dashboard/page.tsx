@@ -48,7 +48,7 @@ const WORDMARK_WHITE =
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
 
-/** Local section union — adds Applications + the ad/lead consoles without
+/** Local section union - adds Applications + the ad/lead consoles without
  *  widening the shared type (mirrors how Applications was added). */
 type PageSection =
   | Section
@@ -79,7 +79,7 @@ const NAV = [
   { key: "reports", label: "Reports", Icon: BarChart3 },
 ] as const;
 
-/** Auth gate state — the dashboard renders nothing sensitive until /api/auth/me
+/** Auth gate state - the dashboard renders nothing sensitive until /api/auth/me
  *  confirms a staff session (admin APIs 401 without one). */
 type Auth =
   | { status: "loading" }
@@ -103,7 +103,7 @@ function GateShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Signed-out gate — points staff at /login with the demo credentials. */
+/** Signed-out gate - points staff at /login with the demo credentials. */
 function SignInGate() {
   return (
     <GateShell>
@@ -131,7 +131,7 @@ function SignInGate() {
   );
 }
 
-/** Signed in, but not staff — warm redirect to their own app. */
+/** Signed in, but not staff - warm redirect to their own app. */
 function NotStaffGate({ user }: { user: SafeUser }) {
   const appHref = user.role === "mentor" ? "/mentor-app" : "/member-app";
   const appLabel = user.role === "mentor" ? "mentor app" : "member app";
@@ -141,7 +141,7 @@ function NotStaffGate({ user }: { user: SafeUser }) {
         This area is for center staff
       </h1>
       <p className="mt-2 text-[14.5px]/[1.7] font-medium text-ink-600">
-        Hi {user.name} — you&rsquo;re signed in as a {user.role}. Your journey
+        Hi {user.name} - you&rsquo;re signed in as a {user.role}. Your journey
         lives in the {appLabel}.
       </p>
       <Link
@@ -191,7 +191,7 @@ export default function DashboardPage() {
 
   const isStaff = auth.status === "in" && auth.user.role === "staff";
 
-  // A 401 from any admin API means the session lapsed — fall back to the gate.
+  // A 401 from any admin API means the session lapsed - fall back to the gate.
   const onUnauthorized = useCallback(() => setAuth({ status: "out" }), []);
 
   const loadOverview = useCallback(async () => {
@@ -222,7 +222,7 @@ export default function DashboardPage() {
       .catch(() => {});
   }, [isStaff, loadOverview, loadPosts, onUnauthorized]);
 
-  // Live badge for Ad Review — poll the ms_admin queue length. Quiet on 404
+  // Live badge for Ad Review - poll the ms_admin queue length. Quiet on 404
   // (the ad APIs may still be coming online).
   useEffect(() => {
     if (!isStaff) return;
@@ -264,7 +264,7 @@ export default function DashboardPage() {
     };
   }, [isStaff]);
 
-  // Live badge for Alumni — the on-watch count. Quiet on 404/500 (the alumni
+  // Live badge for Alumni - the on-watch count. Quiet on 404/500 (the alumni
   // API may still be coming online); retries with the same interval.
   useEffect(() => {
     if (!isStaff) return;
@@ -286,7 +286,7 @@ export default function DashboardPage() {
     };
   }, [isStaff]);
 
-  // Live badge for member Reports — count of open reports. Quiet on 404/500
+  // Live badge for member Reports - count of open reports. Quiet on 404/500
   // (the reports API may still be coming online); polls on the same cadence.
   useEffect(() => {
     if (!isStaff) return;
@@ -348,7 +348,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* SIDEBAR — dashboard shell, not the site Nav/Footer */}
+      {/* SIDEBAR - dashboard shell, not the site Nav/Footer */}
       <aside className="sticky top-0 flex h-screen w-60 flex-none flex-col bg-navy-deep pb-6 pt-7">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

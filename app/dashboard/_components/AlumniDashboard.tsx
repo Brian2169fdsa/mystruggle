@@ -112,7 +112,7 @@ export default function AlumniDashboard({
         Alumni
       </div>
       <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-        A drop in engagement is the earliest, kindest relapse warning — reach out
+        A drop in engagement is the earliest, kindest relapse warning - reach out
         early.
       </div>
     </div>
@@ -176,7 +176,7 @@ export default function AlumniDashboard({
         ))}
       </div>
 
-      {/* Re-engagement queue — watch members, quiet "Reach out" action */}
+      {/* Re-engagement queue - watch members, quiet "Reach out" action */}
       {watch.length > 0 && (
         <div
           className={CARD + " border-l-[3px] border-l-gold-badge px-[30px] py-[22px]"}

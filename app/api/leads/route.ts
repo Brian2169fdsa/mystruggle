@@ -7,8 +7,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
  * Demo / contact-sales requests from the "For Recovery Centers" marketing page.
- * POST — PUBLIC (it's the marketing-site form): validate + queue as "new".
- * GET  — staff-only: the lead queue, newest first.
+ * POST - PUBLIC (it's the marketing-site form): validate + queue as "new".
+ * GET  - staff-only: the lead queue, newest first.
  */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-/** Staff lead queue — newest first. */
+/** Staff lead queue - newest first. */
 export async function GET() {
   const staff = await getRoleUser();
   if (!staff) {

@@ -20,7 +20,7 @@ export type FeedPost = Post & {
 export type CircleSummary = Circle & {
   members: number;
   joined: boolean;
-  locked: boolean; // alumni circle of another center — feed is private
+  locked: boolean; // alumni circle of another center - feed is private
 };
 
 export const CIRCLE_KIND_LABELS: Record<CircleKind, string> = {
@@ -102,7 +102,7 @@ export function TopicTag({ topic }: { topic: Topic }) {
   );
 }
 
-/** Kind accent chip — indigo ◆ milestone on the website (never gold here). */
+/** Kind accent chip - indigo ◆ milestone on the website (never gold here). */
 export function KindChip({ kind }: { kind: PostKind }) {
   if (kind === "milestone")
     return (

@@ -44,7 +44,7 @@ export const MOOD_WORDS: Record<number, string> = {
   5: "great",
 };
 
-/** Warm relative timestamp — "just now" → "3m" → "2h" → "yesterday". */
+/** Warm relative timestamp - "just now" → "3m" → "2h" → "yesterday". */
 export function timeAgo(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
   if (s < 60) return "just now";
@@ -63,7 +63,7 @@ export function timeAgo(ts: number): string {
 
 /** One-line preview for thread lists. */
 export function previewText(m: ChatMessage | null): string {
-  if (!m) return "Say hello — a first message goes a long way.";
+  if (!m) return "Say hello - a first message goes a long way.";
   if (m.kind === "mood")
     return `Checked in: ${m.mood}/5 · ${MOOD_WORDS[m.mood ?? 3] ?? ""}`;
   if (m.kind === "cheer") return `◆ ${m.senderName} sent a cheer!`;
@@ -75,7 +75,7 @@ const CARD_SHADOW = "shadow-[0_1px_3px_rgba(11,37,69,.06)]";
 /* ── Conversation view ─────────────────────────────────────────────── */
 
 /**
- * Shared live conversation — used by the member Chat tab and the mentor app.
+ * Shared live conversation - used by the member Chat tab and the mentor app.
  * Polls every 4s with ?after=<last createdAt>, optimistic sends, mood +
  * cheer message cards.
  */
@@ -134,7 +134,7 @@ export default function ChatThread({
         const data = await res.json();
         if (alive && Array.isArray(data.messages)) merge(data.messages);
       } catch {
-        /* transient network hiccup — next poll retries */
+        /* transient network hiccup - next poll retries */
       }
     };
     load(0);
@@ -247,7 +247,7 @@ export default function ChatThread({
         )}
         {messages !== null && messages.length === 0 && (
           <div className="py-8 text-center text-[13px] font-medium text-ink-400">
-            No messages yet — say hello. It matters more than you know.
+            No messages yet - say hello. It matters more than you know.
           </div>
         )}
 
@@ -325,7 +325,7 @@ export default function ChatThread({
         <div ref={endRef} />
       </div>
 
-      {/* Mood check-in prompt — member side only */}
+      {/* Mood check-in prompt - member side only */}
       {showMoodPrompt && !moodDone && (
         <div className="px-4 pb-3">
           <div className="rounded-2xl border-[1.5px] border-sky-tint bg-white p-5 shadow-[0_2px_10px_rgba(11,37,69,.08)]">
@@ -360,11 +360,11 @@ export default function ChatThread({
       )}
       {showMoodPrompt && moodDone && (
         <div className="px-4 pb-3 text-center text-[12px] font-semibold text-success">
-          ✓ Checked in — thanks for sharing how today feels.
+          ✓ Checked in - thanks for sharing how today feels.
         </div>
       )}
 
-      {/* Request a check-in — mentor side only */}
+      {/* Request a check-in - mentor side only */}
       {showCheckInRequest && (
         <div className="flex justify-end px-4 pb-2">
           <button

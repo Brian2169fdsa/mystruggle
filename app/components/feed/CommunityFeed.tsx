@@ -90,7 +90,7 @@ const COMPOSER_KINDS: { value: PostKind; label: string; gold?: boolean }[] = [
 ];
 
 /**
- * Social recovery community feed — fully self-contained.
+ * Social recovery community feed - fully self-contained.
  * Fetches its own auth + posts, polls every 10s, optimistic everywhere.
  */
 export default function CommunityFeed({ compact = false }: { compact?: boolean }) {
@@ -104,7 +104,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
   const [kind, setKind] = useState<PostKind>("regular");
   const [posting, setPosting] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
-  // Set when the server held a submission for crisis support (held:true) —
+  // Set when the server held a submission for crisis support (held:true) -
   // shows a warm resource card in place of the composer until dismissed.
   const [heldNotice, setHeldNotice] = useState<{ line: string; note: string } | null>(null);
 
@@ -160,7 +160,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
     noteTimer.current = setTimeout(() => setSignInNote(null), 2600);
   };
 
-  /* — share a post — */
+  /* - share a post - */
   const submitPost = async () => {
     const text = draft.trim();
     if (!text || posting || !viewer) return;
@@ -202,7 +202,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
         setPosts((prev) => (prev ?? []).filter((p) => p.id !== temp.id));
         setHeldNotice(
           data.resources ?? {
-            line: "988 Suicide & Crisis Lifeline — call or text 988",
+            line: "988 Suicide & Crisis Lifeline - call or text 988",
             note: "A member of the care team will reach out today.",
           }
         );
@@ -214,13 +214,13 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
     } catch {
       setPosts((prev) => (prev ?? []).filter((p) => p.id !== temp.id));
       setDraft(text);
-      setComposerError("That didn't go through — mind trying again?");
+      setComposerError("That didn't go through - mind trying again?");
     } finally {
       setPosting(false);
     }
   };
 
-  /* — heart toggle — */
+  /* - heart toggle - */
   const toggleHeart = async (post: Post) => {
     if (post.id.startsWith("temp-")) return;
     if (!viewer) {
@@ -278,7 +278,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
     }
   };
 
-  /* — comments — */
+  /* - comments - */
   const submitComment = async (post: Post) => {
     const text = (commentDrafts[post.id] ?? "").trim();
     if (!text || post.id.startsWith("temp-")) return;
@@ -337,7 +337,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
     }
   };
 
-  /* — card chrome (matches the existing member-app feed pixel-for-pixel) — */
+  /* - card chrome (matches the existing member-app feed pixel-for-pixel) - */
   const cardPad = compact ? "px-5 py-[18px]" : "px-6 py-5";
   const cardBase = (p: Post) =>
     p.kind === "milestone"
@@ -348,7 +348,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
     <div className={`flex flex-col ${compact ? "gap-4" : "gap-5"}`}>
       {/* ── composer ── */}
       {!authChecked ? null : viewer && heldNotice ? (
-        /* Crisis support card — warm, navy, no alarm color. Shown in place of
+        /* Crisis support card - warm, navy, no alarm color. Shown in place of
            the composer when a submission was held; dismisses back to it. */
         <div className={`rounded-2xl bg-navy-deep ${cardPad} text-white shadow-[0_2px_10px_rgba(11,37,69,.25)]`}>
           <div className="text-[16px] font-extrabold">
@@ -470,7 +470,7 @@ export default function CommunityFeed({ compact = false }: { compact?: boolean }
           </div>
           <div className="mt-1 text-[13px] font-medium text-ink-600">
             {loadError
-              ? "We'll keep trying — hang tight."
+              ? "We'll keep trying - hang tight."
               : "Be the first to share something with the community."}
           </div>
         </div>

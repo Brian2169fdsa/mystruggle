@@ -91,7 +91,7 @@ export async function POST(
   }
 
   // SAFETY: crisis language is HELD (docs/06). Held messages are stored as
-  // "flagged" so a human follows up, but visibleMessages() never returns them —
+  // "flagged" so a human follows up, but visibleMessages() never returns them -
   // they are not broadcast. The sender is met with support, not silence.
   const crisis = isCrisisText(text);
   const message: CareMessage = {
@@ -108,7 +108,7 @@ export async function POST(
   save();
 
   if (crisis) {
-    // NEVER notify on a crisis-held message — it isn't broadcast. Return support.
+    // NEVER notify on a crisis-held message - it isn't broadcast. Return support.
     return NextResponse.json({ held: true, resources: CRISIS_RESOURCES });
   }
 

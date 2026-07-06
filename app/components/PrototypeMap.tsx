@@ -12,14 +12,14 @@ type Msg = {
   text?: string;
   links?: ChatLink[];
   hint?: string; // small muted helper line (e.g. demo creds)
-  care?: boolean; // navy "care" styling — used for the 988 line
+  care?: boolean; // navy "care" styling - used for the 988 line
   grid?: boolean; // render the compact site-map link grid
 };
 
 // The 988 line is appended verbatim for any support / crisis path. Never
 // dismissive, always navy so it reads as a distinct, gentle care message.
 const CARE_988 =
-  "In crisis? Call or text 988 — someone is there right now.";
+  "In crisis? Call or text 988 - someone is there right now.";
 
 // Footer + default-answer link grid (preserves the old prototype bar's map).
 const SITE_MAP: ChatLink[] = [
@@ -55,7 +55,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "Every gift splits 50/50 — half reaches the member right away as cash at their center, half is held as their Reentry Fund and released when they step back into society.",
+          text: "Every gift splits 50/50 - half reaches the member right away as cash at their center, half is held as their Reentry Fund and released when they step back into society.",
           links: [{ href: "/giving", label: "See how giving works" }],
         },
       ];
@@ -63,7 +63,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "You're not alone — the community is here. You can create an account to connect with a mentor, or read the feed to see people walking the same road.",
+          text: "You're not alone - the community is here. You can create an account to connect with a mentor, or read the feed to see people walking the same road.",
           links: [
             { href: "/signup", label: "Create an account" },
             { href: "/community", label: "Read the community feed" },
@@ -83,7 +83,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "Thank you — every gift is split 50/50 with the member. You can give to the mission or to a specific member's page.",
+          text: "Thank you - every gift is split 50/50 with the member. You can give to the mission or to a specific member's page.",
           links: [
             { href: "/donate", label: "Donate to the mission" },
             { href: "/give", label: "Give to a member" },
@@ -94,7 +94,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "We give centers the whole platform — messaging, programming, an LMS, and a dashboard.",
+          text: "We give centers the whole platform - messaging, programming, an LMS, and a dashboard.",
           links: [{ href: "/centers", label: "See the center platform" }],
           hint: "Demo: sarah@themystruggles.com / mystruggle",
         },
@@ -103,7 +103,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "Post jobs and opportunities to our community — email info@themystruggles.com. Employer dashboards are coming soon.",
+          text: "Post jobs and opportunities to our community - email info@themystruggles.com. Employer dashboards are coming soon.",
           links: [
             {
               href: "mailto:info@themystruggles.com",
@@ -117,7 +117,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "Here's every app surface — jump straight in:",
+          text: "Here's every app surface - jump straight in:",
           links: [
             { href: "/member-app", label: "Member app" },
             { href: "/mentor-app", label: "Mentor app" },
@@ -142,7 +142,7 @@ function answersFor(id: string): Msg[] {
       return [
         {
           role: "guide",
-          text: "I'm still learning — here's everywhere I can take you:",
+          text: "I'm still learning - here's everywhere I can take you:",
           grid: true,
         },
       ];
@@ -163,7 +163,7 @@ function routeText(text: string): Msg[] {
 }
 
 // ── Shared UI bits ─────────────────────────────────────────────────────────
-/** Script "M" tile — indigo→blue gradient, white glyph. */
+/** Script "M" tile - indigo→blue gradient, white glyph. */
 function GuideTile({ size = 36 }: { size?: number }) {
   return (
     <div
@@ -218,7 +218,7 @@ function MessageBubble({ m }: { m: Msg }) {
       </div>
     );
   }
-  // Guide "care" bubble — distinct navy, never dismissive.
+  // Guide "care" bubble - distinct navy, never dismissive.
   if (m.care) {
     return (
       <div className="flex items-start gap-2.5">
@@ -258,7 +258,7 @@ function MessageBubble({ m }: { m: Msg }) {
 const TOOLTIP_KEY = "ms-guide-tooltip-dismissed";
 
 /**
- * Floating AI assistant ("The Guide") — collapsed bubble → chat panel on every
+ * Floating AI assistant ("The Guide") - collapsed bubble → chat panel on every
  * page. Canned answers only, no network/AI calls. Keeps the default export
  * name so existing imports are untouched.
  */
@@ -272,7 +272,7 @@ export default function PrototypeMap() {
   const [showMap, setShowMap] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Apps use bottom tab bars — lift the bubble so it clears them.
+  // Apps use bottom tab bars - lift the bubble so it clears them.
   const inApp =
     pathname?.startsWith("/member-app") || pathname?.startsWith("/mentor-app");
   const offset = inApp ? "bottom-24" : "bottom-4";
@@ -370,7 +370,7 @@ export default function PrototypeMap() {
             <div className="min-w-0 flex-1">
               <div className="text-[15px] font-bold text-white">The Guide</div>
               <div className="truncate text-[12px] font-medium text-[#8FBCF0]">
-                Here 24/7 — not a human, happy to help
+                Here 24/7 - not a human, happy to help
               </div>
             </div>
             <button
@@ -438,7 +438,7 @@ export default function PrototypeMap() {
             </button>
           </form>
 
-          {/* Footer — site-map toggle preserves the old bar's utility */}
+          {/* Footer - site-map toggle preserves the old bar's utility */}
           <div className="flex flex-none justify-center border-t border-sky-tint bg-white pb-2">
             <button
               type="button"

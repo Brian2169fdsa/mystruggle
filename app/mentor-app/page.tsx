@@ -2,7 +2,7 @@ import PrototypeMap from "../components/PrototypeMap";
 import MentorApp from "./_components/MentorApp";
 
 export const metadata = {
-  title: "Mentor App — My Struggle",
+  title: "Mentor App - My Struggle",
 };
 
 export default function MentorAppPage() {

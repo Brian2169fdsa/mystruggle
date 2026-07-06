@@ -37,7 +37,7 @@ export async function POST(
     placement.status = "running";
     placement.approvedBy = admin.id;
     placement.rejectionReason = undefined;
-    note = `Approved by ${admin.name} — placement now running.`;
+    note = `Approved by ${admin.name} - placement now running.`;
   } else if (action === "reject") {
     placement.status = "rejected";
     placement.rejectionReason = reason || "Rejected: does not meet the community content policy.";

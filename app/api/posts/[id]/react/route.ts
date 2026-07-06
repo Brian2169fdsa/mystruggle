@@ -4,7 +4,7 @@ import { getSessionUser } from "@/app/lib/auth";
 
 type ReactionKind = "heart" | "proud" | "same";
 
-/** Toggle a reaction — heart (default, byte-compatible with the original
+/** Toggle a reaction - heart (default, byte-compatible with the original
  *  contract), plus the docs/13 Part B shared-experience pair: "proud" and
  *  "same". Body is optional JSON: { kind?: "heart" | "proud" | "same" }. */
 export async function POST(
@@ -22,7 +22,7 @@ export async function POST(
   const post = db().posts.find((p) => p.id === id);
   if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
 
-  // Runtime-additive arrays — pre-expansion posts gain them on first use.
+  // Runtime-additive arrays - pre-expansion posts gain them on first use.
   post.proud ??= [];
   post.same ??= [];
 
@@ -47,10 +47,10 @@ export async function POST(
   }
 
   return NextResponse.json({
-    // Original heart contract — unchanged keys for existing clients.
+    // Original heart contract - unchanged keys for existing clients.
     hearts: post.hearts.length,
     hearted: post.hearts.includes(user.id),
-    // Expansion contract — all three counts + the viewer's own toggles.
+    // Expansion contract - all three counts + the viewer's own toggles.
     counts: {
       hearts: post.hearts.length,
       proud: post.proud.length,

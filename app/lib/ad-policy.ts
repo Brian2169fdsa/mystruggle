@@ -1,18 +1,18 @@
-// Sponsored-placement content policy — HARD CONTENT SCREEN (safety stopgap).
+// Sponsored-placement content policy - HARD CONTENT SCREEN (safety stopgap).
 //
 // Member trust is the product. Nothing a person in recovery should not see is
 // allowed to run in the community feed: no gambling, no alcohol, no predatory
-// lending, no MLM, no obvious scams. This module is a pure function — no store
+// lending, no MLM, no obvious scams. This module is a pure function - no store
 // access, safe to call from any route handler before a placement is created.
 //
 // FUTURE UPGRADE: the real gate (per docs/15 §B) is a Claude review with a
 // recovery-safety rubric, run before any placement goes live. Until that
-// exists, this deterministic keyword screen is the stopgap — case-insensitive,
-// word-boundary matched — so the obviously-off-policy categories are hard-
+// exists, this deterministic keyword screen is the stopgap - case-insensitive,
+// word-boundary matched - so the obviously-off-policy categories are hard-
 // blocked in code and never reach ms_admin's review queue by accident.
 
 /** Off-policy categories. Each entry: a human label + word-boundary patterns.
- *  Word boundaries (\b) keep this from tripping on innocent substrings — e.g.
+ *  Word boundaries (\b) keep this from tripping on innocent substrings - e.g.
  *  "betterment" does not match \bbet\b, "winery tour" is caught by \bwine\b but
  *  "winner" is not caught by \bwin\b (we never match \bwin\b). */
 const BLOCKED: { label: string; patterns: RegExp[] }[] = [

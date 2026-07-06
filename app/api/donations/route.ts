@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   // Continuum: a gift received is an engagement/support signal on the member.
   emitContinuumEvent(member.id, "giving", 2);
 
-  // Notify the member who received the gift. Donations are anonymous — never
+  // Notify the member who received the gift. Donations are anonymous - never
   // name the donor.
   emitNotification(
     member.id,

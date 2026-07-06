@@ -14,14 +14,14 @@ import type {
  *
  *  Recovery capital is ACTIVITY-DERIVED and strengths-based (0–100 per
  *  domain), never clinical:
- *    personal  — streaks, course progress, active goals, BARC self-checks
- *    social    — community posts/comments, circle memberships
- *    community — goals achieved, funded support requests, mentor sessions
+ *    personal  - streaks, course progress, active goals, BARC self-checks
+ *    social    - community posts/comments, circle memberships
+ *    community - goals achieved, funded support requests, mentor sessions
  */
 
 const DAY = 86_400_000;
 
-/** Expansion arrays are seeded by a separate rollout — access defensively. */
+/** Expansion arrays are seeded by a separate rollout - access defensively. */
 type ExpandedDB = ReturnType<typeof db> & {
   recoveryGoals?: RecoveryGoal[];
   barcChecks?: BarcSelfCheck[];
@@ -45,14 +45,14 @@ type MemberActivity = {
   avgCoursePct: number;
 };
 
-/** Recovery-capital snapshot for one member — every input is a real recorded
+/** Recovery-capital snapshot for one member - every input is a real recorded
  *  activity (docs/13 Part F):
- *    personal  — streak, course progress, active goals, BARC self-checks
- *    social    — posts, comments, cheers given, circles joined
- *    community — goals achieved, funded requests, mentor sessions, gifts
+ *    personal  - streak, course progress, active goals, BARC self-checks
+ *    social    - posts, comments, cheers given, circles joined
+ *    community - goals achieved, funded requests, mentor sessions, gifts
  *                received through the member's giving page
  *  NOTE: duplicated from the member-facing calc in /api/profile (profile
- *  rings) — keep the two in sync until the store grows a shared helper. */
+ *  rings) - keep the two in sync until the store grows a shared helper. */
 function capital(m: User, a: MemberActivity): Capital {
   const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
   return {
@@ -90,7 +90,7 @@ export async function GET() {
 
   const members = d.users.filter((u) => u.role === "member");
 
-  // REPORTING ANCHOR — same pattern as /api/admin/reports: seed data hangs
+  // REPORTING ANCHOR - same pattern as /api/admin/reports: seed data hangs
   // off a fixed epoch, so anchor windows to the latest recorded activity.
   const latestActivity = Math.max(
     0,

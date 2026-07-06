@@ -31,7 +31,7 @@ const WORDMARK_WHITE =
 type DrawerItem = { href: string; label: string; icon: LucideIcon };
 type DrawerGroup = { heading: string; items: DrawerItem[] };
 
-/** Platform accordion — mirrors the desktop mega-menu groups. */
+/** Platform accordion - mirrors the desktop mega-menu groups. */
 const PLATFORM_GROUPS: DrawerGroup[] = [
   {
     heading: "The Community",
@@ -74,7 +74,7 @@ const DONATE_ITEMS: DrawerItem[] = [
 ];
 
 /**
- * Mobile nav drawer (below lg) — hamburger trigger + full-screen navy-deep
+ * Mobile nav drawer (below lg) - hamburger trigger + full-screen navy-deep
  * panel. Mirrors the desktop Platform / Donate mega-menus as tidy expandable
  * accordion groups. Renders nothing visible at lg+.
  */
