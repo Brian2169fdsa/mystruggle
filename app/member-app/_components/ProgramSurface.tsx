@@ -198,6 +198,55 @@ export function CareThread({
   const countRef = useRef(0);
   const meta = KIND_META[channel.kind];
 
+  // ── Announcement read receipts (announcement channels ONLY - receipts are
+  //    a broadcast feature; 1:1/group threads never get them). Announcements
+  //    are staff-post-only, so canPost here cleanly splits the two viewers:
+  //    canPost ⇒ staff (sees "Seen by N"), !canPost ⇒ member/mentor (beacons
+  //    their reads once per mount, fire-and-forget).
+  const isAnnouncement = channel.kind === "announcement";
+  const staffViewer = isAnnouncement && channel.canPost;
+  const beaconedRef = useRef(false);
+  const [reads, setReads] = useState<Record<string, number> | null>(null);
+
+  // Member/mentor: beacon the visible message ids once per mount.
+  useEffect(() => {
+    if (!isAnnouncement || staffViewer || beaconedRef.current) return;
+    const ids = (messages ?? [])
+      .filter((m) => !m.id.startsWith("tmp-"))
+      .map((m) => m.id);
+    if (!ids.length) return;
+    beaconedRef.current = true;
+    fetch(`/api/care-channels/${channel.id}/reads`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageIds: ids }),
+    }).catch(() => {
+      /* fire-and-forget - receipts are never worth an error state */
+    });
+  }, [messages, isAnnouncement, staffViewer, channel.id]);
+
+  // Staff: fetch the channel's receipt rollup for the "Seen by N" lines.
+  useEffect(() => {
+    if (!staffViewer) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/care-channels/${channel.id}/reads`);
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null);
+        if (!alive || !Array.isArray(data?.byMessage)) return;
+        const map: Record<string, number> = {};
+        for (const row of data.byMessage) map[row.messageId] = row.reads ?? 0;
+        setReads(map);
+      } catch {
+        /* transient - receipts just stay hidden */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [staffViewer, channel.id]);
+
   const merge = useCallback((incoming: CareMsg[]) => {
     setMessages((prev) => {
       const cur = prev ?? [];
@@ -373,6 +422,15 @@ export function CareThread({
               <span className="mt-1 px-1 text-[10px] font-medium text-ink-400">
                 {timeAgo(m.createdAt)}
               </span>
+              {/* Muted receipt line - staff viewers of announcement channels
+                  only. Never rendered in 1:1/group threads. */}
+              {staffViewer && reads !== null && !m.id.startsWith("tmp-") && (
+                <span className="px-1 text-[10px] font-medium text-ink-400">
+                  {(reads[m.id] ?? 0) > 0
+                    ? `Seen by ${reads[m.id]}`
+                    : "Not seen yet"}
+                </span>
+              )}
             </div>
           );
         })}

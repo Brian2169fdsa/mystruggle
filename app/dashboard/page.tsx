@@ -21,6 +21,7 @@ import {
   HeartHandshake,
   Sparkles,
   Building2,
+  SlidersHorizontal,
 } from "lucide-react";
 import PrototypeMap from "../components/PrototypeMap";
 import Overview from "./_components/Overview";
@@ -42,6 +43,7 @@ import Programs from "./_components/Programs";
 import Caseload from "./_components/Caseload";
 import Engage from "./_components/Engage";
 import EmployerVetting from "./_components/EmployerVetting";
+import CenterSettings from "./_components/CenterSettings";
 import type { Post, SafeUser } from "../lib/types";
 import type {
   AdminMember,
@@ -72,7 +74,8 @@ type PageSection =
   | "programs"
   | "caseloads"
   | "engage"
-  | "employerVetting";
+  | "employerVetting"
+  | "centerSettings";
 
 /** Final left-nav IA per docs/16: Overview · Programs · Participants ·
  *  Caseloads · Mentorship · Community · Giving · Engage · Reports · Settings.
@@ -131,6 +134,7 @@ const NAV_GROUPS = [
     items: [
       { key: "ads", label: "Ad Manager", Icon: Megaphone },
       { key: "employerVetting", label: "Employers", Icon: Building2 },
+      { key: "centerSettings", label: "Center settings", Icon: SlidersHorizontal },
       { key: "leads", label: "Demo Leads", Icon: Inbox },
     ],
   },
@@ -575,6 +579,7 @@ export default function DashboardPage() {
         {section === "employerVetting" && (
           <EmployerVetting onPendingCount={setEmployerPending} />
         )}
+        {section === "centerSettings" && <CenterSettings />}
       </main>
 
       <PrototypeMap />

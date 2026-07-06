@@ -69,6 +69,7 @@ type EnrollmentRow = {
   memberId: string;
   cohortLabel?: string;
   enrolledAt: number;
+  completedAt?: number;
   status: "active" | "completed" | "withdrawn";
   memberName: string;
   avatarColor: string;
@@ -207,6 +208,9 @@ export default function Programs() {
   const [cohortLabel, setCohortLabel] = useState("");
   const [enrolling, setEnrolling] = useState(false);
   const [enrollMsg, setEnrollMsg] = useState<string | null>(null);
+
+  // Completion (memberId in flight - one graduation at a time per member).
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   // Session form.
   const [sessTitle, setSessTitle] = useState("");
@@ -402,6 +406,51 @@ export default function Programs() {
       setEnrollMsg("Couldn't enroll right now.");
     } finally {
       setEnrolling(false);
+    }
+  }
+
+  async function markCompleted(enrollment: EnrollmentRow) {
+    if (!detail || completingId) return;
+    setCompletingId(enrollment.memberId);
+    const completedAt = Date.now();
+    // Optimistic flip - the roster celebrates immediately; revert on failure.
+    const flip = (
+      status: EnrollmentRow["status"],
+      when?: number
+    ): void =>
+      setDetail((cur) =>
+        cur
+          ? {
+              ...cur,
+              enrollments: cur.enrollments.map((e) =>
+                e.id === enrollment.id
+                  ? { ...e, status, completedAt: when }
+                  : e
+              ),
+            }
+          : cur
+      );
+    flip("completed", completedAt);
+    try {
+      const res = await fetch(`/api/programs/${detail.program.id}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: enrollment.memberId }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        enrollment?: { status: EnrollmentRow["status"]; completedAt?: number };
+      };
+      if (!res.ok) {
+        flip(enrollment.status, enrollment.completedAt);
+        return;
+      }
+      if (data.enrollment) {
+        flip(data.enrollment.status, data.enrollment.completedAt);
+      }
+    } catch {
+      flip(enrollment.status, enrollment.completedAt);
+    } finally {
+      setCompletingId(null);
     }
   }
 
@@ -1034,7 +1083,7 @@ export default function Programs() {
                         {activeEnrollments.map((e) => (
                           <div
                             key={e.id}
-                            className="flex min-h-[44px] items-center gap-3 rounded-xl bg-canvas px-4 py-2.5"
+                            className="flex min-h-[44px] flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-canvas px-4 py-2.5"
                           >
                             <span
                               className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-[12px] font-extrabold text-white"
@@ -1049,6 +1098,36 @@ export default function Programs() {
                               <span className="inline-flex h-[20px] flex-none items-center rounded-full bg-sky-tint px-2 text-[10px] font-bold text-blue-primary">
                                 {e.cohortLabel}
                               </span>
+                            )}
+                            {e.status === "active" && (
+                              <button
+                                type="button"
+                                onClick={() => markCompleted(e)}
+                                disabled={completingId !== null}
+                                className="inline-flex h-11 flex-none cursor-pointer items-center rounded-full border-[1.5px] border-blue-primary px-4 text-[12px] font-bold text-blue-primary hover:bg-sky-tint disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {completingId === e.memberId
+                                  ? "Celebrating…"
+                                  : "Mark completed 🎓"}
+                              </button>
+                            )}
+                            {e.status === "completed" && (
+                              <>
+                                <span className="inline-flex h-[20px] flex-none items-center rounded-full bg-[#E8F8F0] px-2 text-[10px] font-bold text-[#12B76A]">
+                                  Completed
+                                  {e.completedAt
+                                    ? ` ${new Date(e.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                                    : ""}
+                                </span>
+                                <a
+                                  href={`/certificate/${e.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex h-11 flex-none items-center rounded-full px-3 text-[12px] font-bold text-blue-primary hover:bg-sky-tint"
+                                >
+                                  Certificate
+                                </a>
+                              </>
                             )}
                           </div>
                         ))}

@@ -364,12 +364,16 @@ function SelfCheckCard({
   );
 }
 
-const JOURNEY: {
+type JourneyRow = {
   title: string;
   sub: string;
   state: "done" | "current" | "future";
   lineColor?: string;
-}[] = [
+};
+
+/** Signed-out styled demo ONLY (Danielle's story). Signed-in members get a
+ *  timeline built from their own real data below. */
+const DEMO_JOURNEY: JourneyRow[] = [
   {
     title: "Outreach",
     sub: "Met the Laveen team · Oct 2025",
@@ -439,6 +443,17 @@ export default function MeTab({
   // ── profile details + BARC trend (signed in only) ────────────────────
   const [details, setDetails] = useState<OwnDetails | null>(null);
   const [checks, setChecks] = useState<CheckPoint[]>([]);
+  // Real milestone signals from /api/profile (deriveMilestones) - drives
+  // the badges + journey timeline for signed-in members.
+  const [milestones, setMilestones] = useState<{
+    coursesCompleted: number;
+    goalsAchieved: number;
+  } | null>(null);
+  // A real "hired" win from the member's own job tracker, if any.
+  const [hiredApp, setHiredApp] = useState<{
+    company: string;
+    role: string;
+  } | null>(null);
   // Public giving page consent - null until the fresh server copy arrives.
   const [consentOn, setConsentOn] = useState<boolean | null>(null);
   const userId = user?.id;
@@ -461,10 +476,33 @@ export default function MeTab({
           showMilestones: data.details.showMilestones !== false,
         });
         setChecks(data.checks ?? []);
+        if (data.milestones) {
+          setMilestones({
+            coursesCompleted: Number(data.milestones.coursesCompleted) || 0,
+            goalsAchieved: Number(data.milestones.goalsAchieved) || 0,
+          });
+        }
       } catch {
         // offline - the rest of the tab still works
       }
     })();
+    // Job tracker - a real hired application powers a journey row.
+    fetch("/api/job-applications")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        const hired = (
+          d?.applications as
+            | { status?: string; company?: string; role?: string }[]
+            | undefined
+        )?.find((a) => a.status === "hired");
+        if (hired)
+          setHiredApp({
+            company: String(hired.company ?? ""),
+            role: String(hired.role ?? ""),
+          });
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -530,6 +568,101 @@ export default function MeTab({
       return null;
     }
   };
+
+  // ── badges + journey from REAL signals (signed in) ───────────────────
+  const streak = user ? (user.streak ?? 0) : 12; // 12 = signed-out demo
+  const accountAgeDays = user
+    ? Math.floor((Date.now() - user.createdAt) / 86_400_000)
+    : 0;
+  const coursesDone = milestones?.coursesCompleted ?? 0;
+  const badges: { name: string; earned: boolean }[] = user
+    ? [
+        {
+          name: "First Week",
+          earned: accountAgeDays >= 7 || streak >= 7,
+        },
+        streak >= 30
+          ? { name: "30-Day Streak", earned: true }
+          : { name: `${streak}-Day Streak`, earned: false },
+        coursesDone > 0
+          ? {
+              name:
+                coursesDone === 1
+                  ? "1 Course Done"
+                  : `${coursesDone} Courses Done`,
+              earned: true,
+            }
+          : { name: "First Course", earned: false },
+      ]
+    : [
+        // Signed-out styled demo (Danielle) - GED badge dropped everywhere.
+        { name: "First Week", earned: true },
+        { name: "30-Day Streak", earned: true },
+      ];
+
+  const journey: JourneyRow[] = user
+    ? (() => {
+        const joined = new Date(user.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        });
+        const rows: JourneyRow[] = [
+          {
+            title: "Joined My Struggle",
+            sub: `Member since ${joined}`,
+            state: "done",
+          },
+        ];
+        if (milestones && (coursesDone > 0 || milestones.goalsAchieved > 0)) {
+          const parts: string[] = [];
+          if (coursesDone > 0)
+            parts.push(
+              `${coursesDone} course${coursesDone === 1 ? "" : "s"} completed`
+            );
+          if (milestones.goalsAchieved > 0)
+            parts.push(
+              `${milestones.goalsAchieved} goal${
+                milestones.goalsAchieved === 1 ? "" : "s"
+              } achieved`
+            );
+          rows.push({
+            title: "Making progress",
+            sub: parts.join(" · "),
+            state: "done",
+          });
+        }
+        if (hiredApp) {
+          rows.push({
+            title: "Hired",
+            sub: [hiredApp.role, hiredApp.company]
+              .filter(Boolean)
+              .join(" at "),
+            state: "done",
+          });
+        }
+        rows.push({
+          title: "Today - you are here",
+          sub:
+            streak > 0
+              ? `${streak}-day streak and counting`
+              : "Every day you show up counts",
+          state: "current",
+          lineColor: "#E2E8F0",
+        });
+        rows.push({
+          title: "What's next",
+          sub: "Your next goal, at your pace",
+          state: "future",
+        });
+        // Connector colors: green after done rows, blue into the current dot.
+        for (let i = 0; i < rows.length - 1; i++) {
+          if (rows[i].state === "done")
+            rows[i].lineColor =
+              rows[i + 1].state === "current" ? "#2E7CD6" : "#12B76A";
+        }
+        return rows;
+      })()
+    : DEMO_JOURNEY;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -760,16 +893,26 @@ export default function MeTab({
           MY BADGES
         </div>
         <div className="grid grid-cols-4 gap-3">
-          {["First Week", "GED Earned", "30-Day Streak"].map((name) => (
+          {badges.map((b) => (
             <div
-              key={name}
-              className="rounded-2xl border-[1.5px] border-gold-border bg-white px-2 py-3.5 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]"
+              key={b.name}
+              className={
+                "rounded-2xl border-[1.5px] bg-white px-2 py-3.5 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)] " +
+                (b.earned ? "border-gold-border" : "border-white opacity-45")
+              }
             >
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gold-bg text-[16px] font-extrabold text-gold-ink">
-                ◆
+              <div
+                className={
+                  "mx-auto flex h-10 w-10 items-center justify-center rounded-full text-[16px] font-extrabold " +
+                  (b.earned
+                    ? "bg-gold-bg text-gold-ink"
+                    : "bg-[#F1F5F9] text-ink-400")
+                }
+              >
+                {b.earned ? "◆" : "◇"}
               </div>
               <div className="mt-2 text-[10px]/[1.3] font-bold text-ink-900">
-                {name}
+                {b.name}
               </div>
             </div>
           ))}
@@ -802,8 +945,8 @@ export default function MeTab({
         </div>
         <div className="rounded-2xl bg-white px-6 pb-5 pt-6 shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="flex flex-col">
-            {JOURNEY.map((step, i) => {
-              const last = i === JOURNEY.length - 1;
+            {journey.map((step, i) => {
+              const last = i === journey.length - 1;
               return (
                 <div key={step.title} className="flex gap-4">
                   <div className="flex flex-col items-center">

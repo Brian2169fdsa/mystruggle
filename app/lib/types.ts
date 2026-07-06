@@ -649,6 +649,12 @@ export interface Notification {
   refType?: string;
   refId?: string;
   read: boolean;
+  // QUIET HOURS (docs/16 deferred set): true when the notification was
+  // emitted inside the recipient's center quiet window (CenterPolicy).
+  // The row is still written; the bell-badge logic excludes quiet rows
+  // until morning. Optional so pre-expansion rows stay untouched, and
+  // unreadCount semantics in the store are unchanged (the API owns that).
+  quiet?: boolean;
   createdAt: number;
 }
 
@@ -947,6 +953,27 @@ export interface SavedJob {
   postingId: string; // → JobPost.id
   savedAt: number;
 }
+
+// ── Center policies + announcement read receipts + milestone spotlights ─
+// (docs/16 deferred set). EXPANSION: additive only - nothing above this
+// line changes. A CenterPolicy is the center's communication rulebook
+// (community access during residential, quiet hours, portal-only early
+// phase); a MessageRead is one user's read receipt on one CareMessage
+// (powers announcement "seen by" counts); a Spotlight is a staff-drafted
+// milestone celebration that publishes to the community feed ONLY after
+// the member consents (pending_consent → approved → postId set).
+
+/** A center's communication policy. quietHoursStart/End are hours 0-23
+ *  local (America/Phoenix); both set = quiet window active, and the window
+ *  may wrap past midnight (e.g. 22 → 7). */
+export interface CenterPolicy { centerId:string; communityAccessDuringResidential:boolean; quietHoursStart?:number; quietHoursEnd?:number; portalOnlyEarlyPhase:boolean; updatedAt:number; updatedBy?:string; }
+
+/** One user's read receipt on one CareMessage (announcement channels). */
+export interface MessageRead { id:string; messageId:string; userId:string; readAt:number; }
+
+/** A staff-drafted milestone spotlight awaiting the member's consent.
+ *  postId is set once approved + published to the community feed. */
+export interface Spotlight { id:string; memberId:string; staffId:string; title:string; body:string; status:"pending_consent"|"approved"|"declined"; createdAt:number; decidedAt?:number; postId?:string; }
 
 /** What /api/auth/me returns - never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;

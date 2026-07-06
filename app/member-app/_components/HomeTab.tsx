@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import CommunityFeed from "@/app/components/feed/CommunityFeed";
 import type { SafeUser } from "@/app/lib/types";
@@ -66,6 +67,28 @@ export default function HomeTab({
   const firstName = user?.name ?? "Danielle";
   const streak = user ? (user.streak ?? 0) : 12;
   const activeGoals = (planGoals ?? []).filter((g) => g.status === "active");
+  // Real current date - set client-side (useEffect) so SSR/hydration agree.
+  // The member's center name isn't available client-side, so the header
+  // shows just the date rather than a fabricated center.
+  const [today, setToday] = useState("");
+  useEffect(() => {
+    setToday(
+      new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }).format(new Date())
+    );
+  }, []);
+  // Second ring - average progress across the member's ACTIVE recovery
+  // goals (real /api/recovery-goals data). Hidden when there are none.
+  const planPct =
+    user && activeGoals.length > 0
+      ? Math.round(
+          activeGoals.reduce((s, g) => s + g.progressPct, 0) /
+            activeGoals.length
+        )
+      : null;
   return (
     <div className="flex flex-1 flex-col">
       {/* My Program - client portal panel (docs/16 Part D). Fetches
@@ -79,8 +102,8 @@ export default function HomeTab({
             <div className="text-[22px] font-extrabold tracking-[-0.02em] text-ink-900">
               Welcome home, {firstName}
             </div>
-            <div className="mt-0.5 text-[13px] font-medium text-ink-600">
-              Friday, July 4 · Laveen Center
+            <div className="mt-0.5 min-h-[20px] text-[13px] font-medium text-ink-600">
+              {today}
             </div>
           </div>
           {streak > 0 ? (
@@ -99,7 +122,12 @@ export default function HomeTab({
       <div className="flex flex-1 flex-col gap-4 p-5">
         {/* Dual progress rings + one-tap tasks */}
         <div className="rounded-2xl bg-white px-5 py-[22px] shadow-[0_1px_3px_rgba(11,37,69,.06)]">
-          <div className="grid grid-cols-2 gap-4">
+          <div
+            className={
+              "grid gap-4 " +
+              (planPct !== null ? "grid-cols-2" : "grid-cols-1")
+            }
+          >
             <div className="flex flex-col items-center gap-2.5">
               <div
                 className="flex h-[110px] w-[110px] items-center justify-center rounded-full"
@@ -115,16 +143,25 @@ export default function HomeTab({
               </div>
               <div className="text-[13px] font-bold text-ink-900">My Tracker</div>
             </div>
-            <div className="flex flex-col items-center gap-2.5">
-              <div className="flex h-[110px] w-[110px] items-center justify-center rounded-full bg-[conic-gradient(#4E5B9B_0_45%,#EAF2FC_45%_100%)]">
-                <div className="flex h-[84px] w-[84px] items-center justify-center rounded-full bg-white">
-                  <div className="tnum text-[24px] font-extrabold text-indigo-brand">
-                    45%
+            {/* My Plan ring - real average progress across active recovery
+                goals (was a hardcoded "My Center 45%" demo ring). */}
+            {planPct !== null && (
+              <div className="flex flex-col items-center gap-2.5">
+                <div
+                  className="flex h-[110px] w-[110px] items-center justify-center rounded-full"
+                  style={{
+                    background: `conic-gradient(#4E5B9B 0 ${planPct}%, #EAF2FC ${planPct}% 100%)`,
+                  }}
+                >
+                  <div className="flex h-[84px] w-[84px] items-center justify-center rounded-full bg-white">
+                    <div className="tnum text-[24px] font-extrabold text-indigo-brand">
+                      {planPct}%
+                    </div>
                   </div>
                 </div>
+                <div className="text-[13px] font-bold text-ink-900">My Plan</div>
               </div>
-              <div className="text-[13px] font-bold text-ink-900">My Center</div>
-            </div>
+            )}
           </div>
           {/* MY PLAN - compact recovery-goal summary (docs/13 Part C),
               signed in only. Sits between the rings and the tasks. */}

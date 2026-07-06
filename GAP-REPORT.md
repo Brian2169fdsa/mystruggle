@@ -1,3 +1,46 @@
+# Gap Report - run 2026-07-06-17 (community rail ads + center-ops completion)
+
+## Run 17 summary
+Two slices, both verified live on seed v19 (tsc clean, build green, 95 pages):
+
+A) COMMUNITY RAIL ADS (user spec): Desert Bloom Residential on the left rail
+   (join card -> Explore), South Phoenix evening IOP on the right (stats ->
+   Support board), Sun Valley Warehouse second-chance hiring (Support board ->
+   Recovery anniversaries). Same trust-gated serve inventory as the feed
+   (crisis exclusion, kill switch), Sponsored labels, external "their site"
+   CTAs, impression/click beacons.
+
+B) CENTER-OPS COMPLETION (the docs/16 deferred set):
+- Kiosk mode: /kiosk member#+first-name quick login, 2h session using the
+  existing HMAC primitives, 5-fail rate limit, 5-min idle auto-logout,
+  privacy note. Verified 200/404/429.
+- Center policies: per-center settings (community access during residential,
+  quiet hours, portal-only early phases) in a dashboard Center settings panel;
+  ENFORCED: residential/detox members blocked from community posting when
+  toggled (403 warm copy, verified round-trip); quiet hours mark notifications
+  quiet:true inside emitNotification (Phoenix wall clock, midnight wrap).
+- Announcement read receipts: member beacons + staff "Seen by N" with named
+  readers - announcements ONLY (1:1/group always null: never chat
+  surveillance). Verified counts 7/5 + 403s.
+- Certificates: staff Mark completed 🎓 -> continuum event + member
+  notification -> print-quality landscape certificate page (member-or-staff
+  access, warm not-found for everyone else). Verified.
+- Milestone spotlights: staff propose -> member consents -> post publishes AS
+  the member (decline never reaches the feed). 403/409 wrong-actor paths
+  verified.
+- Demo panels wired real: member Home date/plan-ring/tasks, MeTab badges +
+  journey timeline (GED fabrication removed), Client 360 timeline + consent
+  card, Billing labeled placeholder.
+
+## Run 17 residual
+- Kiosk idle timer runs on /kiosk only (member-app global idle logout needs a
+  shared layout touch); QR-scan kiosk login (member# entry ships).
+- portalOnlyEarlyPhase policy is stored + configurable but only community
+  POSTING is enforced; full portal-only routing is future work.
+- Quiet notifications still count toward unreadCount (flag persisted; badge
+  exclusion is a UI follow-up).
+- CSV cohort import + preview-as-client (Program Builder) remain deferred.
+
 # Gap Report - run 2026-07-06-16 (whole-product audit + fix wave)
 
 ## Run 16 summary

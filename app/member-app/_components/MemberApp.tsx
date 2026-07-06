@@ -19,7 +19,7 @@ import CelebrationOverlay from "./CelebrationOverlay";
 import { FEED_REFRESH_EVENT } from "@/app/components/feed/CommunityFeed";
 import { OPEN_CARE_CHANNEL_EVENT } from "./MyProgramPanel";
 
-export type Task = { label: string; done: boolean };
+export type Task = { id?: string; label: string; done: boolean };
 
 /** Next incomplete lesson (1-based), or null when the course is done. */
 export function nextLesson(
@@ -43,11 +43,10 @@ export default function MemberApp() {
   const [celebrating, setCelebrating] = useState(false);
   const [lessonDone, setLessonDone] = useState(false);
   const [quiz, setQuiz] = useState(0);
-  const [tasks, setTasks] = useState<Task[]>([
-    { label: "Mood check-in with Marcus", done: true },
-    { label: "Job interview at ABC Painting - 2:00 pm", done: false },
-    { label: "ISE Course 3 · Lesson 2 - 12 min video", done: false },
-  ]);
+  // One-tap tasks - REAL open milestones from the member's active recovery
+  // goals (the same checklist /api/portal's journey-task fallback and
+  // PlanView read). Empty until the goals load / when signed out.
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [heart3, setHeart3] = useState(false); // local fallback shared-win post
   const [vidCat, setVidCat] = useState("All");
   const [sharedWin, setSharedWin] = useState(false);
@@ -121,13 +120,47 @@ export default function MemberApp() {
     return () => window.removeEventListener(OPEN_CARE_CHANNEL_EVENT, onOpenCare);
   }, []);
 
+  // Derive the Home one-tap tasks from the loaded recovery goals - active
+  // goals' milestones, capped at 4 for the Home card. Re-runs whenever a
+  // milestone flips (here or in PlanView) so both surfaces stay in sync.
+  useEffect(() => {
+    if (!planGoals) return;
+    setTasks(
+      planGoals
+        .filter((g) => g.status === "active")
+        .flatMap((g) => [...g.milestones].sort((a, b) => a.sort - b.sort))
+        .slice(0, 4)
+        .map((m) => ({ id: m.id, label: m.title, done: m.done }))
+    );
+  }, [planGoals]);
+
   // My Tracker ring = % of completed one-tap tasks + the lesson itself.
   const doneCount = tasks.filter((t) => t.done).length + (lessonDone ? 1 : 0);
   const trackerPct = Math.round((doneCount / (tasks.length + 1)) * 100);
   const points = 640 + (lessonDone ? 10 : 0);
 
-  const toggleTask = (i: number) =>
+  // Optimistic local flip; when the task is a real goal milestone, persist
+  // through the same endpoint PlanView uses and re-sync the loaded goals.
+  const toggleTask = (i: number) => {
+    const task = tasks[i];
     setTasks((ts) => ts.map((t, j) => (j === i ? { ...t, done: !t.done } : t)));
+    if (!me || !task?.id) return;
+    fetch("/api/recovery-goals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ milestoneId: task.id, done: !task.done }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.goal)
+          setPlanGoals((gs) =>
+            gs ? gs.map((g) => (g.id === d.goal.id ? d.goal : g)) : gs
+          );
+      })
+      .catch(() => {
+        // offline - keep the optimistic flip; server catches up next load
+      });
+  };
 
   const goTab = (key: TabKey) => {
     setTab(key);

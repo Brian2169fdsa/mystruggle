@@ -10,11 +10,41 @@ import {
 } from "@/app/api/circles/_lib";
 import {
   TOPICS,
+  type CareEpisode,
+  type CenterPolicy,
   type Post,
   type PostKind,
   type PostStatus,
   type Topic,
 } from "@/app/lib/types";
+
+/** Center policy gate for member posting. A center may pause community
+ *  posting for members currently in residential or detox care
+ *  (communityAccessDuringResidential === false). Defensive by design:
+ *  no policy row, no center, or no care episode = allow (default permissive).
+ *  The policies array is a recent store addition, so tolerate its absence. */
+function residentialPostingBlocked(user: { id: string; centerId?: string }): boolean {
+  if (!user.centerId) return false;
+  const d = db() as { centerPolicies?: CenterPolicy[] };
+  const policy = (d.centerPolicies ?? []).find(
+    (p) => p.centerId === user.centerId
+  );
+  if (!policy || policy.communityAccessDuringResidential !== false) return false;
+
+  // Latest care episode → is this member in residential/detox programming?
+  const episodes = (db() as { careEpisodes?: CareEpisode[] }).careEpisodes ?? [];
+  const episode = episodes
+    .filter((ep) => ep.memberId === user.id)
+    .reduce<CareEpisode | null>(
+      (best, ep) => (!best || ep.startedAt > best.startedAt ? ep : best),
+      null
+    );
+  return (
+    !!episode &&
+    episode.carePhase === "in_program" &&
+    (episode.levelOfCare === "residential" || episode.levelOfCare === "detox")
+  );
+}
 
 /** Attach public-safe request/giving context to a feed post. */
 function decorate(post: Post) {
@@ -105,6 +135,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  // Center policy: a center may pause community posting for members currently
+  // in residential/detox care. Mentors and staff are never gated.
+  if (user.role === "member" && residentialPostingBlocked(user)) {
+    return NextResponse.json(
+      {
+        error:
+          "Community posting opens up as you move through your program - your center can tell you more.",
+      },
+      { status: 403 }
+    );
+  }
 
   const body = await req.json().catch(() => null);
   const text = String(body?.body ?? "").trim();

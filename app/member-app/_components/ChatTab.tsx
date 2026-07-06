@@ -12,6 +12,7 @@ import {
   type CareChannelSummary,
 } from "./ProgramSurface";
 import GuideCompanion from "./GuideCompanion";
+import SpotlightConsent from "./SpotlightConsent";
 
 export default function ChatTab({
   openChannelId = null,
@@ -128,6 +129,11 @@ export default function ChatTab({
       <div className="hairline" />
 
       <div className="flex flex-col gap-4 p-5">
+        {/* Spotlight consent - staff-drafted celebrations wait here for the
+            member's OK before anything reaches the community feed. Renders
+            null when nothing is pending. */}
+        <SpotlightConsent />
+
         {/* Pinned mentor thread - real when signed in, demo otherwise */}
         {realThreads ? (
           threads.map((t) => (

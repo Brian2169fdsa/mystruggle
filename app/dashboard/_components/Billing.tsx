@@ -120,6 +120,9 @@ export default function Billing() {
 
       {/* ── PLAN TIERS (mirrored from the /centers page) ─────────────── */}
       <div className="text-[15px] font-extrabold text-ink-900">Plans</div>
+      <p className="-mt-3 text-[12px] font-medium text-ink-400">
+        Placeholder pricing - final plans to come.
+      </p>
       <div className="grid gap-[18px] lg:grid-cols-3">
         {TIERS.map((t) => (
           <div

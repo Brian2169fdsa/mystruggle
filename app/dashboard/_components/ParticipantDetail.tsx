@@ -211,39 +211,82 @@ const GOAL_STATUS_LABEL: Record<PlanGoal["status"], string> = {
   archived: "Archived",
 };
 
-// Journey timeline stays the styled demo - journey stages aren't in the
-// data model yet.
-const TIMELINE = [
-  {
-    title: "Outreach - met Laveen team",
-    date: <>Oct 12, 2025</>,
-    done: true,
-    lineColor: "#12B76A",
-  },
-  {
-    title: "Stabilization - matched with mentor, IOP intake",
-    date: <>Nov 3, 2025</>,
-    done: true,
-    lineColor: "#12B76A",
-  },
-  {
-    title: "In Program - GED earned, first job at ABC Painting",
-    date: (
-      <>
-        Feb 20, 2026 ·{" "}
-        <span className="font-bold text-gold-ink">◆ GED badge</span>
-      </>
-    ),
-    done: true,
-    lineColor: "#2E7CD6",
-  },
-  {
-    title: "Transitional - hallway house, weekly goal live",
-    date: <>May 4, 2026 · current stage</>,
+// Journey timeline - REAL rows derived from the Client 360 payload + the
+// member roster row (was a hardcoded Danielle demo). Only dates that exist
+// in the data (joinedAt) are shown; nothing is fabricated.
+type TimelineRow = {
+  title: string;
+  date: string;
+  done: boolean;
+  lineColor: string | null;
+};
+
+function buildTimeline(
+  member: AdminMember,
+  c360: Client360 | null | "offline"
+): TimelineRow[] {
+  const data = c360 && c360 !== "offline" ? c360 : null;
+  const rows: TimelineRow[] = [
+    {
+      title: "Joined My Struggle",
+      date: new Date(member.joinedAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      done: true,
+      lineColor: null,
+    },
+  ];
+  if (data) {
+    // Program enrollments - real title, status, curriculum progress.
+    for (const p of data.learning.programs.slice(0, 2)) {
+      rows.push({
+        title:
+          p.status === "completed"
+            ? `Completed ${p.title}`
+            : `Enrolled - ${p.title}`,
+        date: `${p.status} · ${p.progressPct}% of curriculum`,
+        done: true,
+        lineColor: null,
+      });
+    }
+    // Recovery-plan milestones rolled up across active goals.
+    const msDone = data.goalsReentry.goals.reduce(
+      (s, g) => s + g.milestonesDone,
+      0
+    );
+    const msTotal = data.goalsReentry.goals.reduce(
+      (s, g) => s + g.milestonesTotal,
+      0
+    );
+    if (msTotal > 0) {
+      rows.push({
+        title: "Recovery plan in motion",
+        date: `${msDone} of ${msTotal} milestones complete`,
+        done: true,
+        lineColor: null,
+      });
+    }
+  }
+  // Current stage - the latest care-episode phase when Client 360 has one.
+  const phase = data?.header.phase ?? null;
+  rows.push({
+    title: phase
+      ? `${C360_PHASE_LABEL[phase] ?? phase} - current stage`
+      : "In community - current stage",
+    date: data
+      ? `${data.engagement.streak}-day streak · continuum score ${data.header.continuumScore}`
+      : "",
     done: false,
     lineColor: null,
-  },
-];
+  });
+  // Connector colors: green between done rows, blue into the current dot.
+  for (let i = 0; i < rows.length - 1; i++) {
+    rows[i].lineColor = i === rows.length - 2 ? "#2E7CD6" : "#12B76A";
+  }
+  return rows;
+}
 
 function Toggle({
   on,
@@ -1519,14 +1562,22 @@ export default function ParticipantDetail({
           {/* Engagement section - source chips + 28-day strip + streak */}
           <EngagementCard c360={c360} />
 
-          {/* Journey timeline - kept (styled demo; journey stages aren't in
-              the data model yet). */}
+          {/* Journey timeline - real rows from the Client 360 payload +
+              the roster row (join date, programs, plan milestones, current
+              care phase). */}
           <div className={CARD + " px-[30px] py-[26px]"}>
               <div className="text-[15px] font-bold text-ink-900">
                 Journey timeline
               </div>
+              {c360 === null ? (
+                <div className="mt-4 flex flex-col gap-2.5">
+                  <div className={SKELETON + " h-9"} />
+                  <div className={SKELETON + " h-9"} />
+                  <div className={SKELETON + " h-9"} />
+                </div>
+              ) : (
               <div className="mt-4 flex flex-col">
-                {TIMELINE.map((t) => (
+                {buildTimeline(member, c360).map((t) => (
                   <div key={t.title} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       {t.done ? (
@@ -1557,6 +1608,7 @@ export default function ParticipantDetail({
                   </div>
                 ))}
               </div>
+              )}
           </div>
         </div>
       )}
@@ -1758,21 +1810,27 @@ export default function ParticipantDetail({
                     {consentError}
                   </div>
                 )}
+                {/* No consent timestamp exists in the store - show only the
+                    current state, never a fabricated approval date. */}
                 <div className="flex items-center justify-between">
-                  Story approved
-                  <span className="text-xs font-bold text-success">
-                    ✓ Jun 2, 2026
+                  <span>
+                    Photo on page{" "}
+                    <span className="text-[10px] font-medium text-ink-400">
+                      (demo control)
+                    </span>
                   </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  Photo on page
                   <Toggle
                     on={photoPublic}
                     onToggle={() => setPhotoPublic((v) => !v)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  Milestone updates to donors
+                  <span>
+                    Milestone updates to donors{" "}
+                    <span className="text-[10px] font-medium text-ink-400">
+                      (demo control)
+                    </span>
+                  </span>
                   <Toggle on />
                 </div>
               </div>

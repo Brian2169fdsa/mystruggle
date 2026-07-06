@@ -69,6 +69,9 @@ import type {
   PostingCandidate,
   RetentionConfirm,
   SavedJob,
+  CenterPolicy,
+  MessageRead,
+  Spotlight,
 } from "./types";
 
 interface DB {
@@ -144,11 +147,18 @@ interface DB {
   postingCandidates: PostingCandidate[];
   retentionConfirms: RetentionConfirm[];
   savedJobs: SavedJob[];
+  // center policies + announcement read receipts + milestone spotlights
+  // (seed v19 - docs/16 deferred set). One policy per center (quiet hours
+  // drive the emitNotification quiet flag); messageReads power announcement
+  // "seen by" counts; spotlights are consent-gated staff celebrations.
+  centerPolicies: CenterPolicy[];
+  messageReads: MessageRead[];
+  spotlights: Spotlight[];
 }
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 18;
+const SEED_VERSION = 19;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -3954,6 +3964,93 @@ function seed(): DB {
     },
   ];
 
+  // ── v19 additions (docs/16 deferred set - appended AFTER every existing
+  //    draw so all prior seed-* ids and PRNG output stay byte-identical):
+  //    center policies, announcement read receipts, milestone spotlights. ──
+
+  // (a) One CenterPolicy per seeded center. Laveen enforces quiet hours
+  // 22:00-07:00 (wraps midnight); South Phoenix is all-permissive.
+  const centerPolicies: CenterPolicy[] = [
+    {
+      centerId: laveen.id,
+      communityAccessDuringResidential: true,
+      quietHoursStart: 22,
+      quietHoursEnd: 7,
+      portalOnlyEarlyPhase: false,
+      updatedAt: now - 30 * DAY,
+      updatedBy: sarah.id,
+    },
+    {
+      centerId: southPhoenix.id,
+      communityAccessDuringResidential: true,
+      portalOnlyEarlyPhase: false,
+      updatedAt: now - 30 * DAY,
+    },
+  ];
+
+  // (b) Read receipts on the Laveen announcement channel's two existing
+  // broadcasts, from enrolled Laveen members (Danielle + her IOP cohort
+  // peers) - 12 rows total so the "seen by" count demos.
+  const messageReads: MessageRead[] = [];
+  const laveenAnnMsgs = careMessages
+    .filter((m) => m.channelId === laveenAnnId)
+    .sort((a, b) => a.createdAt - b.createdAt);
+  const annReaders: [User[], User[]] = [
+    [danielle, ...cohortPeers.slice(0, 6)], // holiday closure notice - 7 reads
+    [danielle, ...cohortPeers.slice(0, 4)], // Alumni BBQ invite - 5 reads
+  ];
+  laveenAnnMsgs.forEach((m, mi) => {
+    (annReaders[mi] ?? []).forEach((reader, ri) => {
+      messageReads.push({
+        id: did(),
+        messageId: m.id,
+        userId: reader.id,
+        readAt: m.createdAt + (ri + 1) * 2 * 3600e3,
+      });
+    });
+  });
+
+  // (c) Milestone spotlights - consent-gated staff celebrations. One
+  // APPROVED for Tyrell with its published feed post (authored by Sarah,
+  // consent noted in the body), and one PENDING for Danielle so the
+  // consent → approve flow demos live.
+  const tyrellSpotlight: Spotlight = {
+    id: did(),
+    memberId: tyrell.id,
+    staffId: sarah.id,
+    title: "Forklift certified",
+    body: "Tyrell passed his forklift certification on the first try - months of study sessions paying off. The warehouse floor just got a little safer and a lot prouder.",
+    status: "approved",
+    createdAt: now - 4 * DAY,
+    decidedAt: now - 3 * DAY,
+  };
+  const tyrellSpotlightPost: Post = {
+    id: did(),
+    authorId: sarah.id,
+    authorName: "Sarah",
+    authorRole: "staff",
+    avatarColor: sarah.avatarColor,
+    body: "Center spotlight (shared with Tyrell's consent): Tyrell passed his forklift certification on the first try. Months of study sessions, every class attended - this one was earned. Cheer him on!",
+    kind: "milestone",
+    status: "approved",
+    hearts: [danielle.id, marcus.id, andre.id],
+    comments: [],
+    createdAt: now - 3 * DAY + 2 * 3600e3,
+  };
+  tyrellSpotlight.postId = tyrellSpotlightPost.id;
+  posts.push(tyrellSpotlightPost);
+
+  const danielleSpotlight: Spotlight = {
+    id: did(),
+    memberId: danielle.id,
+    staffId: sarah.id,
+    title: "Six months employed",
+    body: "Six months at the same job - every shift showed up for, every paycheck part of the plan. Danielle, the whole center has watched you build this steady thing week by week, and we would love to celebrate it out loud. Only if you want us to.",
+    status: "pending_consent",
+    createdAt: now - 1 * DAY,
+  };
+  const spotlights: Spotlight[] = [tyrellSpotlight, danielleSpotlight];
+
   return {
     seedVersion: SEED_VERSION,
     // v15 employers appended LAST so every pre-v15 user keeps its position.
@@ -4017,6 +4114,9 @@ function seed(): DB {
     postingCandidates,
     retentionConfirms,
     savedJobs,
+    centerPolicies,
+    messageReads,
+    spotlights,
   };
 }
 
@@ -4144,11 +4244,37 @@ export function emitContinuumEvent(
   return evt;
 }
 
+/** The recipient's center communication policy, or null when the center has
+ *  none (or the user is unaffiliated). Single read path for quiet hours +
+ *  the docs/16 deferred policy toggles. */
+export function centerPolicyFor(centerId?: string): CenterPolicy | null {
+  if (!centerId) return null;
+  const d = db();
+  d.centerPolicies ??= [];
+  return d.centerPolicies.find((p) => p.centerId === centerId) ?? null;
+}
+
+/** True when hour `h` (0-23) falls inside the quiet window [start, end),
+ *  handling windows that wrap past midnight (e.g. 22 → 7). start === end is
+ *  treated as no window. */
+function inQuietWindow(h: number, start: number, end: number): boolean {
+  if (start < end) return h >= start && h < end;
+  if (start > end) return h >= start || h < end;
+  return false;
+}
+
 /** Fire-and-forget notification into a user's inbox. The single write path for
  *  live notifications (mirrors emitContinuumEvent). Guards `d.notifications`,
  *  unshifts newest-first, persists. Returns null when there is no valid target
  *  (empty userId) - call sites additionally skip self-notification (never notify
- *  a user about their OWN action) by comparing target vs. actor before calling. */
+ *  a user about their OWN action) by comparing target vs. actor before calling.
+ *
+ *  QUIET HOURS (docs/16 deferred set): when the recipient's center has a
+ *  CenterPolicy with quiet hours configured and the current wall-clock hour in
+ *  America/Phoenix (UTC-7, no DST) falls inside the window, the notification
+ *  is STILL written but flagged `quiet: true` so the bell badge can exclude it
+ *  until morning. unreadCount semantics in the store are unchanged - the API
+ *  owns that. */
 export function emitNotification(
   userId: string,
   kind: NotificationKind,
@@ -4160,6 +4286,22 @@ export function emitNotification(
   if (!userId) return null;
   const d = db();
   d.notifications ??= [];
+  const recipient = d.users.find((u) => u.id === userId);
+  const policy = centerPolicyFor(recipient?.centerId);
+  let quiet = false;
+  if (
+    policy &&
+    policy.quietHoursStart !== undefined &&
+    policy.quietHoursEnd !== undefined
+  ) {
+    // America/Phoenix wall-clock hour: UTC-7 year-round (no DST).
+    const phoenixHour = new Date(Date.now() - 7 * 3600e3).getUTCHours();
+    quiet = inQuietWindow(
+      phoenixHour,
+      policy.quietHoursStart,
+      policy.quietHoursEnd
+    );
+  }
   const n: Notification = {
     id: uid(),
     userId,
@@ -4169,6 +4311,7 @@ export function emitNotification(
     refType,
     refId,
     read: false,
+    ...(quiet ? { quiet: true } : {}),
     createdAt: Date.now(),
   };
   d.notifications.unshift(n);
