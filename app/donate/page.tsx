@@ -112,6 +112,59 @@ export default function Donate() {
         </div>
       </section>
 
+      {/* DANIELLE STORY SPOTLIGHT */}
+      <section className="bg-canvas">
+        <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-6 lg:py-[100px]">
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(11,37,69,.08)] lg:grid-cols-[minmax(300px,460px)_1fr]">
+            <div
+              className="relative min-h-[260px] bg-cover bg-center lg:min-h-[420px]"
+              style={{ backgroundImage: "url('/danielle.png')" }}
+            />
+
+            <div className="flex flex-col gap-[18px] px-6 py-8 lg:px-16 lg:py-14">
+              <div className="text-[12px] font-bold tracking-[.12em] text-blue-primary lg:text-[13px]">
+                WHERE YOUR GIFT GOES
+              </div>
+              <div className="flex flex-wrap items-center gap-3.5">
+                <div className="text-[30px] font-extrabold tracking-[-0.02em] text-ink-900 lg:text-[36px]">
+                  Danielle
+                </div>
+                <span className="inline-flex h-[30px] items-center rounded-full bg-sky-tint px-3.5 text-[12px] font-bold text-blue-primary">
+                  Member #039521464
+                </span>
+              </div>
+              <div className="text-[17px]/[1.7] text-ink-600">
+                Danielle earned her GED, started her first job, and moved into
+                transitional housing — three milestones in eight months. Right
+                now she&apos;s working toward $175 a week for her hallway house,
+                the last step before a place of her own. This is what a gift
+                looks like: a real person, a real week, a real next step.
+              </div>
+              <div className="mt-1.5">
+                <div className="flex justify-between text-[14px] font-semibold text-ink-900">
+                  <span>Hallway house · $175/week</span>
+                  <span className="tnum text-blue-primary">
+                    $105 raised this week
+                  </span>
+                </div>
+                <div className="mt-2.5 h-3 overflow-hidden rounded-full bg-sky-tint">
+                  <div className="h-full w-[60%] rounded-full bg-[linear-gradient(90deg,#4E5B9B,#2E7CD6)]" />
+                </div>
+              </div>
+              <div className="mt-2.5">
+                <Link
+                  href="/give"
+                  className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-blue-primary px-5 text-[15px] font-bold text-white shadow-[0_6px_16px_rgba(46,124,214,.28)] hover:bg-blue-hover sm:w-auto sm:px-8 sm:text-base"
+                >
+                  Donate to Danielle&apos;s journey{" "}
+                  <Heart size={14} fill="currentColor" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 500,000 STAT SPLIT */}
       <section className="bg-white">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-8 px-5 py-16 lg:grid-cols-[minmax(280px,400px)_1fr] lg:gap-20 lg:px-6 lg:py-[100px]">

@@ -9,11 +9,12 @@ export default function About() {
       <Nav />
 
       {/* HERO */}
-      <section className="relative flex min-h-[460px] items-center overflow-hidden bg-[repeating-linear-gradient(45deg,#DFEAF9_0_14px,#D2E2F5_14px_28px)]">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.55)_55%,rgba(11,37,69,.2)_100%)]" />
-        <span className="absolute bottom-4 right-5 rounded-md bg-navy-deep/50 px-2.5 py-1 font-mono text-[11px] font-medium text-white/75">
-          photo: community center, members + mentors together
-        </span>
+      <section className="relative flex min-h-[600px] items-center overflow-hidden bg-navy-deep lg:min-h-[720px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/about-community.png')" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,37,69,.92)_0%,rgba(11,37,69,.62)_52%,rgba(11,37,69,.28)_100%)]" />
         <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-5 py-16 lg:px-6 lg:py-20">
           <div className="text-[12px] font-bold tracking-[.12em] text-[#8FBCF0] lg:text-[13px]">
             ABOUT US
