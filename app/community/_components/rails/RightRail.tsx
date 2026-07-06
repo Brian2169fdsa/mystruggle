@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
+import RailAdCard from "../RailAdCard";
 
 const CARD =
   "rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]";
@@ -475,7 +476,9 @@ export default function RightRail() {
   return (
     <div className="sticky top-[92px] flex flex-col gap-4 self-start">
       <StatsCard stats={stats} />
+      <RailAdCard slot="iop" />
       <BoardCard board={board} />
+      <RailAdCard slot="job" />
       <AnniversariesCard rows={highlights?.anniversaries ?? []} />
       <SuggestionsCard rows={highlights?.suggestions ?? []} />
       <HiringCard jobs={jobs} />

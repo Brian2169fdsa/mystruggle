@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CalendarDays, Compass, Users } from "lucide-react";
 import type { SafeUser, Topic } from "@/app/lib/types";
 import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "../ui";
+import RailAdCard from "../RailAdCard";
 
 const CARD =
   "rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(11,37,69,.06)]";
@@ -402,6 +403,7 @@ function LeftRailInner() {
       ) : (
         <SignedOutCard />
       )}
+      <RailAdCard slot="residential" />
       <ExploreCard />
       <ChannelsCard />
       <CirclesCard />

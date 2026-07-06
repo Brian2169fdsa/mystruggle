@@ -148,7 +148,7 @@ interface DB {
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 17;
+const SEED_VERSION = 18;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -3308,8 +3308,8 @@ function seed(): DB {
     orgName: "Desert Bloom Residential",
     title: "A safe place to start over - tour our residential program",
     body: "Beds are available now in our residential program: private rooms, 24/7 support staff, and a community that treats you like family from day one. Come walk the grounds and meet the team - no commitment, just a conversation.",
-    ctaLabel: "Learn more",
-    ctaUrl: "/centers",
+    ctaLabel: "Visit their site",
+    ctaUrl: "https://www.desertbloomrecovery.org",
     kind: "program",
     audienceScope: "community",
     targeting: { metro: "Phoenix, AZ", interestTags: ["recovery", "housing"] },
@@ -3326,8 +3326,8 @@ function seed(): DB {
     orgName: southPhoenix.name,
     title: "Evening IOP that works around your job",
     body: "Keep your shift and keep your recovery: our evening Intensive Outpatient track meets after work hours, three nights a week, with transportation help available. Talk to us about whether it's the right fit.",
-    ctaLabel: "See schedule",
-    ctaUrl: "/centers",
+    ctaLabel: "See their schedule",
+    ctaUrl: "https://www.southphoenixrecovery.org/iop",
     kind: "program",
     audienceScope: "community",
     targeting: { metro: "Phoenix, AZ", interestTags: ["recovery"] },
@@ -3344,8 +3344,8 @@ function seed(): DB {
     orgName: "Sun Valley Warehouse",
     title: "Now hiring - fair-chance warehouse roles, apply with your resume",
     body: "Sun Valley Warehouse hires on who you are today: steady daytime hours, weekly pay, and training provided - forklift cert help included. Bring the resume you built here and come meet the team.",
-    ctaLabel: "Apply",
-    ctaUrl: "/jobs",
+    ctaLabel: "See open roles",
+    ctaUrl: "https://careers.sunvalleywarehouse.com",
     kind: "job_opening",
     audienceScope: "community",
     targeting: { metro: "Phoenix, AZ", interestTags: ["employment"] },
