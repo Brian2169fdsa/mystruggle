@@ -347,13 +347,23 @@ export default function Nav() {
                       For employers
                     </span>
                     <Link
-                      href="/employer"
+                      href="/employers"
                       className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
                     >
                       <span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-blue-primary shadow-[0_1px_3px_rgba(11,37,69,.10)]">
                         <Briefcase size={14} />
                       </span>
-                      Post jobs to the community
+                      Fair-chance hiring overview
+                      <ArrowRight
+                        size={13}
+                        className="transition-transform group-hover/link:translate-x-0.5"
+                      />
+                    </Link>
+                    <Link
+                      href="/employer"
+                      className="group/link inline-flex items-center gap-2 text-[13px] font-bold text-blue-primary hover:text-blue-hover"
+                    >
+                      Post a job
                       <ArrowRight
                         size={13}
                         className="transition-transform group-hover/link:translate-x-0.5"

@@ -3,6 +3,15 @@
 Judgment calls made while building, newest first. Format:
 `YYYY-MM-DD · area · decision · why`.
 
+- 2026-07-06 · seed · Mock community ads (seed v14): three more running
+  placements appended after all v13 sections - "Desert Bloom Residential"
+  (external org, minted orgId "org-desert-bloom-residential", no Center row)
+  and Sun Valley Warehouse (orgId = the seeded employer USER's id) bend the
+  "orgId === Center.id" doc comment · /api/placements/serve never reads orgId
+  (community scope serves to every signed-in member) and center ad managers
+  list only rows matching their own centerId, so the two non-center rows are
+  feed-only demo inventory; all three pass screenPlacement, and every v13 row
+  verified byte-identical after the append.
 - 2026-07-06 · seed · docs/16's "Desert Hope" demo center maps to the existing
   `center-laveen` (Laveen Center) · the seed already anchors Danielle, Sarah,
   and the IOP cohort at Laveen; a second flagship center would fork the demo

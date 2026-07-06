@@ -1,3 +1,49 @@
+# Gap Report - run 2026-07-06-14 (Center Operations Suite + mock ads + employer page)
+
+## Run 14 summary
+Shipped the Center Operations Suite per docs/16 (expand-never-replace), plus
+user orders: "New Freedom" removed platform-wide, em dashes removed platform-
+wide (1,153), mock community ads seeded, For Employers marketing page. All
+verified live on seed v14 (tsc clean, build green, 88 pages):
+- Program Builder (templates + clone, cohort enroll, weekly sessions,
+  attendance -> continuum events, publish auto-creates the cohort channel)
+- Client 360 (score/trend/risk header + 6 tabs; privacy walls verified: no
+  journals, no DMs, no BARC, feed-visible posts only)
+- Caseloads (risk + last-touch, untouched-3-days flags, kudos/nudge/check-in
+  -> staff_engagement + continuum event; kudos notified Danielle live 4->5)
+- Engage (challenges opt-in no rankings; pulse anonymous-to-peers, staff see
+  count/avg only) - member side rides the portal panel
+- Client portal (My Program panel: Today, progress, tasks, kudos inbox 💛,
+  challenge chip, pulse quick-respond) - verified for Danielle/IOP Core
+- Dashboard IA final nav; ROI dashboard (assumptions x actuals, case-study
+  benchmark chips, print one-pager) + /centers showcases + ROI calculator
+- MOCK COMMUNITY ADS serving live: Desert Bloom Residential (program),
+  South Phoenix evening IOP (program), Sun Valley Warehouse (job_opening) -
+  all pass screenPlacement, all with event history
+- /employers marketing page (Fair-Chance Verified, honest stats, pledge
+  application -> demo-leads queue) + Nav link
+
+## Run 14 deferrals (center-ops, per requirements/13)
+1. Kiosk mode (PIN/QR quick-login, session-scoped, auto-logout)
+2. Per-org policy toggles (community access by phase, quiet hours, portal-only)
+3. Completion certificate PDF + branded executive one-pager PDF (print view
+   ships instead); program badge celebration overlay on completion
+4. CSV cohort import; preview-as-client; curriculum drag-reorder UI
+5. Announcement read receipts; milestone spotlights w/ consent prompt
+6. Journal-flag indicators (assigned-staff-only) in Learning tab
+7. Cohort-compare data view (placeholder label ships); mv_roi_inputs as a
+   real MV (computed live route ships); staff-touch->outcome correlation is
+   directional-only
+8. Events->sponsored-placement linking for alumni events
+
+## NEXT: Employer Platform wave 2 (docs/17 staged, page shipped)
+Remaining: employer_profiles + job_postings + posting_candidates data spine
+(seed v15), vetting queue (ms_admin), member job board in Goals & Reentry w/
+first-apply consent screen, privacy-first candidate kanban (name/resume/answers
+ONLY - negative tests), employer dashboard (Overview/Postings/Candidates/Hires
+w/ retention confirms/Resources/Settings), staff referral cards, hired ->
+continuum + goal + consented celebration, reuse audit in DECISIONS.md.
+
 # Gap Report — run 2026-07-06-13 (Community 2.0 — big-social UX, ours, mobile-first)
 
 ## Run 13 summary

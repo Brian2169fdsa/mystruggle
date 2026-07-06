@@ -52,6 +52,19 @@ import type {
   EventKind,
   EventRsvp,
   PostReport,
+  Program,
+  ProgramCurriculumItem,
+  ProgramEnrollment,
+  ProgramSession,
+  SessionAttendance,
+  CareTeamAssignment,
+  StaffEngagement,
+  StaffTouchKind,
+  Challenge,
+  ChallengeJoin,
+  PulseSurvey,
+  PulseResponse,
+  StaffTask,
 } from "./types";
 
 interface DB {
@@ -103,11 +116,26 @@ interface DB {
   eventRsvps: EventRsvp[];
   // member-filed post reports → staff moderation queue (seed v12).
   postReports: PostReport[];
+  // center operations suite (seed v13 - docs/16 / requirements/13): programs
+  // sit above courses; care teams + staff touches; challenges, pulse surveys,
+  // and the staff task queue round out the engagement toolkit.
+  programs: Program[];
+  programCurriculum: ProgramCurriculumItem[];
+  programEnrollments: ProgramEnrollment[];
+  programSessions: ProgramSession[];
+  sessionAttendance: SessionAttendance[];
+  careTeamAssignments: CareTeamAssignment[];
+  staffEngagements: StaffEngagement[];
+  challenges: Challenge[];
+  challengeJoins: ChallengeJoin[];
+  pulseSurveys: PulseSurvey[];
+  pulseResponses: PulseResponse[];
+  staffTasks: StaffTask[];
 }
 
 /** Bump when the seed shape/volume changes - stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 12;
+const SEED_VERSION = 14;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -2624,9 +2652,572 @@ function seed(): DB {
     });
   }
 
+  // ── Center Operations Suite (added in seed v13 - keep AFTER all v12
+  //    sections so earlier PRNG draws and seed-* ids stay byte-identical) ──
+  // Programs sit above courses (docs/16): 4 My Struggle starter templates
+  // plus 3 live Laveen programs with a Summer 2026 cohort, weekly sessions,
+  // and attendance history. Danielle anchors the demo: live IOP Core
+  // enrollment, a care team of 3, a warm staff-touch history, a challenge,
+  // and a pulse survey. Every timestamp hangs off EPOCH (never Date.now()).
+
+  // Two new Laveen staff - appended AFTER every existing user (see the
+  // `users` array in the return) so all prior seed-* ids stay byte-identical.
+  // Same shared demo password ("mystruggle").
+  const angela = mk("staff", "Angela", "angela@themystruggles.com", "#4E5B9B", {
+    centerId: laveen.id,
+    createdAt: now - 220 * DAY,
+  });
+  const devStaff = mk("staff", "Dev", "dev@themystruggles.com", "#12B76A", {
+    centerId: laveen.id,
+    createdAt: now - 140 * DAY,
+  });
+
+  const programs: Program[] = [];
+  const programCurriculum: ProgramCurriculumItem[] = [];
+
+  const mkProgram = (
+    title: string,
+    description: string,
+    levelOfCare: LevelOfCare,
+    category: Program["category"],
+    durationWeeks: number,
+    delivery: Program["delivery"],
+    isTemplate: boolean,
+    badge: string,
+    centerId?: string
+  ): Program => {
+    const p: Program = {
+      id: did(),
+      centerId,
+      title,
+      description,
+      levelOfCare,
+      category,
+      durationWeeks,
+      delivery,
+      isTemplate,
+      status: "published",
+      badge,
+      createdAt: now - (isTemplate ? 120 : 45) * DAY,
+    };
+    programs.push(p);
+    return p;
+  };
+
+  const mkItem = (
+    programId: string,
+    sort: number,
+    kind: ProgramCurriculumItem["kind"],
+    label: string,
+    courseId?: string,
+    config?: Record<string, unknown>
+  ): void => {
+    programCurriculum.push({
+      id: did(),
+      programId,
+      sort,
+      kind,
+      courseId,
+      label,
+      config,
+    });
+  };
+
+  // ── 4 My Struggle starter templates (shared library - no centerId) ─────
+  const tplIse = mkProgram(
+    "ISE 12-Step",
+    "Our flagship Inner Strength Experience - the three ISE courses plus a weekly step group, walked together at a humane pace.",
+    "op",
+    "PON",
+    12,
+    "hybrid",
+    true,
+    "ISE Finisher"
+  );
+  mkItem(tplIse.id, 0, "course", "ISE Course 1 - Honesty", "course-ise-1");
+  mkItem(tplIse.id, 1, "course", "ISE Course 2 - Hope", "course-ise-2");
+  mkItem(tplIse.id, 2, "course", "ISE Course 3 - Decision", "course-ise-3");
+  mkItem(tplIse.id, 3, "session_series", "Weekly step group", undefined, {
+    cadence: "weekly",
+    weeks: 8,
+  });
+  mkItem(tplIse.id, 4, "milestone", "Week 12: share your story with the cohort", undefined, {
+    week: 12,
+  });
+
+  const tplIop = mkProgram(
+    "IOP Core",
+    "An intensive outpatient core: relapse-prevention curriculum, weekly group, and a family-session milestone at week four.",
+    "iop",
+    "IOP",
+    8,
+    "in_facility",
+    true,
+    "IOP Core Graduate"
+  );
+  mkItem(tplIop.id, 0, "course", "Relapse Prevention Basics", "course-relapse-basics");
+  mkItem(tplIop.id, 1, "course", "ISE Course 2 - Hope", "course-ise-2");
+  mkItem(tplIop.id, 2, "session_series", "Weekly IOP group", undefined, {
+    cadence: "weekly",
+    weeks: 8,
+  });
+  mkItem(tplIop.id, 3, "milestone", "Week 4: first family session", undefined, {
+    week: 4,
+  });
+
+  const tplVoc = mkProgram(
+    "Vocational Readiness",
+    "From first application to first paycheck: forklift certification, a weekly job lab, and a job-search task pack.",
+    "op",
+    "VOC",
+    6,
+    "hybrid",
+    true,
+    "Work Ready"
+  );
+  mkItem(tplVoc.id, 0, "course", "Forklift Certification", "course-forklift");
+  mkItem(tplVoc.id, 1, "session_series", "Weekly job lab", undefined, {
+    cadence: "weekly",
+    weeks: 8,
+  });
+  mkItem(tplVoc.id, 2, "task_pack", "Job Search Pack", undefined, {
+    tasks: ["Finish my resume", "Apply to five places", "Practice interview answers"],
+  });
+  mkItem(tplVoc.id, 3, "milestone", "Mock interview passed");
+
+  const tplNav = mkProgram(
+    "Reentry Navigation",
+    "The paperwork season, handled with dignity: documents and ID recovery, a weekly navigation huddle, and every form in hand.",
+    "op",
+    "NAV",
+    6,
+    "hybrid",
+    true,
+    "Navigator"
+  );
+  mkItem(tplNav.id, 0, "course", "Documents & ID Recovery", "course-docs-id");
+  mkItem(tplNav.id, 1, "task_pack", "Reentry Documents Pack", undefined, {
+    tasks: ["Get state ID", "Order Social Security card", "Visit the MVD"],
+  });
+  mkItem(tplNav.id, 2, "session_series", "Weekly navigation huddle", undefined, {
+    cadence: "weekly",
+    weeks: 8,
+  });
+  mkItem(tplNav.id, 3, "milestone", "All documents in hand");
+
+  // ── 3 live Laveen programs - clones of the templates (docs/16 seeds the
+  //    spec's "Desert Hope" demo center as center-laveen; see DECISIONS.md).
+  const cloneCurriculum = (from: Program, to: Program): void => {
+    const src = programCurriculum.filter((i) => i.programId === from.id);
+    for (const item of src) {
+      programCurriculum.push({ ...item, id: did(), programId: to.id });
+    }
+  };
+  const liveIse = mkProgram(
+    "ISE 12-Step",
+    tplIse.description,
+    "op",
+    "PON",
+    12,
+    "hybrid",
+    false,
+    "ISE Finisher",
+    laveen.id
+  );
+  cloneCurriculum(tplIse, liveIse);
+  const liveIop = mkProgram(
+    "IOP Core",
+    tplIop.description,
+    "iop",
+    "IOP",
+    8,
+    "in_facility",
+    false,
+    "IOP Core Graduate",
+    laveen.id
+  );
+  cloneCurriculum(tplIop, liveIop);
+  const liveVoc = mkProgram(
+    "Vocational Readiness",
+    tplVoc.description,
+    "op",
+    "VOC",
+    6,
+    "hybrid",
+    false,
+    "Work Ready",
+    laveen.id
+  );
+  cloneCurriculum(tplVoc, liveVoc);
+
+  // ── cohort enrollments (Summer 2026) - existing Laveen members ─────────
+  const programEnrollments: ProgramEnrollment[] = [];
+  const episodeByMember = new Map(careEpisodes.map((e) => [e.memberId, e]));
+
+  // Danielle first (hand-written): active in the live IOP Core, linked to
+  // her existing care episode so Client 360 reads one continuous story.
+  programEnrollments.push({
+    id: did(),
+    programId: liveIop.id,
+    memberId: danielle.id,
+    careEpisodeId: danielleEpisode.id,
+    cohortLabel: "Summer 2026",
+    enrolledAt: now - 24 * DAY,
+    status: "active",
+  });
+
+  const enrolleesByProgram = new Map<string, User[]>([[liveIop.id, [danielle]]]);
+  const enrollCohort = (program: Program, count: number): void => {
+    const chosen = new Set<User>();
+    while (chosen.size < count) chosen.add(pick(laveenGenerated));
+    const list = enrolleesByProgram.get(program.id) ?? [];
+    for (const m of chosen) {
+      programEnrollments.push({
+        id: did(),
+        programId: program.id,
+        memberId: m.id,
+        careEpisodeId: episodeByMember.get(m.id)?.id,
+        cohortLabel: "Summer 2026",
+        enrolledAt: now - int(15, 32) * DAY,
+        status: rnd() < 0.9 ? "active" : "withdrawn",
+      });
+      list.push(m);
+    }
+    enrolleesByProgram.set(program.id, list);
+  };
+  enrollCohort(liveIse, int(9, 14));
+  enrollCohort(liveIop, int(8, 13)); // + Danielle = 9-14
+  enrollCohort(liveVoc, int(9, 14));
+
+  // ── weekly program sessions - a few past, a few future, Sarah facilitates.
+  const programSessions: ProgramSession[] = [];
+  const sessionAttendance: SessionAttendance[] = [];
+  const mkSessionRun = (
+    program: Program,
+    sessionTitle: string,
+    dayOffset: number, // staggers the three programs across the week
+    hour: number,
+    durationMin: number,
+    location: string
+  ): void => {
+    const enrollees = enrolleesByProgram.get(program.id) ?? [];
+    for (let w = 0; w < 8; w++) {
+      const startsAt =
+        now + (w - 5) * 7 * DAY + dayOffset * DAY + hour * 3600e3;
+      const session: ProgramSession = {
+        id: did(),
+        programId: program.id,
+        title: `${sessionTitle} - Week ${w + 1}`,
+        startsAt,
+        durationMin,
+        location,
+        facilitatorId: sarah.id,
+        createdAt: now - 40 * DAY,
+      };
+      programSessions.push(session);
+      if (startsAt >= now) continue; // attendance history on past sessions only
+      for (const m of enrollees) {
+        // Danielle's record stays demo-warm: present every week but one remote.
+        const r = rnd();
+        const status: SessionAttendance["status"] =
+          m.id === danielle.id
+            ? w === 2
+              ? "remote"
+              : "present"
+            : r < 0.7
+              ? "present"
+              : r < 0.85
+                ? "remote"
+                : r < 0.94
+                  ? "absent"
+                  : "excused";
+        sessionAttendance.push({
+          id: did(),
+          sessionId: session.id,
+          memberId: m.id,
+          status,
+          markedBy: sarah.id,
+          markedAt: startsAt + durationMin * 60e3 + int(0, 2) * 3600e3,
+        });
+      }
+    }
+  };
+  mkSessionRun(liveIse, "Step group", 1, 17.5, 60, "Laveen Center - Community Room");
+  mkSessionRun(liveIop, "IOP group", 2, 17.5, 90, "Laveen Center - Community Room");
+  mkSessionRun(liveVoc, "Job lab", 4, 10, 60, "Laveen Center - Learning Lab");
+
+  // ── Danielle's care team of 3 (Sarah primary + the two new staff) ──────
+  const careTeamAssignments: CareTeamAssignment[] = [
+    {
+      id: did(),
+      memberId: danielle.id,
+      careEpisodeId: danielleEpisode.id,
+      staffId: sarah.id,
+      role: "case_manager",
+      isPrimary: true,
+      assignedAt: dInProgramAt,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      careEpisodeId: danielleEpisode.id,
+      staffId: angela.id,
+      role: "counselor",
+      isPrimary: false,
+      assignedAt: now - 24 * DAY,
+    },
+    {
+      id: did(),
+      memberId: danielle.id,
+      careEpisodeId: danielleEpisode.id,
+      staffId: devStaff.id,
+      role: "peer_support",
+      isPrimary: false,
+      assignedAt: now - 24 * DAY,
+    },
+  ];
+  // Light caseload breadth: every other IOP Core cohort member gets Sarah as
+  // case manager plus one of the new staff, so My Caseload views read alive.
+  const iopPeersForTeams = (enrolleesByProgram.get(liveIop.id) ?? []).filter(
+    (m) => m.id !== danielle.id
+  );
+  for (let i = 0; i < iopPeersForTeams.length; i++) {
+    const m = iopPeersForTeams[i];
+    careTeamAssignments.push({
+      id: did(),
+      memberId: m.id,
+      careEpisodeId: episodeByMember.get(m.id)?.id,
+      staffId: sarah.id,
+      role: "case_manager",
+      isPrimary: true,
+      assignedAt: now - int(15, 32) * DAY,
+    });
+    careTeamAssignments.push({
+      id: did(),
+      memberId: m.id,
+      careEpisodeId: episodeByMember.get(m.id)?.id,
+      staffId: i % 2 === 0 ? angela.id : devStaff.id,
+      role: i % 2 === 0 ? "counselor" : "peer_support",
+      isPrimary: false,
+      assignedAt: now - int(10, 28) * DAY,
+    });
+  }
+
+  // ── Danielle's staff-touch history - 8 warm, engagement-only touches
+  //    (never PHI/clinical) spread over recent weeks. ─────────────────────
+  const staffEngagements: StaffEngagement[] = [];
+  const touchDanielle = (
+    staff: User,
+    kind: StaffTouchKind,
+    daysAgo: number,
+    body?: string,
+    mood?: number
+  ): void => {
+    staffEngagements.push({
+      id: did(),
+      memberId: danielle.id,
+      staffId: staff.id,
+      kind,
+      body,
+      mood,
+      occurredAt: now - daysAgo * DAY - int(0, 8) * 3600e3,
+    });
+  };
+  touchDanielle(sarah, "kudos", 2, "Sarah noticed your 12-day streak. Keep going!");
+  touchDanielle(angela, "checkin", 4, "Quick check-in after group - steady week, housing on her mind.", 4);
+  touchDanielle(devStaff, "hallway", 6, "Caught up by the coffee station - she is excited about the job offer.");
+  touchDanielle(sarah, "nudge", 9, "Friendly reminder: bring your ID documents Tuesday.");
+  touchDanielle(angela, "kudos", 12, "Best coping-skills share in group this week.");
+  touchDanielle(sarah, "checkin", 16, "Weekly check-in - upbeat, focused on the housing goal.", 5);
+  touchDanielle(devStaff, "hallway", 21, "Walked her out after group - she was smiling about the interview.");
+  touchDanielle(angela, "checkin", 27, "Bus trouble made a rough week - we sorted a pass together.", 3);
+
+  // ── Gratitude Week challenge - opt-in, no loser-boards (docs/07 holds) ──
+  const gratitudeWeek: Challenge = {
+    id: did(),
+    centerId: laveen.id,
+    title: "Gratitude Week",
+    description:
+      "Post one gratitude a day for seven days - big or small, it counts. Everyone who finishes earns the Gratitude Week badge.",
+    startsAt: now - 2 * DAY,
+    endsAt: now + 5 * DAY,
+    badge: "Gratitude Week",
+    createdBy: sarah.id,
+    createdAt: now - 4 * DAY,
+  };
+  const challenges: Challenge[] = [gratitudeWeek];
+  const challengeJoins: ChallengeJoin[] = [
+    {
+      id: did(),
+      challengeId: gratitudeWeek.id,
+      memberId: danielle.id,
+      joinedAt: now - 2 * DAY,
+    },
+  ];
+  const gratitudeJoiners = new Set<User>();
+  while (gratitudeJoiners.size < 10) gratitudeJoiners.add(pick(laveenGenerated));
+  for (const m of gratitudeJoiners) {
+    challengeJoins.push({
+      id: did(),
+      challengeId: gratitudeWeek.id,
+      memberId: m.id,
+      joinedAt: now - int(0, 2) * DAY - int(1, 20) * 3600e3,
+    });
+  }
+
+  // ── pulse survey on the live IOP Core cohort - anonymous to peers,
+  //    trend visible to staff on the cockpit. ─────────────────────────────
+  const supportPulse: PulseSurvey = {
+    id: did(),
+    centerId: laveen.id,
+    programId: liveIop.id,
+    question: "How supported do you feel this week?",
+    createdBy: sarah.id,
+    createdAt: now - 3 * DAY,
+    closesAt: now + 4 * DAY,
+  };
+  const pulseSurveys: PulseSurvey[] = [supportPulse];
+  const pulseResponses: PulseResponse[] = [
+    {
+      id: did(),
+      surveyId: supportPulse.id,
+      memberId: danielle.id,
+      score: 4,
+      note: "The bus pass and the check-ins - I feel seen.",
+      createdAt: now - 2 * DAY,
+    },
+  ];
+  const pulsePool = [
+    ...iopPeersForTeams,
+    ...(enrolleesByProgram.get(liveIse.id) ?? []),
+  ];
+  const pulseResponders = new Set<User>();
+  while (pulseResponders.size < 11 && pulseResponders.size < pulsePool.length)
+    pulseResponders.add(pick(pulsePool));
+  for (const m of pulseResponders) {
+    const r = rnd();
+    pulseResponses.push({
+      id: did(),
+      surveyId: supportPulse.id,
+      memberId: m.id,
+      score: r < 0.1 ? 2 : r < 0.35 ? 3 : r < 0.75 ? 4 : 5,
+      createdAt: now - int(0, 2) * DAY - int(1, 20) * 3600e3,
+    });
+  }
+
+  // ── Sarah's staff task queue - follow-ups with due dates + done state ──
+  const staffTasks: StaffTask[] = [
+    {
+      id: did(),
+      staffId: sarah.id,
+      memberId: danielle.id,
+      title: "Call Danielle re: housing application",
+      dueAt: now + 1 * DAY,
+      done: false,
+      createdBy: sarah.id,
+      createdAt: now - 2 * DAY,
+    },
+    {
+      id: did(),
+      staffId: sarah.id,
+      title: "Print the Summer 2026 IOP Core attendance sheet",
+      dueAt: now + 2 * DAY,
+      done: false,
+      createdBy: sarah.id,
+      createdAt: now - 1 * DAY,
+    },
+    {
+      id: did(),
+      staffId: sarah.id,
+      memberId: tyrell.id,
+      title: "Nudge Tyrell about the forklift practice test",
+      dueAt: now - 1 * DAY,
+      done: true,
+      createdBy: sarah.id,
+      createdAt: now - 6 * DAY,
+    },
+    {
+      id: did(),
+      staffId: sarah.id,
+      title: "Confirm Gratitude Week badge copy with Angela",
+      done: true,
+      createdBy: angela.id,
+      createdAt: now - 4 * DAY,
+    },
+  ];
+
+  // ── Mock community ads (added in seed v14 - keep AFTER all v13 sections
+  //    so earlier PRNG draws and seed-* ids stay byte-identical) ──────────
+  // Three more running placements so the feed's everyN interleave shows a
+  // realistic sponsored mix: a residential program, the other center's
+  // evening IOP, and a fair-chance employer. All community-scoped (serve to
+  // every signed-in member), all screened clean against ad-policy.ts, and
+  // APPENDED - the v8 rows above are untouched. The residential advertiser
+  // is an external org (no Center row) and the employer ad is owned by the
+  // seeded Sun Valley Warehouse employer account; serve ignores orgId, and
+  // center ad managers list only their own centerId rows (see DECISIONS.md).
+  const residentialAd: SponsoredPlacement = {
+    id: did(),
+    orgId: "org-desert-bloom-residential",
+    orgName: "Desert Bloom Residential",
+    title: "A safe place to start over - tour our residential program",
+    body: "Beds are available now in our residential program: private rooms, 24/7 support staff, and a community that treats you like family from day one. Come walk the grounds and meet the team - no commitment, just a conversation.",
+    ctaLabel: "Learn more",
+    ctaUrl: "/centers",
+    kind: "program",
+    audienceScope: "community",
+    targeting: { metro: "Phoenix, AZ", interestTags: ["recovery", "housing"] },
+    status: "running",
+    startsAt: now - 5 * DAY,
+    endsAt: now + 16 * DAY,
+    budgetCents: 30000,
+    approvedBy: sarah.id,
+    createdAt: now - 8 * DAY,
+  };
+  const eveningIopAd: SponsoredPlacement = {
+    id: did(),
+    orgId: southPhoenix.id,
+    orgName: southPhoenix.name,
+    title: "Evening IOP that works around your job",
+    body: "Keep your shift and keep your recovery: our evening Intensive Outpatient track meets after work hours, three nights a week, with transportation help available. Talk to us about whether it's the right fit.",
+    ctaLabel: "See schedule",
+    ctaUrl: "/centers",
+    kind: "program",
+    audienceScope: "community",
+    targeting: { metro: "Phoenix, AZ", interestTags: ["recovery"] },
+    status: "running",
+    startsAt: now - 3 * DAY,
+    endsAt: now + 14 * DAY,
+    budgetCents: 18000,
+    approvedBy: sarah.id,
+    createdAt: now - 6 * DAY,
+  };
+  const warehouseAd: SponsoredPlacement = {
+    id: did(),
+    orgId: empSunValley.id,
+    orgName: "Sun Valley Warehouse",
+    title: "Now hiring - fair-chance warehouse roles, apply with your resume",
+    body: "Sun Valley Warehouse hires on who you are today: steady daytime hours, weekly pay, and training provided - forklift cert help included. Bring the resume you built here and come meet the team.",
+    ctaLabel: "Apply",
+    ctaUrl: "/jobs",
+    kind: "job_opening",
+    audienceScope: "community",
+    targeting: { metro: "Phoenix, AZ", interestTags: ["employment"] },
+    status: "running",
+    startsAt: now - 2 * DAY,
+    endsAt: now + 21 * DAY,
+    budgetCents: 22000,
+    approvedBy: sarah.id,
+    createdAt: now - 4 * DAY,
+  };
+  sponsoredPlacements.push(residentialAd, eveningIopAd, warehouseAd);
+  seedEvents(residentialAd.id, int(60, 100));
+  seedEvents(eveningIopAd.id, int(50, 90));
+  seedEvents(warehouseAd.id, int(70, 110));
+
   return {
     seedVersion: SEED_VERSION,
-    users: [sarah, ...mentors, ...members, ...employers],
+    users: [sarah, ...mentors, ...members, ...employers, angela, devStaff],
     posts,
     threads: [dmThread, tyThread],
     donations,
@@ -2662,6 +3253,18 @@ function seed(): DB {
     events,
     eventRsvps,
     postReports,
+    programs,
+    programCurriculum,
+    programEnrollments,
+    programSessions,
+    sessionAttendance,
+    careTeamAssignments,
+    staffEngagements,
+    challenges,
+    challengeJoins,
+    pulseSurveys,
+    pulseResponses,
+    staffTasks,
   };
 }
 
