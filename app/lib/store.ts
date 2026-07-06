@@ -45,6 +45,12 @@ import type {
   ConsentGrant,
   FollowUpCheckin,
   JobPost,
+  Notification,
+  NotificationKind,
+  MemberBlock,
+  CommunityEvent,
+  EventKind,
+  EventRsvp,
 } from "./types";
 
 interface DB {
@@ -87,11 +93,18 @@ interface DB {
   // Employers are stored in `users` (role "employer"); jobPosts are their
   // openings, wired into the community Hiring rail + public /jobs board.
   jobPosts: JobPost[];
+  // engagement backend (seed v11 — notifications, member blocks, community
+  // events + RSVP). One notification inbox per user; blocks are user-driven;
+  // events carry RSVPs whose going=true emits a "community" continuum_event.
+  notifications: Notification[];
+  memberBlocks: MemberBlock[];
+  events: CommunityEvent[];
+  eventRsvps: EventRsvp[];
 }
 
 /** Bump when the seed shape/volume changes — stale .data/db.json is discarded
  *  on load so existing installs pick up the new seed. */
-const SEED_VERSION = 10;
+const SEED_VERSION = 11;
 
 const DATA_DIR = process.env.VERCEL
   ? "/tmp"
@@ -2340,6 +2353,247 @@ function seed(): DB {
     ),
   ];
 
+  // ── Engagement backend (added in seed v11 — keep AFTER all v10 sections so
+  //    earlier PRNG draws and seed-* ids stay byte-identical) ───────────────
+  // Notifications inbox, member blocks (user-driven — left empty), and center
+  // community events with RSVP. Danielle anchors the demo: a full inbox across
+  // kinds (mix read/unread) and an RSVP to the Laveen Alumni BBQ. Every
+  // timestamp hangs off EPOCH (never Date.now()).
+
+  // ── community events (2–3 per center: meetings, a celebration, a workshop)
+  const events: CommunityEvent[] = [];
+  const mkEvent = (
+    center: Center,
+    creator: User,
+    title: string,
+    description: string,
+    startsAt: number,
+    durationHrs: number,
+    location: string,
+    kind: EventKind
+  ): CommunityEvent => {
+    const ev: CommunityEvent = {
+      id: did(),
+      centerId: center.id,
+      creatorId: creator.id,
+      title,
+      description,
+      startsAt,
+      endsAt: startsAt + durationHrs * 3600e3,
+      location,
+      kind,
+      createdAt: now - int(6, 20) * DAY,
+    };
+    events.push(ev);
+    return ev;
+  };
+
+  const spMentor = mentors.find((m) => m.centerId === southPhoenix.id) ?? marcus;
+
+  // Laveen (Danielle's center) — a weekly meeting, the Alumni BBQ, a workshop.
+  const laveenMeeting = mkEvent(
+    laveen,
+    sarah,
+    "Tuesday Alumni Meeting",
+    "Our weekly alumni check-in — coffee, wins of the week, and a few minutes to set a goal together. Everyone welcome, no pressure to share.",
+    now + 2 * DAY + 17.5 * 3600e3,
+    1.5,
+    "Laveen Center — Community Room",
+    "meeting"
+  );
+  const laveenBbq = mkEvent(
+    laveen,
+    sarah,
+    "Laveen Alumni BBQ",
+    "Alumni, families, and mentors — join us Saturday at noon for food, music, and a chance to reconnect. Bring someone you're walking beside.",
+    now + 4 * DAY + 12 * 3600e3,
+    3,
+    "Cesar Chavez Park — Ramada 3",
+    "celebration"
+  );
+  mkEvent(
+    laveen,
+    marcus,
+    "Resume & Interview Workshop",
+    "Bring your work history — our navigators help you build a fair-chance-ready resume and practice interview answers in one sitting. Coffee provided.",
+    now + 9 * DAY + 18 * 3600e3,
+    2,
+    "Laveen Center — Learning Lab",
+    "workshop"
+  );
+
+  // South Phoenix — a meeting, a workshop, a community gathering.
+  mkEvent(
+    southPhoenix,
+    spMentor,
+    "New in Recovery — Welcome Circle",
+    "A warm first step for anyone in their early weeks. Peer-led, confidential, and yours to attend as often as you need.",
+    now + 3 * DAY + 18 * 3600e3,
+    1.5,
+    "South Phoenix Center — Circle Room",
+    "meeting"
+  );
+  mkEvent(
+    southPhoenix,
+    spMentor,
+    "Budgeting Basics Workshop",
+    "A judgment-free hour on saving your first $100, reading a pay stub, and building a simple plan on paper. Snacks and bus passes available.",
+    now + 6 * DAY + 17 * 3600e3,
+    1.5,
+    "South Phoenix Center — Room B",
+    "workshop"
+  );
+  mkEvent(
+    southPhoenix,
+    spMentor,
+    "Community Cookout & Resource Fair",
+    "Food, music, and tables from local fair-chance employers, housing navigators, and health partners. Come for lunch, leave with a next step.",
+    now + 11 * DAY + 12 * 3600e3,
+    3,
+    "South Mountain Park — Ramada 1",
+    "community"
+  );
+
+  // ── event RSVPs — Danielle attends the Alumni BBQ + Tuesday meeting; a
+  //    handful of Laveen alumni fill out the celebration roster. ────────────
+  const eventRsvps: EventRsvp[] = [
+    {
+      id: did(),
+      eventId: laveenBbq.id,
+      userId: danielle.id,
+      createdAt: now - 3 * DAY,
+    },
+    {
+      id: did(),
+      eventId: laveenMeeting.id,
+      userId: danielle.id,
+      createdAt: now - 1 * DAY,
+    },
+  ];
+  const rsvpPool = new Set<User>();
+  while (rsvpPool.size < 14 && rsvpPool.size < laveenGenerated.length)
+    rsvpPool.add(pick(laveenGenerated));
+  for (const m of rsvpPool) {
+    eventRsvps.push({
+      id: did(),
+      eventId: laveenBbq.id,
+      userId: m.id,
+      createdAt: now - int(1, 6) * DAY - int(0, 23) * 3600e3,
+    });
+  }
+
+  // ── member blocks — user-driven, seeded empty. ──────────────────────────
+  const memberBlocks: MemberBlock[] = [];
+
+  // ── notifications — Danielle's inbox across kinds, mix read/unread. ──────
+  const danielleGedPost = posts.find(
+    (p) => p.authorId === danielle.id && p.kind === "win"
+  );
+  const notifications: Notification[] = [];
+  const mkNotif = (
+    kind: NotificationKind,
+    title: string,
+    body: string,
+    createdAt: number,
+    read: boolean,
+    refType?: string,
+    refId?: string
+  ): void => {
+    notifications.push({
+      id: did(),
+      userId: danielle.id,
+      kind,
+      title,
+      body,
+      refType,
+      refId,
+      read,
+      createdAt,
+    });
+  };
+
+  mkNotif(
+    "reaction",
+    "Marcus reacted to your post",
+    "Marcus sent a heart on “Got my GED today.”",
+    now - 3 * 3600e3,
+    false,
+    "post",
+    danielleGedPost?.id
+  );
+  mkNotif(
+    "comment",
+    "New comment on your post",
+    "Rosa commented: “So proud of you — that door is wide open now!”",
+    now - 6 * 3600e3,
+    false,
+    "post",
+    danielleGedPost?.id
+  );
+  mkNotif(
+    "care_message",
+    "Message from Sarah",
+    "Sarah: “Left a bus pass for you at the front desk. See you Thursday.”",
+    now - 20 * 3600e3,
+    false,
+    "channel",
+    "channel-1to1-danielle"
+  );
+  mkNotif(
+    "follow_up",
+    "A check-in is due",
+    "Your 180-day check-in with Laveen Center is coming up. No pressure — we just like hearing how you're doing.",
+    now - 1 * DAY,
+    false,
+    "followup",
+    undefined
+  );
+  mkNotif(
+    "job",
+    "New job match",
+    "Sun Valley Warehouse posted a Warehouse Associate role in Laveen — fair-chance, $17–$19/hr.",
+    now - 2 * DAY,
+    true,
+    "job",
+    undefined
+  );
+  mkNotif(
+    "event",
+    "You're invited: Laveen Alumni BBQ",
+    "Saturday at noon — food, music, and familiar faces. Tap to RSVP.",
+    now - 2 * DAY - 4 * 3600e3,
+    true,
+    "event",
+    laveenBbq.id
+  );
+  mkNotif(
+    "mention",
+    "Tyrell mentioned you",
+    "Tyrell mentioned you in Job Seekers: “@Danielle your resume tips helped me land the interview!”",
+    now - 3 * DAY,
+    true,
+    "circle",
+    "circle-job-seekers"
+  );
+  mkNotif(
+    "reaction",
+    "3 people cheered your milestone",
+    "Your GED milestone is getting love from across the center.",
+    now - 4 * DAY,
+    true,
+    "post",
+    danielleGedPost?.id
+  );
+  mkNotif(
+    "system",
+    "You reached Silver",
+    "You crossed 640 points and reached Silver. Every check-in and lesson got you here.",
+    now - 8 * DAY,
+    true,
+    undefined,
+    undefined
+  );
+
   return {
     seedVersion: SEED_VERSION,
     users: [sarah, ...mentors, ...members, ...employers],
@@ -2373,6 +2627,10 @@ function seed(): DB {
     consentGrants,
     followUps,
     jobPosts,
+    notifications,
+    memberBlocks,
+    events,
+    eventRsvps,
   };
 }
 

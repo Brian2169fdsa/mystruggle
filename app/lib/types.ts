@@ -578,6 +578,68 @@ export interface FollowUpCheckin {
   barcTotal?: number; // optional BARC-10 pulse captured at the check-in (0–50)
 }
 
+// ── Engagement: notifications + member blocks + community events ──────
+// EXPANSION: additive only — nothing above this line changes. The engagement
+// backend: per-user notifications (one inbox across every module), user-driven
+// member blocks (mutual safety), and center community events with RSVP (an
+// RSVP is an engagement signal → continuum_event source "community").
+
+export type NotificationKind =
+  | "reaction"
+  | "comment"
+  | "care_message"
+  | "follow_up"
+  | "job"
+  | "event"
+  | "mention"
+  | "system";
+
+/** A single notification in a member's inbox. refType/refId point back at the
+ *  source artifact (post, event, channel message, …) for deep-linking. */
+export interface Notification {
+  id: string;
+  userId: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  refType?: string;
+  refId?: string;
+  read: boolean;
+  createdAt: number;
+}
+
+/** A user-driven block — blocker hides/mutes blocked across social surfaces. */
+export interface MemberBlock {
+  id: string;
+  blockerId: string;
+  blockedId: string;
+  createdAt: number;
+}
+
+export type EventKind = "meeting" | "celebration" | "workshop" | "community";
+
+/** A center or member-created community event members can RSVP to. */
+export interface CommunityEvent {
+  id: string;
+  centerId?: string;
+  creatorId: string;
+  title: string;
+  description: string;
+  startsAt: number;
+  endsAt?: number;
+  location: string;
+  kind: EventKind;
+  createdAt: number;
+}
+
+/** One member's RSVP to a community event. */
+export interface EventRsvp {
+  id: string;
+  eventId: string;
+  userId: string;
+  createdAt: number;
+}
+
 /** What /api/auth/me returns — never includes credentials. */
 export type SafeUser = Omit<User, "passwordHash" | "salt">;
 

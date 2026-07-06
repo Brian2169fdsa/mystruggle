@@ -9,6 +9,7 @@ import Composer, { type ComposerPrefill } from "./Composer";
 import PostCard from "./PostCard";
 import SponsoredCard, { type Placement } from "./SponsoredCard";
 import SponsoredControls, { readReducePref } from "./SponsoredControls";
+import { useBlockedIds } from "./BlockControls";
 import {
   CIRCLES_CHANGED_EVENT,
   CIRCLE_KIND_LABELS,
@@ -346,6 +347,10 @@ export default function Feed({
   // Guards stale async responses after a filter switch.
   const filterRef = useRef(filterKey);
   filterRef.current = filterKey;
+  // Member safety: hide posts by anyone the viewer has blocked. Fails open
+  // (empty set) when signed out or /api/blocks isn't live, so the feed shows
+  // everything by default.
+  const blockedIds = useBlockedIds();
 
   /* — re-sync auth on the client (covers a stale cached shell) — */
   useEffect(() => {
@@ -506,6 +511,8 @@ export default function Feed({
   ];
 
   const inPrivateCircle = blocked || (!!circleInfo && circleInfo.locked);
+  // Posts from blocked authors are dropped before render/interleave.
+  const shown = (posts ?? []).filter((p) => !blockedIds.has(p.authorId));
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
@@ -580,7 +587,7 @@ export default function Feed({
         <PrivateCircleCard name={circleInfo?.name} />
       ) : posts === null ? (
         <Skeletons />
-      ) : posts.length === 0 ? (
+      ) : shown.length === 0 ? (
         <div className="rounded-2xl bg-white px-6 py-8 text-center shadow-[0_1px_3px_rgba(11,37,69,.06)]">
           <div className="text-[15px] font-bold text-ink-900">
             {loadError
@@ -601,7 +608,7 @@ export default function Feed({
         </div>
       ) : (
         <>
-          {interleave(posts, placements, everyN, reduceSponsored, dismissed).map(
+          {interleave(shown, placements, everyN, reduceSponsored, dismissed).map(
             (item) =>
               item.type === "post" ? (
                 <PostCard

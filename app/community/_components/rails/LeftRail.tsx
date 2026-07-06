@@ -5,7 +5,8 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { CalendarDays, Compass } from "lucide-react";
 import type { SafeUser, Topic } from "@/app/lib/types";
 import { CIRCLES_CHANGED_EVENT, type CircleSummary } from "../ui";
 
@@ -123,6 +124,53 @@ function ProfileCard({ user }: { user: SafeUser }) {
         </Link>
       </div>
     </div>
+  );
+}
+
+/* ── Explore nav (cross-page destinations) ────────────────────────── */
+
+const EXPLORE: { href: string; label: string; Icon: typeof Compass }[] = [
+  { href: "/community/discover", label: "Discover people", Icon: Compass },
+  { href: "/community/events", label: "Events", Icon: CalendarDays },
+];
+
+function ExploreCard() {
+  const pathname = usePathname();
+  return (
+    <nav className={CARD + " px-3"} aria-label="Explore">
+      <h2 className="px-3 pb-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-ink-400">
+        Explore
+      </h2>
+      <ul className="space-y-0.5">
+        {EXPLORE.map(({ href, label, Icon }) => {
+          const on = pathname === href;
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={on ? "page" : undefined}
+                className={
+                  "flex h-11 w-full items-center gap-2.5 rounded-xl pl-2 pr-3 text-left text-[14px] transition-colors " +
+                  (on
+                    ? "bg-sky-tint font-bold text-blue-primary"
+                    : "font-semibold text-ink-600 hover:bg-canvas hover:text-ink-900")
+                }
+              >
+                <span
+                  className={
+                    "h-5 w-[3px] shrink-0 rounded-full " +
+                    (on ? "bg-blue-primary" : "bg-transparent")
+                  }
+                  aria-hidden
+                />
+                <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden />
+                {label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 
@@ -353,6 +401,7 @@ function LeftRailInner() {
       ) : (
         <SignedOutCard />
       )}
+      <ExploreCard />
       <ChannelsCard />
       <CirclesCard />
       <FooterLinksCard />

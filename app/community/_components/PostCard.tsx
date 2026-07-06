@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, Send, ThumbsUp, Users } from "lucide-react";
+import {
+  Flag,
+  Heart,
+  MoreHorizontal,
+  Send,
+  ThumbsUp,
+  UserRoundX,
+  Users,
+} from "lucide-react";
 import type { Comment, SafeUser } from "@/app/lib/types";
+import { setBlock } from "./BlockControls";
+import ReportModal from "./ReportModal";
 import {
   AvatarTile,
   KindChip,
@@ -76,7 +86,22 @@ export default function PostCard({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [nudge, setNudge] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const temp = post.id.startsWith("temp-");
+  // Never offer "block yourself"; the whole overflow menu is hidden on own posts.
+  const isOwn = !!viewer && viewer.id === post.authorId;
+
+  const blockAuthor = async () => {
+    setMenuOpen(false);
+    if (blocking || !viewer) return;
+    setBlocking(true);
+    // setBlock broadcasts BLOCKS_CHANGED_EVENT → the feed re-filters and this
+    // author's posts fall away on their own.
+    await setBlock(post.authorId, "block");
+    setBlocking(false);
+  };
 
   const showNudge = () => {
     setNudge(true);
@@ -201,7 +226,7 @@ export default function PostCard({
         ) : (
           <AvatarTile name={post.authorName} color={post.avatarColor} size={46} />
         )}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             {post.authorSlug ? (
               <Link
@@ -223,6 +248,63 @@ export default function PostCard({
             {timeAgo(post.createdAt)}
           </div>
         </div>
+
+        {/* safety overflow menu — hidden on your own posts and on temp posts */}
+        {!isOwn && !temp && (
+          <div className="relative flex-none">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label="Post options"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-canvas hover:text-ink-600"
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            {menuOpen && (
+              <>
+                {/* click-away backdrop */}
+                <button
+                  type="button"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  onClick={() => setMenuOpen(false)}
+                  className="fixed inset-0 z-10 cursor-default"
+                />
+                <div
+                  role="menu"
+                  className="absolute right-0 top-10 z-20 w-56 overflow-hidden rounded-2xl border border-sky-tint bg-white py-1 shadow-[0_10px_30px_rgba(11,37,69,.16)]"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setReportOpen(true);
+                    }}
+                    className="flex min-h-[44px] w-full items-center gap-2.5 px-4 text-left text-[14px] font-semibold text-ink-900 transition-colors hover:bg-canvas"
+                  >
+                    <Flag size={15} className="flex-none text-blue-primary" />
+                    Report post
+                  </button>
+                  {viewer && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={blockAuthor}
+                      disabled={blocking}
+                      className="flex min-h-[44px] w-full items-center gap-2.5 px-4 text-left text-[14px] font-semibold text-ink-900 transition-colors hover:bg-canvas disabled:opacity-50"
+                    >
+                      <UserRoundX size={15} className="flex-none text-ink-400" />
+                      <span className="truncate">Block {post.authorName}</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* body */}
@@ -378,6 +460,14 @@ export default function PostCard({
             </Link>
           )}
         </div>
+      )}
+
+      {reportOpen && (
+        <ReportModal
+          postId={post.id}
+          authorName={post.authorName}
+          onClose={() => setReportOpen(false)}
+        />
       )}
     </article>
   );

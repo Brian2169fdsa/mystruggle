@@ -21,6 +21,7 @@ import {
   TopicTag,
   timeAgo,
 } from "@/app/community/_components/ui";
+import { BlockButton } from "@/app/community/_components/BlockControls";
 
 export const dynamic = "force-dynamic";
 
@@ -161,7 +162,13 @@ function PrivateCard() {
   );
 }
 
-function ProfileBody({ profile }: { profile: PublicProfile }) {
+function ProfileBody({
+  profile,
+  memberId,
+}: {
+  profile: PublicProfile;
+  memberId: string;
+}) {
   const journey = profile.journeySince ? journeyLabel(profile.journeySince) : null;
   const m = profile.milestones;
   return (
@@ -213,6 +220,9 @@ function ProfileBody({ profile }: { profile: PublicProfile }) {
             <Heart size={14} fill="currentColor" />
           </Link>
         )}
+
+        {/* member-safety control — only renders for signed-in, non-self viewers */}
+        <BlockButton targetId={memberId} targetName={profile.name} />
       </section>
 
       {/* recovery-capital rings — only when the member made them public */}
@@ -290,13 +300,18 @@ export default async function PublicProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const profile = buildPublicProfile(findMemberBySlug(slug));
+  const member = findMemberBySlug(slug);
+  const profile = buildPublicProfile(member);
 
   return (
     <div className="min-h-screen bg-canvas">
       <Nav />
       <main className="mx-auto flex max-w-[860px] flex-col gap-6 px-4 py-8 lg:px-6 lg:py-12">
-        {profile ? <ProfileBody profile={profile} /> : <PrivateCard />}
+        {profile && member ? (
+          <ProfileBody profile={profile} memberId={member.id} />
+        ) : (
+          <PrivateCard />
+        )}
       </main>
       <Footer />
       <PrototypeMap />

@@ -1,3 +1,46 @@
+# Gap Report — run 2026-07-06-9 (community engagement layer: notifications, safety, events, discovery)
+
+## Run 9 summary
+Built up the recovery community into a real engagement layer (desktop + mobile),
+all typed, seeded (SEED_VERSION 11), tsc clean, build green (73 pages), every
+flow negative-tested live on a fresh seed:
+- Engagement backend: Notification / MemberBlock / CommunityEvent / EventRsvp
+  models + seed (9 notifications for Danielle across all 8 kinds, 6 events
+  across both centers, RSVP roster). Routes: /api/notifications (list +
+  markRead), /api/blocks (block/unblock, self-block rejected), /api/events
+  (list + staff create), /api/events/[id]/rsvp (RSVP emits a continuum event).
+  VERIFIED live: unreadCount 4→0 on markRead; BBQ RSVP 15→14 on toggle-off;
+  self-block → 400.
+- Notifications UI: self-gating bell + unread badge in Nav (client-fetch, hides
+  when signed out — no server auth needed in Nav), dropdown, full /notifications
+  page with New/Earlier grouping + mark-all-read.
+- Community safety: per-post overflow menu (Report → warm non-punitive reason
+  modal w/ 988; Block author), feed hides blocked authors instantly via a
+  change-broadcast, Block/Unblock on member profiles. Fails open on 401/offline.
+- Community discovery: /community/discover consent-gated member directory with
+  client search (reuses buildPublicProfile — public members only, no BARC/
+  balances/email); /community/events RSVP page; LeftRail "Explore" nav.
+
+## GAP REGISTER — run 9 deferrals
+1. **Member-initiated report has no dedicated endpoint** (safety gap): the
+   Report modal posts to the staff-gated /api/posts/[id]/moderate, so a
+   non-staff member's report 401s server-side (UI shows the thank-you either
+   way, safety-first). Needs a real member-report route that files a concern
+   without staff auth. Priority P1.
+2. Realtime is polling (notifications 45s; feed/events refetch) — swap to
+   Supabase realtime channels + read receipts on care/mentor chat at cutover.
+3. Notifications are seeded but NOT yet emitted by live actions (a reaction/
+   comment/care-message/RSVP should write a Notification like emitContinuumEvent
+   does). Add notification-emit hooks on those routes next.
+4. Events lack per-center admin management UI in the dashboard (create exists
+   via API/staff; needs a dashboard surface). Discovery has no circle/group
+   browse yet (directory only).
+5. Carried: staff-readable BARC/résumé consent gate; AI Companion deeper
+   context; Resend email on leads/reports; real PDF export; ms_admin role;
+   milestone→journey_task mirror; employer email notifications.
+6. Standing DECISIONS-NEEDED: Stripe keys, Supabase project keys, verbatim
+   copy, real /centers prices, footer social link (FB label already removed).
+
 # Gap Report — run 2026-07-06-8 (continuum of care: care channels, cockpit, alumni, outcomes)
 
 ## Run 8 summary

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import NavDrawer from "./NavDrawer";
+import NotificationBell from "./NotificationBell";
 
 const WORDMARK_INDIGO =
   "https://lirp.cdn-website.com/9777191e/dms3rep/multi/opt/Untitled+design+%2844%29-1920w.png";
@@ -376,6 +377,9 @@ export default function Nav() {
         </nav>
 
         <div className="flex items-center gap-2.5 lg:gap-[18px]">
+          {/* Self-gating bell — renders nothing until a signed-in session is
+              confirmed via /api/notifications (401 → hidden). */}
+          <NotificationBell />
           <Link
             href="/login"
             className="hidden text-[15px] font-semibold text-blue-primary lg:block"
