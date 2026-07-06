@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, findUserById, save, uid } from "@/app/lib/store";
+import { db, findUserById, save, uid, emitContinuumEvent } from "@/app/lib/store";
 import { getRoleUser } from "@/app/lib/auth";
 import type { Session, SessionMode } from "@/app/lib/types";
 
@@ -87,6 +87,9 @@ export async function POST(req: Request) {
   };
   sessionStore().push(session);
   save();
+
+  // Continuum: a logged mentor session is a strong engagement signal.
+  emitContinuumEvent(memberId, "session", 4, session.id);
 
   return NextResponse.json({ session });
 }

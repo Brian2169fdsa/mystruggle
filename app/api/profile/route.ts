@@ -11,7 +11,7 @@
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/app/lib/auth";
-import { findMemberBySlug, save, uid } from "@/app/lib/store";
+import { findMemberBySlug, save, uid, emitContinuumEvent } from "@/app/lib/store";
 import { toSafeUser, type BarcSelfCheck, type ProfileDetails } from "@/app/lib/types";
 import {
   barcChecksStore,
@@ -124,6 +124,10 @@ export async function POST(req: Request) {
     };
     barcChecksStore().push(check);
     save();
+
+    // Continuum: a self-check is a reflection/engagement signal.
+    emitContinuumEvent(user.id, "checkin", 3, check.id);
+
     return NextResponse.json({
       check: { id: check.id, takenAt: check.takenAt, total: check.total },
       checks: trendOf(checksFor(user.id)),

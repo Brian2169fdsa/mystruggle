@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid, findMemberBySlug } from "@/app/lib/store";
+import { db, save, uid, findMemberBySlug, emitContinuumEvent } from "@/app/lib/store";
 
 /** Record a donation to a member: splits 50/50 cash / Reentry Fund and
  *  advances the targeted support request's weekly progress. */
@@ -40,6 +40,9 @@ export async function POST(req: Request) {
     createdAt: Date.now(),
   });
   save();
+
+  // Continuum: a gift received is an engagement/support signal on the member.
+  emitContinuumEvent(member.id, "giving", 2);
 
   return NextResponse.json({
     ok: true,

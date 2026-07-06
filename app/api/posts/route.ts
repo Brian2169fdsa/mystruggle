@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid, findUserById } from "@/app/lib/store";
+import { db, save, uid, findUserById, emitContinuumEvent } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import { isCrisisText } from "@/app/lib/crisis";
 import {
@@ -167,6 +167,9 @@ export async function POST(req: Request) {
   };
   db().posts.unshift(post);
   save();
+
+  // Continuum: a published community post is an engagement signal.
+  if (!crisis) emitContinuumEvent(user.id, "community", 2, post.id);
 
   if (crisis) {
     return NextResponse.json({

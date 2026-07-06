@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, save, uid } from "@/app/lib/store";
+import { db, save, uid, emitContinuumEvent } from "@/app/lib/store";
 import { getSessionUser } from "@/app/lib/auth";
 import type { Enrollment } from "@/app/lib/types";
 
@@ -86,6 +86,10 @@ export async function POST(req: Request) {
   user.lastActivityAt = now;
 
   save();
+
+  // Continuum: a completed lesson is a learning-engagement signal.
+  emitContinuumEvent(user.id, "lms", 3, courseId);
+
   return NextResponse.json({
     enrollment,
     points: user.points,
