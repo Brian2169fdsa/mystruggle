@@ -190,16 +190,28 @@ function SignInGate() {
 
 /** Signed in, but not staff - warm redirect to their own app. */
 function NotStaffGate({ user }: { user: SafeUser }) {
-  const appHref = user.role === "mentor" ? "/mentor-app" : "/member-app";
-  const appLabel = user.role === "mentor" ? "mentor app" : "member app";
+  const appHref =
+    user.role === "mentor"
+      ? "/mentor-app"
+      : user.role === "employer"
+        ? "/employer/dashboard"
+        : "/member-app";
+  const appLabel =
+    user.role === "mentor"
+      ? "mentor app"
+      : user.role === "employer"
+        ? "employer dashboard"
+        : "member app";
   return (
     <GateShell>
       <h1 className="mt-6 text-[22px]/[1.3] font-extrabold tracking-[-0.01em] text-ink-900">
         This area is for center staff
       </h1>
       <p className="mt-2 text-[14.5px]/[1.7] font-medium text-ink-600">
-        Hi {user.name} - you&rsquo;re signed in as a {user.role}. Your journey
-        lives in the {appLabel}.
+        Hi {user.name} - you&rsquo;re signed in as a {user.role}.{" "}
+        {user.role === "employer"
+          ? "Your hiring tools live in the employer dashboard."
+          : `Your journey lives in the ${appLabel}.`}
       </p>
       <Link
         href={appHref}

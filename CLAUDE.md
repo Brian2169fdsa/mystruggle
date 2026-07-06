@@ -54,8 +54,9 @@ is Supabase + Stripe; the store is the swap-out seam (route handlers under
 - Voice: "member / mentor / journey", never "client / case". Warm, dignified.
 - Demo logins (password `mystruggle`): danielle@themystruggles.com (member),
   marcus@themystruggles.com (mentor).
-- Session auth: HMAC cookie (`app/lib/auth.ts`); admin APIs are demo-open —
-  flagged as a P0 gap until real auth roles exist.
+- Session auth: HMAC cookie (`app/lib/auth.ts`); staff/mentor/employer APIs
+  are role-gated via getRoleUser (verified by audit). Remaining auth gaps:
+  demo PIN/secret constants (redeem desk) and the Supabase Auth cutover.
 
 ## Git
 

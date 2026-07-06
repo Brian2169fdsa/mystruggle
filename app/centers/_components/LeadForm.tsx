@@ -5,7 +5,7 @@ import { useState } from "react";
 type Status = "idle" | "submitting" | "success" | "error";
 
 const MAILTO =
-  "mailto:info@themystruggles.com?subject=Demo%20request%20%E2%80%94%20My%20Struggle%20for%20Centers";
+  "mailto:info@themystruggles.com?subject=Demo%20request%20-%20My%20Struggle%20for%20Centers";
 
 const FIELD =
   "h-[52px] w-full rounded-xl border border-sky-tint-2 bg-white px-4 text-[15px] font-medium text-ink-900 outline-none placeholder:text-ink-400 focus:border-blue-primary focus:ring-2 focus:ring-blue-primary/25";

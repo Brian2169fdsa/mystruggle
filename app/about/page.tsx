@@ -247,7 +247,7 @@ export default function About() {
               Come see a center for yourself.
             </div>
             <div className="mt-2 text-[15px] font-medium text-ink-600">
-              6614 W Harwell Rd, Laveen AZ 85339 · 602-402-7197 ·
+              6614 W Harwell Rd, Laveen AZ 85339 · 602-402-5121 ·
               info@themystruggles.com
             </div>
           </div>
